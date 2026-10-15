@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+case1.log
+.worktrees/
+.DS_Store
+web/frontend/node_modules/
+web/public/
+.web_data/*.pid
+.web_data/*.log
+.idea
+test_html/
+template_previews/
+.env.local
+.description_style_rotation.json

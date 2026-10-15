@@ -1,0 +1,4 @@
+interface:
+  display_name: "Flutter 工程执行"
+  short_description: "按用户创意和项目名称执行 Flutter 工程流程，支持跨机器安装"
+  default_prompt: "使用 $flutter-engine-runner 开始执行；缺少创意主题或项目名称时先询问，工程创建在我指定的目录，未指定时使用当前 Codex 工作目录。"

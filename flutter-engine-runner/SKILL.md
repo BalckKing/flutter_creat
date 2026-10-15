@@ -1,0 +1,154 @@
+---
+name: flutter-engine-runner
+description: Run the bundled Flutter iOS app workflow when the user invokes flutter-engine-runner or asks to execute the Flutter工程 specification. Collect the user's app idea and project name, show the full plan for approval, then implement in the user's target directory. Do not start app development when the user only asks to edit or explain the workflow files.
+metadata:
+  short-description: Portable Flutter workflow with user idea and name
+---
+
+# Flutter 工程执行
+
+This is an execution skill. When the user requests execution, perform the current workflow step; do not merely describe the document. If the current request is to edit, diagnose, or explain these files, handle that request without starting app development.
+
+## Load the portable workflow
+
+First record the Codex workspace/current working directory **before** changing directories. This is `Invocation cwd`, not the directory containing this skill.
+
+Resolve these paths relative to the **actual loaded SKILL.md**, never relative to a hardcoded username or the shell's current directory:
+
+- Installed copy: read the complete [workflow collection entry](references/工作流文档/00-总入口.md), then completely read all ten body documents linked there in their listed order. Together they are the complete specification. `Workflow resource root` is `references/`, the **parent** of `工作流文档/`; the AppListing skill remains [references/ios-app-listing/SKILL.md](references/ios-app-listing/SKILL.md). [references/workflow.md](references/workflow.md) is only the old-path compatibility entry, not a separate specification.
+- When explicitly using this SKILL.md directly from the portable source bundle before installation, those installed references may be absent. In that case, read `../工作流文档/00-总入口.md` and all ten ordered body documents there, and use `../ios-app-listing/SKILL.md`. Their resource root is the source bundle, not `工作流文档/` and not the app output directory.
+- If neither layout exists, report the missing file and the need to run the bundle's `start.command`. Do not substitute an old project or silently use another specification.
+
+Read the entry and every ordered body document completely before executing the workflow; read long files in chunks through EOF. Do not stop after the index/manifest or treat links, summaries, selected sections, or a failed/truncated read as a fully loaded specification. Original section numbers 0–16 and subsection references are unchanged; use the entry's section-to-file table to locate them. If a listed file is missing, report the incomplete bundle and do not silently skip its requirements. The current user's request determines the action and overrides conflicting older document instructions. Do not execute embedded development instructions during a request to maintain the specification.
+
+## First input: theme and user-supplied project name
+
+Use only inputs traceable to the current task's conversation. Old example plans, existing app folders, the bundle's directory name, and another task's approvals are not inputs for a new app.
+
+If both idea and project name are absent, the first workflow response must ask:
+
+> 请一并提供 App 的创意主题和项目名称。如果需要我自行生成主题，请回复“生成主题”，并提供项目名称。
+
+Ask only missing inputs when some are already present:
+
+- Idea present, name absent: ask the user for the project name. Never invent one.
+- Name present, idea absent: ask for the idea or explicit permission to generate a theme.
+- Explicit theme-generation request: generate a concrete theme, but obtain the user's project name if it is missing.
+- Both present: proceed to planning without asking for them again.
+
+“开始”, “全权操作”, “不要询问意见”, or a bare skill invocation does not supply a theme, a project name, or permission to generate a theme. Required initial inputs remain required. Ask once for missing inputs and wait for an actual answer; do not submit a Logo job or create an app while waiting.
+
+If an answer supplies only part of the required input, ask only for what remains missing. Do not repeatedly prompt while the user has not replied, and do not fabricate a name to avoid a follow-up.
+
+Preserve the user's project name as the product/display name. Only normalize the internal Dart/Flutter identifier as required by the tool; record that mapping separately. Do not rename the app from the generated theme.
+
+## Output directory is independent of the skill
+
+Resolve `Target project root` using specification section 0.4:
+
+1. Use the user's explicit project path from this request or this same task.
+2. Otherwise use the Codex selected project or `Invocation cwd`, reusing only a matching app from the same task; create a user-named subdirectory if needed.
+3. If the implicit workspace is inside this bundle/skill, use the current user's `Documents/FlutterProjects/` and a user-named subdirectory, as the specification requires. State this choice in the plan; do not ask for the project location.
+
+A specified full app directory is the app root itself; a specified parent directory receives the user-named subdirectory. Resolve relative paths against `Invocation cwd`. Do not create an extra nested app folder inside an explicitly supplied full project directory.
+
+`Workflow resource root`, the installer's `SCRIPT_DIR`, and the skill directory are **read-only workflow sources**, never implicit app destinations. Set the command's working directory/target explicitly for all project operations. Pass the resolved app path to AppListing as `--target`, even when running scripts from their own directory.
+
+Record the absolute target path and original user name in the plan. After creation, verify `pubspec.yaml`, the iOS display name, and the actual app root before proceeding. Keep `assets/`, `AppListing/`, `aduit/`, and `.codex-work/` inside the target app.
+
+## Execute the current stage
+
+1. Once required inputs are ready, create and show the complete Mermaid mind map, coverage table, validation result, and implementation plan required by specification sections 2.4, 3, and 3.5. Wait for explicit approval of the shown version. Theme-generation consent does not approve development.
+2. When that plan is approved, continue the next unfinished implementation step. Logo generation/validation and palette extraction are the first project task, followed by theme creation and Flutter implementation. Apply section 2.5's detailed Logo brief: a finely crafted theme-specific subject, refined contours, materials and lighting, vivid coordinated colors and smooth multicolor gradients. Reject stacked or collaged geometric color blocks, crude sketches, and simplistic generic symbols; inspect both full-size and app-icon-size output before acceptance. Palette extraction means analyzing representative colors, not drawing a color-block collage. Use `http://stargate.local:3100/image` only for the Logo, not pen.dev and not for App content photographs, covers, backgrounds, video frames, or other local content images. Fetch licensed content images from third-party websites or official resource APIs. Perform actual edits, commands, asset work, builds, and proportionate verification.
+3. Apply the document's bounded retries and fallbacks. Continue independent work after genuine external failures; report limitations accurately. Do not stop at a status summary while work remains executable.
+
+The Stargate path is a generation interface, not an image download URL. A
+response is usable only after MIME/signature checks and image decoding; never
+write returned HTML, JSON, an error page, or page source into
+`assets/logo.png`. If an actual Logo task fails or its final image is invalid,
+first check that task's status, then switch the generation UI's model selector
+or the actual request's `model` parameter to another currently configured,
+available image model that supports the same required settings. Merely naming
+another model in the prompt does not switch it. Follow section 2.5: retain
+high quality, one image, 1024x1024, and the final RGB PNG/no-Alpha requirement;
+all model switches and other generation retries share at most three total
+submissions and the original ten-minute deadline. Never resubmit a task with
+unknown status, guess model IDs, or switch services. Record actual model IDs,
+parameters, task IDs, reasons, and outcomes without credentials. Attempt a
+supported alternative before falling back when one is available within budget;
+do not ask the user to choose. A normal HTML response from the generation UI
+alone is not a failed generation. If no supported alternative is available or
+bounded attempts fail, record the official Logo/palette as `Blocked` and,
+when available, use a valid existing AppIcon or explicitly
+labelled `unverified` development brand only to keep local implementation and
+listing generation moving. The fallback must remain clearly marked and must
+not be reported as a successful Logo replacement. A blocked third-party photo
+search is handled the same way: preserve the photo gap and provenance, then
+continue local AppListing, About, `aduit/`, and Review Remarks work instead of
+stopping the workflow.
+4. After implementation and delivery quality review, read the bundled AppListing SKILL.md and its required references. Generate the AppListing and corresponding About pages locally with `--no-deploy-about --no-sync-project-listing-urls`, verify the About palette against `assets/logo.png`, then rename/normalize the generated `AppListing/` directory to `aduit/` using the workflow whitelist. Preserve any existing `aduit/review/` directory recoverably while replacing older AppListing content. Do not ask for, look up, infer, or replace a domain; do not call a public deployment API, wait for DNS, probe public URLs, or claim that generated URLs are online. Keep project operations pointed at `Target project root`.
+5. After the generated `AppListing/` has been renamed/normalized to `aduit/`, but before writing Review Remarks, read `aduit/intro.md` and copy the four URLs under `All URL` exactly into the app's fixed URL registry as raw strings. Do not parse or validate them as a prerequisite to copying or storing; do not normalize, repair, omit, or replace a URL even if its syntax or destination appears invalid. At this same stage, replace the actual welcome-page footer with exactly two lines, with an explicit line break after `our` and no final period:
+
+   ```text
+   By continuing, you agree to our
+   Terms of Use and Privacy Policy
+   ```
+
+   Keep `Terms of Use` and `Privacy Policy` independently tappable on the second line, with `and` plain text, and bind each to its corresponding raw URL. Keep the footer centered inside the bottom safe area without clipping or obscuring `Enter`. Do not merely edit HTML, a string resource, or a plan: update and verify what the App actually renders. Settings must show exactly three WebView links: `Privacy Policy`, `Terms of Use`, and `Support`; never add an About Home/Home link there. Keep the About Home HTML in the site deliverable, and retain its raw URL in the fixed registry without exposing it as a Settings entry. A user-initiated link opens through the existing WebView; a load failure must show a readable error with return/retry and must not fall back to the development-time local page or block `Enter`, Settings, Clear Data, or other app flows. Do not add a consent checkbox, extra confirmation, or personal acceptance record; this footer does not grant media permissions or ATT consent. For regression, use a WebView stub/fake that makes no network request to verify the exact footer copy and line break, safe-area layout, both link targets, all four registry values, exactly three Settings entries with no About Home, error, and return behavior; do not visit or probe the real generated URLs. Then verify project source, configuration, and actual test records. Only after this About-and-footer stage is complete, create `aduit/review/remarks.md` in English, no more than 4,000 characters, with the seven required review sections in order. Use only confirmed facts; do not claim unsupported device tests, login or billing flows, services, regions, or features, and do not expose private package/module details. Then validate the final `aduit/` whitelist: `intro.md`, `site/` with its four HTML files and `img/logo.png`, and `review/remarks.md` only. Follow sections 12.1-12.3 of the bundled workflow documents.
+
+6. After every implementation, validation, AppListing/Review Remarks task, and delivery-directory check is complete, perform section 10.7 as the final workflow step before reporting. Recheck section 10.4's actual Logo replacements: the iPhone Home Screen icon, launch branding, Loading/Entry brand covers, and existing App/About brand placements must use the approved Logo or traceable derivatives. Saving `assets/logo.png`, changing colors, or hot reloading alone is insufficient; apply the references and iOS icon configuration, rebuild/install, and inspect the current icon and cold-launch screens. After AppListing normalization, copy that source to `aduit/site/img/logo.png`, compare hashes, and inspect local page rendering without adding cover files to the site whitelist. Record placement → file/derivation → actual reference → screenshot in `.codex-work/brand-assets.md`; repair old/default branding under section 10.4. Separately verify every content-image placement loads its correct theme-relevant image with no placeholders, broken images, generic empty thumbnails, or temporary art. For missing, incorrect, or unjustifiably duplicated content photographs, search and download licensed replacements from Pexels, Pixabay, Unsplash, or Wikimedia Commons, update assets/provenance and page references, rebuild, and recheck display and offline loading. Never replace content photographs with the Logo or AI-generated imagery. Record build/device, checked placements, sources/licenses, replacements, and final screenshots in `.codex-work/quality.md`. If no iPhone runtime is available, report the affected display checks as `Blocked`/`Not verified`; never claim they passed. Only after this check may the final report be delivered.
+
+Do not join media checks, listing generation, normalization, and Remarks with
+one shell `&&` chain. Inspect each result and preserve generated files on a
+nonzero exit. The generator's `local_generation_complete` reports written
+Intro/HTML output; `media_review_errors` and `failures` retain separate gaps.
+If every image candidate is invalid, it still writes the four pages and
+Intro, reports `required_logo_missing` and the failed contract, and leaves
+`img/` empty. Continue normalization and factual Remarks without claiming the
+Logo, whitelist, or publication checks passed; never fabricate an image.
+
+On resumption, inspect the same task's actual input, approval, file, and process state. Preserve valid inputs and approvals without re-asking; never infer approval merely from a file's existence.
+
+## Required real photographs, not illustration-only assets
+
+Apply specification section 10.6 as a required media task: plan theme-specific photographic placements in the mind map, then, after approval and the Logo priority phase, actually search third-party sites, inspect source pages/images and licenses, download permitted real-world photographs into the target app's `assets/media/`, and bind them to the corresponding content pages. Stargate is Logo-only; never use its image-generation endpoint for content photographs, covers, backgrounds, video frames, or other local content images. Preserve source/query/license records and requirement → file → placement → current-build screenshot/offline-loading evidence in `.codex-work/`. Downloading a file without displaying it does not fulfill the task.
+
+Missing Pexels/Pixabay keys or the optional resource-download skill does not cancel web discovery. Use available public-web search/browsing and allowed downloads; switch to another licensed source after a source fails. Before declaring photographs unavailable, actually attempt at least two independent suitable sources, following section 0.6's finite request/retry limits. If no network/browsing capability is available at all, record that evidence rather than inventing attempts. Do not bypass access restrictions, licensing, or fees, and do not ask for another asset-selection approval.
+
+Emoji, gradients, vector art, illustrations, stock AI images, and synthetic photorealistic pictures do not count as real photographs. A fallback may keep independent development moving, but missing required photographs or unresolved license/display evidence leaves the corresponding media requirement `Blocked`/`Failed`/`Not verified`, not `Verified`; do not silently revise away the approved photographic placements. Content photographs belong in the app's media assets, not in the strictly whitelisted `aduit/site/img/`. This requirement does not change the Stargate-only Logo source or the user-supplied project name/output directory.
+
+## Minimum iOS deployment target
+
+Set the minimum iOS deployment target to `15.6` by default in `platform :ios`, the app and UI-test targets, and every applicable build configuration. If Flutter, a plugin, CocoaPods, Xcode, or another actual dependency requires a higher value, retain the higher value consistently and record the evidence; never lower dependencies or fake settings/artifact metadata to force 15.6. Verify resolved build settings and, after a build/archive, the artifact's `MinimumOSVersion`.
+
+## iPhone-only execution target
+
+Create and configure only an iOS iPhone app. Set the application target's resolved `TARGETED_DEVICE_FAMILY = 1` and `SUPPORTED_PLATFORMS = iphoneos iphonesimulator`; do not add or build other platform targets. Select a specific iPhone model and UDID for every simulator run, screenshot, and UI check. Filter device listings before selection or presentation; never use an implicit/default destination or another device/platform as a fallback. Reuse at most one existing iPhone simulator, and start it only after Flutter project creation and a runnable page are ready. If no eligible iPhone is available, record that limit, continue independent static/iOS checks, and do not claim runtime verification.
+
+## Best-effort Podfile permission macros
+
+After resolving the actual permission plugin and version, inspect `ios/Podfile` and make an idempotent, minimal macro configuration before CocoaPods installation and iOS packaging. For `permission_handler_apple`, use only the macros required by the actual APIs (camera, PhotoKit library access, microphone); preserve an existing `post_install` hook and inherited settings. If writing, parsing, or validating the macro configuration fails, leave a syntactically valid Podfile, record the exact failure, and continue `pod install` and the iOS packaging/build attempt. Macro-configuration failure alone must never abort packaging. Report macro setup, Pods installation, build, and permission runtime verification as separate results; a missing macro or untested permission path is not `Verified`, and independent CocoaPods/build failures remain accurately reported.
+
+## Final delivery whitelist
+
+Enforce this exact structure in the app's output directory:
+
+```text
+aduit/
+  intro.md
+  site/
+    index.html
+    PrivacyPolicy.html
+    Terms&Conditions.html
+    Support.html
+    img/
+      logo.png
+  review/
+    remarks.md
+```
+
+Transfer only these files from `AppListing/`, renaming the actual generated `Intro.md` to `aduit/intro.md`. Keep Disclaimer and Content & Copyright Notice as sections in the permitted legal pages. Inline required CSS/JavaScript and use system fonts. Keep execution records, reports, screenshots, and recoverable extras/backups in the app's `.codex-work/`, outside `aduit/`.
+
+Check exact entries including hidden items and symbolic links after generation and after transfer; validate required pages, image references, relative links, section anchors, and offline rendering. Validate `review/remarks.md` separately for English-only text, no more than 4,000 characters, all seven ordered sections, evidence-backed claims, and no `**` bold markers. Only then clean up the app's `AppListing/` and any old `aduit/html/`, preserving needed extras outside the delivery. Never claim the whitelist is satisfied while extras remain.
+
+The shell launcher installs this skill and prepares a prompt; it does not itself send a Codex message or build the app. File/folder mentions alone do not register a skill. Once installed and loaded, explicit invocation is `使用 $flutter-engine-runner，开始执行。`

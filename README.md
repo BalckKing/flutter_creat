@@ -1,38 +1,146 @@
-### 3 分钟了解如何进入开发
+# Flutter 工程：复制、安装、执行
 
-欢迎使用云效代码管理 Codeup，通过阅读以下内容，你可以快速熟悉 Codeup ，并立即开始今天的工作。
+这是可移植的 Codex 执行技能资料包。整个文件夹可以放在另一台 Mac 的任意位置，不要求用户名是 `admin`，也不要求放在桌面。
 
-### 提交**文件**
+## 第一次使用
 
-Codeup 支持两种方式进行代码提交：网页端提交，以及本地 Git 客户端提交。
+1. 把整个 `Flutter工程` 文件夹复制到新机器，保留下面列出的文件和目录。
+2. 双击 `start.command`。它会安装执行技能、复制完整规范和 AppListing 资源、打开 Codex，并将启动语句复制到剪贴板。只安装而不打开 Codex 时，可双击 `install.command`。
+3. 首次安装或更新后重新打开 Codex，选择你要存放工程的项目/工作目录，再进入新对话。
+4. 在技能列表搜索 `Flutter 工程执行` 或 `flutter-engine-runner` 并选择；也可以直接粘贴并发送：
 
-* 如需体验本地命令行操作，请先安装 Git 工具，安装方法参见[安装Git](https://help.aliyun.com/document_detail/153800.html)。
+```text
+使用 $flutter-engine-runner，请开始执行。
+```
 
-* 如需体验 SSH 方式克隆和提交代码，请先在平台账号内配置 SSH 公钥，配置方法参见[配置 SSH 密钥](https://help.aliyun.com/document_detail/153709.html)。
+5. 缺少输入时，Codex 会先询问创意主题和项目名称。提供后，查看完整思维导图，回复“确认，按此执行”。之后继续自主开发；质量复核后使用 AppListing 技能本地生成 AppListing 和对应 About 页面，校对配色后改名/整理为 `aduit`。About 完成后、生成英文审核备注前，会从 `aduit/intro.md` 的 `All URL` 原样复制四个地址，并将欢迎页底部改为以下两行（Terms of Use 与 Privacy Policy 分别可点击）：
 
-* 如需体验 HTTP 方式克隆和提交代码，请先在平台账号内配置克隆账密，配置方法参见[配置 HTTPS 克隆账号密码](https://help.aliyun.com/document_detail/153710.html)。
+```text
+By continuing, you agree to our
+Terms of Use and Privacy Policy
+```
 
-现在，你可以在 Codeup 中提交代码文件了，跟着文档「[__提交第一行代码__](https://help.aliyun.com/document_detail/153707.html?spm=a2c4g.153710.0.0.3c213774PFSMIV#6a5dbb1063ai5)」一起操作试试看吧。
+随后接入 Settings 的 WebView 协议入口；地址失效不会阻断 App 流程。无需提供域名，也不公开部署。
 
-<img src="https://img.alicdn.com/imgextra/i3/O1CN013zHrNR1oXgGu8ccvY_!!6000000005235-0-tps-2866-1268.jpg" width="100%" />
+`@Flutter工程` 是文件夹引用，不等于安装或调用技能。`@` 是否列出技能取决于客户端版本与技能加载状态；看到资料文件不代表执行技能已注册。优先使用技能选择器或 `$flutter-engine-runner`。如果仍未出现，复制安装器打印的“读取并使用……/SKILL.md，开始执行工作流”语句，直接让 Codex 使用已安装技能。
 
+启动器完成的是安装与启动语句准备；它不会自动发送聊天消息。请将语句发送给 Codex 才会执行工作流。
 
-### 进行代码检测
+## 一次提供输入，直接进入思维导图
 
-开发过程中，为了更好的维护你的代码质量，你可以开启 Codeup 内置开箱即用的「[代码检测服务](https://help.aliyun.com/document_detail/434321.html)」，开启后提交或合并请求的变更将自动触发检测，识别代码编写规范和安全漏洞问题，并及时提供结果报表和修复建议。
+在 Codex 中发送，例如：
 
-<img src="https://img.alicdn.com/imgextra/i2/O1CN01BRzI1I1IO0CR2i4Aw_!!6000000000882-0-tps-2862-1362.jpg" width="100%" />
+```text
+使用 $flutter-engine-runner。
+创意主题：帮助用户记录旅行见闻，整理照片与语音。
+项目名称：Journey Notes
+完整工程目录：/你指定的位置/Journey Notes
+请先展示完整思维导图，确认后全权执行。
+```
 
-### 开展代码评审
+需要智能体生成创意时：
 
-功能开发完毕后，通常你需要发起「[代码评审并执行合并](https://help.aliyun.com/document_detail/153872.html)」，Codeup 支持多人协作的代码评审服务，你可以通过「[保护分支设置合并规则](https://help.aliyun.com/document_detail/153873.html?spm=a2c4g.203108.0.0.430765d1l9tTRR#p-4on-aep-l5q)」策略及「[__合并请求设置__](https://help.aliyun.com/document_detail/153874.html?spm=a2c4g.153871.0.0.3d38686cJpcdJI)」对合并过程进行流程化管控，同时提供在线代码评审及冲突解决能力，让评审过程更加流畅。
+```text
+使用 $flutter-engine-runner，请自行生成一个创意主题。
+项目名称：Journey Notes
+完整工程目录：/你指定的位置/Journey Notes
+```
 
-<img src="https://img.alicdn.com/imgextra/i1/O1CN01MaBDFH1WWcGnQqMHy_!!6000000002796-0-tps-2592-1336.jpg" width="100%" />
+示例中的名称与路径请换成自己的；它们不是默认主题、默认项目或真实执行目录。项目名称由你提供，不能由智能体取名；仅 Flutter 内部标识会按工具要求规范化，App 显示名称保留你给定的名称。
 
-### 成员协作
+## 工程创建在哪里
 
-是时候邀请成员一起编写卓越的代码工程了，请点击左下角「成员」邀请你的小伙伴开始协作吧！
+你在当前请求或同一任务中明确指定的工程目录优先。指定完整工程目录时直接在该位置创建；明确指定父目录时，才在其中创建以用户项目名称命名的子目录。
 
-### 更多
+未提供位置时，使用 Codex 当前选定项目/工作目录，优先复用本任务的匹配工程，否则创建同名子目录。资料包目录和技能安装目录只用于读取流程，不是默认输出位置；若当前工作目录恰好在资料包或技能内，回退到当前用户的 `Documents/FlutterProjects/` 下，并在思维导图方案中说明。
 
-Git 使用教学、高级功能指引等更多说明，参见[Codeup帮助文档](https://help.aliyun.com/document_detail/153402.html)。
+不会再询问项目位置，也不会因为目标文件夹尚不存在而改到资料包里。不要只在 Finder 中选中一个目录就认为 Codex 已获得输出位置；请选定 Codex 工作目录或在启动消息里写明。
+
+## 跨机器与更新
+
+复制时至少包含：
+
+```text
+Flutter工程/
+├── 工作流文档/              # 整个目录：总入口、十份正文与 manifest.txt
+├── flutter-engine-runner/
+│   ├── SKILL.md
+│   └── agents/openai.yaml
+├── ios-app-listing/           # 整个目录，含 scripts、references、assets
+├── start.sh
+├── start.command
+├── install.command
+└── README.md
+```
+
+无需复制个人机器上的 `.codex` 文件夹，也不要只复制 Markdown 或启动器。安装器默认使用当前用户的 `CODEX_HOME/skills`，未设置 `CODEX_HOME` 时使用 `~/.codex/skills`；另在 `~/.agents/skills` 建立指向同一安装的兼容链接。会复用旧版的 `flutter工程执行` 安装目录，避免留下同名的旧规则。实际安装路径以启动器输出为准。
+
+安装后的整个文档集与 AppListing 是完整副本，资料包移动或原文件删除不会使已安装技能失效。修改 `工作流文档/` 中的正文或执行技能后，重新双击 `start.command` 同步更新，再重新加载 Codex。安装器会在更新前逐项检查文档清单，缺少任何列出的正文时不覆盖现有技能。旧安装保存在技能目录同级的 `skill-backups/flutter-engine-runner/`，可恢复；不会覆盖其他技能。
+
+Mac 若不允许双击启动器，可在终端输入 `/bin/zsh `，拖入 `start.sh` 并回车。终端入口也支持 `--project-dir` 指定完整工程目录；该路径会加入待发送的启动语句，不会直接创建工程。`--install-only` 只安装，`--help` 查看选项。
+
+Logo 仍通过 `http://stargate.local:3100/image` 生成。该地址是生成界面，不是图片下载接口；不能直接 `curl` 后把网页、JSON 或错误响应保存为 `assets/logo.png`。必须从真实任务结果取得二进制图片，并再次检查 MIME、文件签名、尺寸、可解码性和 Alpha。另一台机器需要能访问该服务；路径可移植不代表服务或 Flutter/Xcode 会自动安装。服务失败时记录正式 Logo 与取色为 `Blocked`，优先复用有效 AppIcon 或明确标记的 `unverified` 开发资源继续本地页面和材料生成，不把回退资源宣称为正式品牌。
+
+Logo 提示词要求围绕主题精细设计主体、材质和光影，多用协调的鲜明色调与平滑渐变，避免几何色块堆叠、粗糙简笔和简陋图案；同时检查原尺寸与图标尺寸的实际视觉效果。详细话术见 `工作流文档/02-创意与思维导图.md` 第 2.5 节。
+
+Logo 实际生成失败时，会先在 Stargate 的生成参数里切换其他已配置、可用且支持相同规格的图像模型，再尝试生成；不是只修改提示词。保持高质量、1 张、`1024x1024` 与最终无 Alpha 要求，所有模型共用最多 3 次提交和原 10 分钟预算，不再询问用户。没有可用替代模型或尝试仍失败时，保留真实记录并继续本地 Listing、`aduit/` 和 Remarks。
+
+Logo 下载后还必须实际替换 iPhone 桌面 App 图标、启动品牌图、Loading/Entry 欢迎封面及现有 App/About 品牌位置，重新构建并检查最终显示，不能仅保存图片。详见 `工作流文档/06-素材与真实照片.md` 第 10.4 节；内容照片封面仍使用贴题的第三方素材，`aduit/site/img/` 仍只保留 `logo.png`。
+
+Listing 生成器优先使用有效的 `assets/logo.png`，不再优先选旧 AppIcon。没有正式 Logo 时可用已有有效图标或 `.codex-work/development-brand.png` 继续本地生成，并保留品牌未验证状态；完全无有效图片时仍输出介绍与四页 HTML，缺图和目录契约检查如实失败，后续 `aduit/` 整理及 Remarks 继续执行。
+
+## 文档集与原入口
+
+原长文档已拆分到同一资料包下的 `工作流文档/`。唯一维护源是总入口 `工作流文档/00-总入口.md` 和按清单列出的十份正文；旧版长文档兼容入口不是必需文件。
+
+```text
+工作流文档/
+├── 00-总入口.md
+├── 01-执行约定.md
+├── 02-创意与思维导图.md
+├── 03-产品定义与导航.md
+├── 04-视觉与页面功能.md
+├── 05-数据与工程架构.md
+├── 06-素材与真实照片.md
+├── 07-测试与质量验收.md
+├── 08-发布与About材料.md
+├── 09-实施顺序与交付报告.md
+├── 10-第三方资源来源.md
+└── manifest.txt
+```
+
+运行语句、执行顺序和原第 0–16 节编号不变。技能会读取总入口并按顺序完整读取十份正文，不是只看目录或按标题猜测内容。规范资源根仍是文档集的父目录，AppListing 与工程输出位置不受拆分影响。跨机器复制时必须带上整个文档集，不能只复制启动器或兼容入口。安装器在旧版长文档不存在时，会用总入口生成安装副本中的旧路径兼容文件。
+
+本次拆分未改写正文；修改需求时编辑对应正文，并同步有实际关联的摘要或引用。拆分前原长文档备份在本机的 `skill-backups/flutter-engine-runner/source-documents/`，不参与执行。
+
+## 真实照片素材要求
+
+如果返回 403、429、超时、登录墙、验证码或许可证无法核验，将对应照片项记为 `Blocked`/`Not verified`；继续生成本地 AppListing、About、`aduit/` 和 `aduit/review/remarks.md`，不能再以素材失败停止整个交付流程。
+
+执行流程必须实际搜索 Pexels、Pixabay、Unsplash、Wikimedia Commons 等第三方网站，核对主题与许可，下载真实实物/实景摄影到目标工程的 `assets/media/` 并接入 App 页面。`http://stargate.local:3100/image` 只用于生成 Logo，不能用于生成照片、封面、背景、视频帧或其他本地内容图片。没有 API Key 或资源下载技能时仍尝试可用公开网页与合法下载方式；来源失败则切换其他来源，按规范有限尝试，不无限等待。
+
+Emoji、渐变、矢量插画、AI 拟真图或仅写素材清单不能代替真实照片。验收要有来源与许可、实际页面截图及离线展示证据；不能只下载不使用，也不能用一张图填满所有分类。所有可用途径确实失败时可继续独立开发，但照片缺口必须明确报告，不能把该项资源质量标为通过。搜索记录与接触表在目标工程 `.codex-work/`，内容照片不进入 `aduit/`。
+
+### iPhone 与权限配置
+
+本流程只创建、构建和验证 iOS iPhone App，最低 iOS 部署版本为 15.6；实际依赖要求更高时保留更高版本，并按正文核对 Podfile、所有构建 target 的解析设置及可用产物。运行与截图必须明确指定 iPhone 机型及 UDID；没有可用 iPhone 时继续可执行检查，不回退到其他设备或平台。按实际权限插件检查 `ios/Podfile` 并尽力设置最小权限宏；宏配置失败需记录，但不得因此中止 Pods 安装或 iOS 打包尝试。宏配置、构建结果与权限运行验证分开报告，失败的权限路径不能标为通过。
+
+## 最终交付目录
+
+目标工程中的 `aduit/` 必须严格保持（由最终生成的 `AppListing/` 改名/整理而来，不执行公开部署）：
+
+```text
+aduit/
+├── intro.md
+├── site/
+│   ├── index.html
+│   ├── PrivacyPolicy.html
+│   ├── Terms&Conditions.html
+│   ├── Support.html
+│   └── img/
+│       └── logo.png
+└── review/
+    └── remarks.md
+```
+
+免责与版权说明合并在现有法律页；样式与脚本内联，使用系统字体。`aduit/` 顶层仅允许 `intro.md`、`site/`、`review/remarks.md`；`site/` 只允许四个 HTML 页面与 `img/logo.png`，`review/` 只允许 `remarks.md`。执行记录、质量报告、截图、备份及额外文件放在目标工程的 `.codex-work/`，不进入交付目录。审核备注全英文、不超过 4,000 字符，基于已确认事实；生成后检查七项内容与白名单，并清理目标工程的 `AppListing/` 和旧 `aduit/html/`。
