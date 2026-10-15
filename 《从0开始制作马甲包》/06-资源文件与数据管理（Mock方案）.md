@@ -30,8 +30,10 @@
    - `assets/{{项目名}}_img/` 目录
    - 图标、图片等资源文件组织清晰
    - **重要：A面资源绝对不能放在 `assets/images` 目录**，该目录是B面专用的
+   - iOS 原生 AppIcon 按 03 步骤单独放在 `ios/Runner/Assets.xcassets/AppIcon.appiconset/`，三种外观文件为 `logo.png`、`logo 1.png`、`logo 2.png`，均为 1024×1024 PNG，`Contents.json` 使用 03 的完整固定格式
 
 2. **完善的数据管理类（Mock 方案）**：
+   - 当前 `{{项目名}}AuthEnabled = false`，个人资料与操作记录通过独立数据服务恢复和保存，不依赖登录；重启恢复，用户在设置页确认 Clear Data 后清除本应用保存的数据与缓存，同步重置内存和统计（见 07）
    - **数据使用 Mock 方案**：
      - **通过模拟请求数据**：使用 `Future.delayed` 模拟网络请求延迟（例如：500-1000ms）
      - **展示假数据**：所有数据都是假数据，不依赖外部接口
