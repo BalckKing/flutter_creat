@@ -1,9 +1,0 @@
-{
-  "templates": [
-    {"template_id": "onboarding-cards", "display_name": "Centered Cards", "layout": "carousel"},
-    {"template_id": "onboarding-spotlight", "display_name": "Brand Spotlight", "layout": "carousel"},
-    {"template_id": "onboarding-compact", "display_name": "Compact Intro", "layout": "carousel"},
-    {"template_id": "onboarding-minimal", "display_name": "Minimal Welcome", "layout": "carousel"},
-    {"template_id": "onboarding-feature-list", "display_name": "Feature List", "layout": "carousel"}
-  ]
-}

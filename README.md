@@ -5,7 +5,7 @@
 ## 第一次使用
 
 1. 把整个 `Flutter工程` 文件夹复制到新机器，保留下面列出的文件和目录。
-2. 双击 `start.command`。它会安装执行技能、复制完整规范和 AppListing 资源、打开 Codex，并将启动语句复制到剪贴板。只安装而不打开 Codex 时，可双击 `install.command`。
+2. 双击 `start.command`。它会安装执行技能、复制完整规范，并从远程仓库的 `feature/1.2.1-A1` 分支同步完整 `ios-app-listing` checkout，然后打开 Codex 并将启动语句复制到剪贴板。只安装而不打开 Codex 时，可双击 `install.command`。
 3. 首次安装或更新后重新打开 Codex，选择你要存放工程的项目/工作目录，再进入新对话。
 4. 在技能列表搜索 `Flutter 工程执行` 或 `flutter-engine-runner` 并选择；也可以直接粘贴并发送：
 
@@ -13,7 +13,7 @@
 使用 $flutter-engine-runner，请开始执行。
 ```
 
-5. 缺少输入时，Codex 会先询问创意主题和项目名称。提供后，查看完整思维导图，回复“确认，按此执行”。之后继续自主开发；质量复核后使用 AppListing 技能本地生成 AppListing 和对应 About 页面，校对配色后改名/整理为 `aduit`。About 完成后、生成英文审核备注前，会从 `aduit/intro.md` 的 `All URL` 原样复制四个地址，并将欢迎页底部改为以下两行（Terms of Use 与 Privacy Policy 分别可点击）：
+5. 缺少输入时，Codex 会先询问创意主题和项目名称。提供后，查看完整思维导图，回复“确认，按此执行”。之后继续自主开发；质量复核后只使用安装器同步的远程 `ios-app-listing` checkout 生成 AppListing 和对应 About 页面，校对配色后改名/整理为 `aduit`。About 完成后、生成英文审核备注前，会从 `aduit/intro.md` 的 `All URL` 原样复制四个地址，并将欢迎页底部改为以下两行（Terms of Use 与 Privacy Policy 分别可点击）：
 
 ```text
 By continuing, you agree to our
@@ -66,7 +66,6 @@ Flutter工程/
 ├── flutter-engine-runner/
 │   ├── SKILL.md
 │   └── agents/openai.yaml
-├── ios-app-listing/           # 整个目录，含 scripts、references、assets
 ├── start.sh
 ├── start.command
 ├── install.command
@@ -75,7 +74,7 @@ Flutter工程/
 
 无需复制个人机器上的 `.codex` 文件夹，也不要只复制 Markdown 或启动器。安装器默认使用当前用户的 `CODEX_HOME/skills`，未设置 `CODEX_HOME` 时使用 `~/.codex/skills`；另在 `~/.agents/skills` 建立指向同一安装的兼容链接。会复用旧版的 `flutter工程执行` 安装目录，避免留下同名的旧规则。实际安装路径以启动器输出为准。
 
-安装后的整个文档集与 AppListing 是完整副本，资料包移动或原文件删除不会使已安装技能失效。修改 `工作流文档/` 中的正文或执行技能后，重新双击 `start.command` 同步更新，再重新加载 Codex。安装器会在更新前逐项检查文档清单，缺少任何列出的正文时不覆盖现有技能。旧安装保存在技能目录同级的 `skill-backups/flutter-engine-runner/`，可恢复；不会覆盖其他技能。
+安装后的工作流文档来自资料包，AppListing 则每次由安装器从远程仓库 `feature/1.2.1-A1` 分支重新同步为 Git checkout；不会把资料包中的同名目录、旧安装或手写页面作为运行时来源。修改 `工作流文档/` 中的正文或执行技能后，重新双击 `start.command` 同步更新，再重新加载 Codex。安装器会在更新前逐项检查文档清单，缺少任何列出的正文或远程 AppListing 必要文件时不覆盖现有技能。远程同步失败时保留旧安装但将 AppListing 阶段视为受阻，修复网络/权限后重新运行安装器；不得回退到本地副本。旧安装保存在技能目录同级的 `skill-backups/flutter-engine-runner/`，可恢复；不会覆盖其他技能。
 
 Mac 若不允许双击启动器，可在终端输入 `/bin/zsh `，拖入 `start.sh` 并回车。终端入口也支持 `--project-dir` 指定完整工程目录；该路径会加入待发送的启动语句，不会直接创建工程。`--install-only` 只安装，`--help` 查看选项。
 
@@ -83,9 +82,13 @@ Logo 仍通过 `http://stargate.local:3100/image` 生成。该地址是生成界
 
 Logo 提示词要求围绕主题精细设计主体、材质和光影，多用协调的鲜明色调与平滑渐变，避免几何色块堆叠、粗糙简笔和简陋图案；同时检查原尺寸与图标尺寸的实际视觉效果。详细话术见 `工作流文档/02-创意与思维导图.md` 第 2.5 节。
 
+Logo 还需检查主题造型、比例、材质和光线是否自然协调，修复明显畸变、断裂边缘、重复纹理、随机碎片、伪文字或廉价塑料/强光效等生成瑕疵；“自然可信”不要求 Logo 做成照片，也不改变其鲜艳配色与渐变。每个主要内容列表至少包含两种有意义的明显尺寸；`featured` / `standard` / `compact` 三档按内容在主要浏览体验跨页面覆盖，不要求每页都有三档。大小服务于内容主次，不随机错落；设置、协议、权限等便于扫描的功能列表保持整齐。完整实现及验收标准见工作流文档第 6.9 节。
+
 Logo 实际生成失败时，会先在 Stargate 的生成参数里切换其他已配置、可用且支持相同规格的图像模型，再尝试生成；不是只修改提示词。保持高质量、1 张、`1024x1024` 与最终无 Alpha 要求，所有模型共用最多 3 次提交和原 10 分钟预算，不再询问用户。没有可用替代模型或尝试仍失败时，保留真实记录并继续本地 Listing、`aduit/` 和 Remarks。
 
 Logo 下载后还必须实际替换 iPhone 桌面 App 图标、启动品牌图、Loading/Entry 欢迎封面及现有 App/About 品牌位置，重新构建并检查最终显示，不能仅保存图片。详见 `工作流文档/06-素材与真实照片.md` 第 10.4 节；内容照片封面仍使用贴题的第三方素材，`aduit/site/img/` 仍只保留 `logo.png`。
+
+启动视觉分为两层：iOS 原生冷启动页静态呈现更大的 Logo、独立 `PRYRIN` 字标、品牌定位文案和装饰线；随后 Flutter Loading 使用深色品牌渐变、光晕/呼吸效果及真实步骤、百分比和进度条。进度必须由已完成的真实启动里程碑驱动；系统开启减少动态时立即停用循环和过渡动画。初始化错误页保留 `Try again` 与复用原二次确认流程的 `Clear Data`。详情见第 7.1 节及第 10.4 节。
 
 Listing 生成器优先使用有效的 `assets/logo.png`，不再优先选旧 AppIcon。没有正式 Logo 时可用已有有效图标或 `.codex-work/development-brand.png` 继续本地生成，并保留品牌未验证状态；完全无有效图片时仍输出介绍与四页 HTML，缺图和目录契约检查如实失败，后续 `aduit/` 整理及 Remarks 继续执行。
 
@@ -109,7 +112,7 @@ Listing 生成器优先使用有效的 `assets/logo.png`，不再优先选旧 Ap
 └── manifest.txt
 ```
 
-运行语句、执行顺序和原第 0–16 节编号不变。技能会读取总入口并按顺序完整读取十份正文，不是只看目录或按标题猜测内容。规范资源根仍是文档集的父目录，AppListing 与工程输出位置不受拆分影响。跨机器复制时必须带上整个文档集，不能只复制启动器或兼容入口。安装器在旧版长文档不存在时，会用总入口生成安装副本中的旧路径兼容文件。
+运行语句、执行顺序和原第 0–16 节编号不变。技能会读取总入口并按顺序完整读取十份正文，不是只看目录或按标题猜测内容。规范资源根仍是文档集的父目录；AppListing 运行时目录由安装器从远程仓库同步，工程输出位置不受拆分影响。跨机器复制时必须带上整个文档集、执行技能和启动器，不能只复制启动器或兼容入口；资料包不需要也不应携带本地 AppListing 副本。安装器在旧版长文档不存在时，会用总入口生成安装副本中的旧路径兼容文件。
 
 本次拆分未改写正文；修改需求时编辑对应正文，并同步有实际关联的摘要或引用。拆分前原长文档备份在本机的 `skill-backups/flutter-engine-runner/source-documents/`，不参与执行。
 
@@ -117,7 +120,7 @@ Listing 生成器优先使用有效的 `assets/logo.png`，不再优先选旧 Ap
 
 如果返回 403、429、超时、登录墙、验证码或许可证无法核验，将对应照片项记为 `Blocked`/`Not verified`；继续生成本地 AppListing、About、`aduit/` 和 `aduit/review/remarks.md`，不能再以素材失败停止整个交付流程。
 
-执行流程必须实际搜索 Pexels、Pixabay、Unsplash、Wikimedia Commons 等第三方网站，核对主题与许可，下载真实实物/实景摄影到目标工程的 `assets/media/` 并接入 App 页面。`http://stargate.local:3100/image` 只用于生成 Logo，不能用于生成照片、封面、背景、视频帧或其他本地内容图片。没有 API Key 或资源下载技能时仍尝试可用公开网页与合法下载方式；来源失败则切换其他来源，按规范有限尝试，不无限等待。
+执行流程必须实际搜索 Pexels、Pixabay、Unsplash、Wikimedia Commons 等第三方网站，核对主题与许可，下载真实实物/实景摄影到目标工程的 `assets/media/` 并接入 App 页面。`http://stargate.local:3100/image` 只用于生成 Logo，不能用于生成内容照片或其他主题摄影。原生图标、代码矢量符号、装饰插画与渐变等非摄影 UI 素材不需要从照片网站取得，也不计作真实照片。没有 API Key 或资源下载技能时仍尝试可用公开网页与合法下载方式；来源失败则切换其他来源，按规范有限尝试，不无限等待。
 
 Emoji、渐变、矢量插画、AI 拟真图或仅写素材清单不能代替真实照片。验收要有来源与许可、实际页面截图及离线展示证据；不能只下载不使用，也不能用一张图填满所有分类。所有可用途径确实失败时可继续独立开发，但照片缺口必须明确报告，不能把该项资源质量标为通过。搜索记录与接触表在目标工程 `.codex-work/`，内容照片不进入 `aduit/`。
 

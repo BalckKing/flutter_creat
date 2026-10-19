@@ -13,6 +13,10 @@ fi
 TASK_RUNNER_SOURCE="$TASK_BUNDLE_DIR/flutter-engine-runner"
 TASK_CODEX_DIR="${CODEX_HOME:-$HOME/.codex}"
 TASK_SKILLS_DIR="$TASK_CODEX_DIR/skills"
+TASK_APP_LISTING_REPO="${FLUTTER_APP_LISTING_REPO:-git@codeup.aliyun.com:6366640f0cd435624679b545/Aurora/Agent/aurora_skills/ios-app-listing.git}"
+TASK_APP_LISTING_BRANCH="feature/1.2.1-A1"
+TASK_APP_LISTING_COMMIT=""
+TASK_STAGE=""
 TASK_INSTALL_ONLY=0
 TASK_OPEN=1
 TASK_CLIPBOARD=1
@@ -46,15 +50,7 @@ while (( $# > 0 )); do
   esac
 done
 
-for TASK_REQUIRED in "$TASK_DOC" "$TASK_DOC_MANIFEST" "$TASK_RUNNER_SOURCE/SKILL.md" "$TASK_RUNNER_SOURCE/agents/openai.yaml" \
-  "$TASK_BUNDLE_DIR/ios-app-listing/SKILL.md" \
-  "$TASK_BUNDLE_DIR/ios-app-listing/references/output-contract.md" \
-  "$TASK_BUNDLE_DIR/ios-app-listing/references/privacy-ai-rules.md" \
-  "$TASK_BUNDLE_DIR/ios-app-listing/scripts/inspect_app.py" \
-  "$TASK_BUNDLE_DIR/ios-app-listing/scripts/generate_app_listing.py" \
-  "$TASK_BUNDLE_DIR/ios-app-listing/scripts/validate_site_publication_ready.py" \
-  "$TASK_BUNDLE_DIR/ios-app-listing/scripts/render_app_listing.py" \
-  "$TASK_BUNDLE_DIR/ios-app-listing/assets/site-render/templates-manifest.json"; do
+for TASK_REQUIRED in "$TASK_DOC" "$TASK_DOC_MANIFEST" "$TASK_RUNNER_SOURCE/SKILL.md" "$TASK_RUNNER_SOURCE/agents/openai.yaml"; do
   if [[ ! -f "$TASK_REQUIRED" ]]; then
     print -u2 -- "资料包不完整，缺少：$TASK_REQUIRED"
     print -u2 -- "请复制整个 Flutter工程 文件夹，不要只复制启动器或 Markdown。"
@@ -103,12 +99,49 @@ fi
 TASK_BACKUP_ROOT="${TASK_SKILLS_DIR:h}/skill-backups/flutter-engine-runner"
 mkdir -p "$TASK_SKILLS_DIR" "$TASK_BACKUP_ROOT"
 TASK_STAGE="$(mktemp -d "$TASK_BACKUP_ROOT/staging.XXXXXX")"
+task_cleanup_staging() {
+  if [[ -n "$TASK_STAGE" && -d "$TASK_STAGE" ]]; then
+    rm -rf -- "$TASK_STAGE"
+  fi
+}
+trap task_cleanup_staging EXIT
+
 mkdir -p "$TASK_STAGE/agents" "$TASK_STAGE/references"
 cp "$TASK_RUNNER_SOURCE/SKILL.md" "$TASK_STAGE/SKILL.md"
 cp "$TASK_RUNNER_SOURCE/agents/openai.yaml" "$TASK_STAGE/agents/openai.yaml"
 cp "$TASK_DOC" "$TASK_STAGE/references/workflow.md"
 cp -R "$TASK_DOCS_DIR" "$TASK_STAGE/references/工作流文档"
-cp -R "$TASK_BUNDLE_DIR/ios-app-listing" "$TASK_STAGE/references/ios-app-listing"
+
+TASK_APP_LISTING_DIR="$TASK_STAGE/references/ios-app-listing"
+TASK_GIT_SSH_COMMAND="${GIT_SSH_COMMAND:-ssh -o BatchMode=yes -o ConnectTimeout=10}"
+if ! GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND="$TASK_GIT_SSH_COMMAND" git clone \
+  --branch "$TASK_APP_LISTING_BRANCH" --single-branch "$TASK_APP_LISTING_REPO" "$TASK_APP_LISTING_DIR"; then
+  print -u2 -- "无法从远程仓库获取 ios-app-listing 分支：$TASK_APP_LISTING_BRANCH"
+  print -u2 -- "旧安装未更改；请检查网络、SSH 凭据和仓库权限后重新运行。"
+  exit 1
+fi
+
+if [[ "$(git -C "$TASK_APP_LISTING_DIR" branch --show-current)" != "$TASK_APP_LISTING_BRANCH" ]]; then
+  print -u2 -- "远程检出分支不匹配，未更新技能：$TASK_APP_LISTING_DIR"
+  exit 1
+fi
+
+for TASK_LISTING_REQUIRED in \
+  SKILL.md \
+  references/output-contract.md \
+  references/privacy-ai-rules.md \
+  scripts/inspect_app.py \
+  scripts/generate_app_listing.py \
+  scripts/validate_site_publication_ready.py \
+  scripts/render_app_listing.py \
+  assets/site-render/templates-manifest.json; do
+  if [[ ! -f "$TASK_APP_LISTING_DIR/$TASK_LISTING_REQUIRED" ]]; then
+    print -u2 -- "远程 ios-app-listing 不完整，缺少：$TASK_LISTING_REQUIRED"
+    print -u2 -- "旧安装未更改。"
+    exit 1
+  fi
+done
+TASK_APP_LISTING_COMMIT="$(git -C "$TASK_APP_LISTING_DIR" rev-parse HEAD)"
 
 TASK_PREVIOUS=""
 if [[ -d "$TASK_INSTALLED_DIR" ]]; then
@@ -153,7 +186,8 @@ if [[ -n "$TASK_PROJECT_DIR" ]]; then
 fi
 
 print -r -- "技能已安装：$TASK_INSTALLED_DIR"
-print -r -- "总入口、$(( ${#TASK_DOCUMENTS} - 1 )) 份规范正文与 AppListing 已随技能复制，不依赖原机器用户名或 /Applications/config。"
+print -r -- "AppListing 技能来源：$TASK_APP_LISTING_REPO ($TASK_APP_LISTING_BRANCH @ $TASK_APP_LISTING_COMMIT)"
+print -r -- "总入口与 $(( ${#TASK_DOCUMENTS} - 1 )) 份规范正文已安装；AppListing 每次从远程指定分支同步。"
 if [[ -n "$TASK_PREVIOUS" ]]; then
   print -r -- "旧安装可恢复：$TASK_PREVIOUS"
 fi
