@@ -5,22 +5,22 @@
 **发布范围固定为 iOS iPhone。** AppListing、About、Support、协议、商店文案、预览和截图均只面向 iPhone；不出现其他设备版本、兼容性声明、商店分发选项或下载入口。最终核对构建产物与商店配置时，只有 iPhone 可用；若后台无法验证这一点，明确记为未验证，不将其描述为已限制完成。
 
 - `Privacy Policy`：完整说明摄像机、相册选择/读取与麦克风的具体用途、授权时机、拒绝/撤销后的行为，照片和录音的本地处理、保存位置、保留、删除、临时文件、备份边界与安全措施；按第 8.5 节准确说明 `Clear Data` 二次确认后清除 App 自有媒体、记录、偏好和缓存，成功后返回欢迎页，失败可重试，系统相册原件、App 外导出文件、现存备份和系统权限不由此删除或重置。说明实际的第三方 SDK、WebView 请求、诊断/网络元数据、接收方和 ATT/追踪结论。App 无需账号、不要求邮箱输入或身份认证数据、不上传用户媒体；若真实支持渠道接收用户主动发送的信息，按第 0.3 节准确披露，不将无账号扩大为未经核验的“所有数据绝不离开设备”。包含真实开发者身份、联系渠道、生效日期、政策变更及适用的隐私权利说明，不声称保存个人协议同意记录。
-- `Terms of Use`：完整说明功能范围、内容来源、许可、可用性、用户责任和禁止滥用，以及拍摄/录音应尊重他人权利、本地媒体保存与删除、用户需自行备份的重要内容、服务限制和联系方式；不得将这些条款变为隐蔽免责。准确描述点击 `Enter` 即可进入，`Clear Data` 须二次确认、无法通过 App 撤销，清理成功后返回欢迎页；不加入不存在的退出、登录、会员、上传或社交功能，也不宣称 `Enter` 代表勾选协议、授予系统权限或同意 ATT。
+- `Terms of Use`：完整说明功能范围、内容来源、许可、可用性、用户责任和禁止滥用，以及拍摄/录音应尊重他人权利、本地媒体保存与删除、用户需自行备份的重要内容、服务限制和联系方式；不得将这些条款变为隐蔽免责。准确描述最终引导页点击 `Continue` 即可进入（仅改名前开发预览可显示 `Enter`），`Clear Data` 须二次确认、无法通过 App 撤销，清理成功后返回欢迎页；不加入不存在的退出、登录、会员、上传或社交功能，也不宣称继续按钮代表勾选协议、授予系统权限或同意 ATT。
 - `Disclaimer` 章节：在 `Terms&Conditions.html` 或 `PrivacyPolicy.html` 中根据主题提供仅供参考的说明，以及适当的专业意见排除条款。
 - `Content & Copyright Notice` 章节：在现有法律页中列出随包素材来源、许可、署名、条款 URL 以及更正/删除联系渠道；区分随包内容和用户本地拍摄/导入/录音，不声称拥有用户媒体，不把私有媒体列入公开清单。
 - About Home 与 Support：使用清晰、友好的产品介绍和支持说明，通过同一 WebView 页面展示，不把 About Home 误写成 App 主首页。
 
-开发期根据实际实现持续维护应用介绍、About、支持页和协议正文，四个 HTML 页面始终保持完整、自然、可独立阅读的成品文案，不显示 `Draft` 等页面状态标签、待补提示或作者备注。缺失的开发者、联系、司法辖区等事实不得猜测，也不得以填空语写入页面；仅在内部生成摘要中记录具体缺口，并标记公开法律审阅未完成。页面生成、接入与本地校验不因此卡住；这不等于宣称法律材料已可公开发布。全流程不依赖域名、公开部署或线上访问。App 功能、UI、资源和第 11.9 节质量复核完成后，依次使用安装器从远程指定分支同步的完整 `ios-app-listing` 目录生成 AppListing 与 About 页面、核对 Logo 配色并整理为 `aduit/`，按第 12.1 节的改名后协议回接要求更新 Entry/Settings 的 WebView URL，最后按第 12.2 节依据已核实事实生成英文 Review Remarks。质量复核的完成含义是已执行适用检查、修复可修复问题并记录外部失败；图库许可或正式 Logo 仍为 `Blocked` 时，不得把相应质量项写成通过，但不能阻断已独立的本地材料步骤。远程 `ios-app-listing` checkout 缺失、来源不符或同步失败时，只将 AppListing 阶段标为 `Blocked`，不得改用资料包副本或手写等价产物。均由智能体自主完成，不新增询问关卡；不要求或查询域名，不公开部署。
+开发期根据实际实现持续维护应用介绍、About、支持页和协议正文，四个 HTML 页面始终保持完整、自然、可独立阅读的成品文案，不显示 `Draft` 等页面状态标签、待补提示或作者备注。最终生成的 `site/index.html` 会在 AppListing 改名为 `aduit/` 后被当前 App 的自包含引导页替换；其余三个页面仍为 Privacy Policy、Terms & Conditions 与 Support。缺失的开发者、联系、司法辖区等事实不得猜测，也不得以填空语写入页面；仅在内部生成摘要中记录具体缺口，并标记公开法律审阅未完成。页面生成、接入与本地校验不因此卡住；这不等于宣称法律材料已可公开发布。全流程不依赖域名、公开部署或线上访问。App 功能、UI、资源和第 11.9 节质量复核完成后，依次使用安装器从远程指定分支同步的完整 `ios-app-listing` 目录生成 AppListing 与 About 页面、核对 Logo 配色并整理为 `aduit/`，按本节先替换并接入首页引导页，再更新 Entry/Settings 的 WebView URL，最后按第 12.2 节依据已核实事实生成英文 Review Remarks。质量复核的完成含义是已执行适用检查、修复可修复问题并记录外部失败；图库许可或正式 Logo 仍为 `Blocked` 时，不得把相应质量项写成通过，但不能阻断已独立的本地材料步骤。远程 `ios-app-listing` checkout 缺失、来源不符或同步失败时，只将 AppListing 阶段标为 `Blocked`，不得改用资料包副本或手写等价产物。均由智能体自主完成，不新增询问关卡；不要求或查询域名，不公开部署。
 
 ### 12.1 AppListing 与本地 About 页面生成、改名为 aduit 并清理
 
 **错误隔离与继续执行**：不要用一条 `&&` 命令链把素材检查、Listing 生成、目录整理与 Remarks 串成全有或全无。分别运行并读取生成器 JSON、退出码与实际文件；`local_generation_complete` 仅表示介绍和页面已经生成，`media_review_errors`、`failures` 与正式发布就绪状态分别记录。退出码非零时先有限修复可修复的本地问题，保留已有产物；仅 Logo 缺失、照片许可、图片运行验证或外部网络失败不能跳过后续改名与 Remarks。正常交付仍必须满足原白名单；完全没有可解码品牌图时，允许先保留空的 `site/img/` 并移除缺图引用，记录 `logo.png` 缺失和目录契约未通过，继续生成 `aduit/intro.md`、四页正文与 `aduit/review/remarks.md`，不创建假图片或宣称白名单通过。开发期图片可以使用已有有效 AppIcon，或显式记录来源的 `.codex-work/development-brand.png`；不能仅凭它被命名为 `assets/logo.png` 就认定正式 Logo 通过。
 
-本节在全部 App 实现、UI/资源精修、适用验证与第 11.9 节质量复核之后执行；质量复核必须实际执行并记录结果，但单项照片、许可、Logo 或运行环境外部失败可以保持 `Blocked`/`Not verified`，不把它们改写为通过，也不阻断本地材料生成；随后还须完成第 12.2 节 Review Remarks。仅对本节涉及的页面、随包同步与文件变更补充必要核验，不另开产品设计或审批。开发期仍提前把四个固定 HTML 页面（About Home、Privacy Policy、Terms & Conditions、Support）及其中合并的法律章节直接放到 `aduit/site/`，应用介绍放到 `aduit/intro.md`，供离线 WebView 使用；即使实际事实尚有缺口，也只在内部记录里标明，不把页面降格为带草稿水印、待填字段或未完成说明的预览稿。这些准备不等于提前执行最终 AppListing 生成、改名或目录清理。
+本节在全部 App 实现、UI/资源精修、适用验证与第 11.9 节质量复核之后执行；质量复核必须实际执行并记录结果，但单项照片、许可、Logo 或运行环境外部失败可以保持 `Blocked`/`Not verified`，不把它们改写为通过，也不阻断本地材料生成；随后还须完成第 12.2 节 Review Remarks。仅对本节涉及的页面、随包同步与文件变更补充必要核验，不另开产品设计或审批。开发期仍提前把四个固定 HTML 页面（About Home、Privacy Policy、Terms & Conditions、Support）及其中合并的法律章节直接放到 `aduit/site/`，应用介绍放到 `aduit/intro.md`，供离线 WebView 使用；即使实际事实尚有缺口，也只在内部记录里标明，不把页面降格为带草稿水印、待填字段或未完成说明的预览稿。这些准备不等于提前执行最终 AppListing 生成、改名或目录清理。最终阶段仅在 AppListing 已改名为 `aduit/` 后以引导页替换生成的 About Home；不得提前替换、另建文件或因此推迟 URL 回接与 Review Remarks。
 
-固定收尾路径：先验证安装器同步的完整远程 `ios-app-listing` checkout（Git 来源、`feature/1.2.1-A1` 分支和当前 revision），再只使用该目录的技能、脚本、引用和资源，以 `--no-deploy-about --no-sync-project-listing-urls` 本地生成最终 AppListing、`description` 与对应 About 页面 → 核对并修正 About 配色 → 将生成的 `AppListing/` 改名/整理为 `aduit/` → 按第 12.1 节清理与核验 `site/` → 将 `aduit/intro.md` 的四个 `All URL` 原样保存到固定 URL 注册表，Entry 接入 Terms/Privacy 两条文本链接、Settings 只接入 Privacy Policy/Terms of Use/Support 三个 WebView 入口，About Home 不加入 Settings，再做定向回归（不探测或修复 URL）→ 按第 12.2 节生成 `aduit/review/remarks.md` → 核验完整目录白名单 → 将全部其他产物移入 `.codex-work/` 并从 `aduit/` 清除 → 确认 `AppListing/` 已不存在 → 最终报告。若远程 checkout 缺失、来源/分支/revision 不符或技能执行失败，保留证据并将 AppListing 阶段标为 `Blocked`，不得读取资料包中的 `ios-app-listing/` 副本，也不得手写等价页面。此流程不要求、查询、推测或替换域名；不调用域名查询或 About 部署接口，不创建、轮询部署任务，不做 DNS 或公开访问探测。
+固定收尾路径：先验证安装器同步的完整远程 `ios-app-listing` checkout（Git 来源、`feature/1.2.1-A1` 分支和当前 revision），再只使用该目录的技能、脚本、引用和资源，以 `--no-deploy-about --no-sync-project-listing-urls` 本地生成最终 AppListing、`description` 与对应 About 页面 → 核对并修正 About 配色 → 将生成的 `AppListing/` 改名/整理为 `aduit/` → 按第 12.1 节清理与核验 `site/` → **完整替换 `aduit/site/index.html` 并接入本地引导 WebView，完成引导页验收** → 将 `aduit/intro.md` 的四个 `All URL` 原样保存到固定 URL 注册表，Entry 引导页保留 Terms/Privacy 两行文本链接、Settings 只接入 Privacy Policy/Terms of Use/Support 三个 WebView 入口，再做定向回归（不探测或修复 URL）→ 按第 12.2 节生成 `aduit/review/remarks.md` → 核验完整目录白名单 → 将全部其他产物移入 `.codex-work/` 并从 `aduit/` 清除 → 确认 `AppListing/` 已不存在 → 最终报告。若远程 checkout 缺失、来源/分支/revision 不符或技能执行失败，保留证据并将 AppListing 阶段标为 `Blocked`，不得读取资料包中的 `ios-app-listing/` 副本，也不得手写等价页面。此流程不要求、查询、推测或替换域名；不调用域名查询或 About 部署接口，不创建、轮询部署任务，不做 DNS 或公开访问探测。
 
-**目录白名单验收**：最终 `aduit/` 的直接子项必须恰好是小写 `intro.md`、`site/` 和 `review/`；`site/` 的直接子项必须恰好是 `index.html`、`PrivacyPolicy.html`、`Terms&Conditions.html`、`Support.html` 和 `img/`，`img/` 中只保留 `logo.png`；`review/` 中只保留 `remarks.md`。大小写、标点和目录层级按此核对，检查包括隐藏项，不允许 `.DS_Store`、其他文件、目录或符号链接混入。四页分别对应 About Home、Privacy Policy、Terms of Use 和 Support；免责及版权说明合并为现有法律页中的章节。AppListing 转移后先核对 `site/`，Review Remarks 写入后再核对完整白名单；文件齐全且额外项为 0 才可标记交付目录验收完成。
+**目录白名单验收**：最终 `aduit/` 的直接子项必须恰好是小写 `intro.md`、`site/` 和 `review/`；`site/` 的直接子项必须恰好是 `index.html`、`PrivacyPolicy.html`、`Terms&Conditions.html`、`Support.html` 和 `img/`，`img/` 中只保留 `logo.png`；`review/` 中只保留 `remarks.md`。大小写、标点和目录层级按此核对，检查包括隐藏项，不允许 `.DS_Store`、其他文件、目录或符号链接混入。最终四页分别为替换生成 About Home 后的引导页、Privacy Policy、Terms of Use 与 Support；免责及版权说明合并为现有法律页中的章节。AppListing 转移后先核对 `site/`，引导页替换和 Review Remarks 写入后再核对完整白名单；文件齐全且额外项为 0 才可标记交付目录验收完成。
 
 页面所需 CSS 和确有用途的 JavaScript 内联到这四个 HTML 文件中，字体采用系统字体，图片仅引用 `img/logo.png`；在移出额外文件前先消除页面对外置 CSS、JS、字体、其他图片或旧路径的依赖，并复验章节锚点、相对链接和离线显示。不能只移动依赖文件而留下失效引用。已有 `aduit/html/`、报告、截图、备份及其他白名单外内容先移到项目根目录 `.codex-work/` 的独立归档位置并核对，不覆盖已有备份；不得将这些内容复制进 `site/` 或 `img/`。
 
@@ -34,6 +34,27 @@
 **改名后的品牌复验**：按第 10.4 节将当前正式 Logo 同步到 `aduit/site/img/logo.png` 并核对哈希，实际查看本地四页的 Logo/品牌封面与渐变，修正旧图片引用；同时确认 App 的桌面图标、启动品牌图和 Loading/Entry 封面未被生成器或后续构建改回旧图。站点不新增独立封面图片文件，保持原白名单。
 
 **页面发布就绪检查**：最终生成或修改四个 HTML 页面后，运行 `python3 <skill-root>/scripts/validate_site_publication_ready.py --site-dir <project-root>/aduit/site`。修复正文、标题、描述元数据或无障碍标签中的草稿/占位内容，并确认页面不是空壳。若缺少真实联系或其他法定事实，只在内部摘要标记公开法律审阅未完成；继续本地生成和接入，不在页面中显示待补字段，也不谎称法律材料已完成。
+
+**AppListing 改名后：首页引导页替换、接入与验收**：仅在最终 `AppListing/` 已按白名单改名/整理为 `aduit/` 后执行，并且必须在 URL 回接和 Review Remarks 之前完成。将用户提到的 `aduit/index.html` 精确落实为现有站点文件 `aduit/site/index.html`：完全替换其中生成器的 About Home 正文，不在 `aduit/` 根目录另建 `index.html`，不新增站点文件。依据当前项目的源码、配置、实际页面与 `aduit/intro.md` 生成 3–5 张真实介绍卡片；全部可见文字使用英语，准确介绍项目实际用途和功能，不固定主题、不虚构能力，CSS 主题色、渐变与整体视觉风格须匹配当前 App 及 Logo 色板。页面必须是小于 256 KiB（262,144 字节）的单一自包含 HTML 文件：全部 HTML、CSS、JavaScript 在该文件中，使用系统字体，不加载外部脚本、样式、字体、图片或其他运行时资源；可见装饰用内联 SVG/CSS，现有 Terms/Privacy 链接属于用户主动导航而非资源依赖。
+
+页面需设置 `viewport-fit=cover`，用 `env(safe-area-inset-top)` 与 `env(safe-area-inset-bottom)` 处理刘海/Dynamic Island 和底部安全区。一次只展示一张卡片并自动轮播，提供可点击且有可访问名称的分页圆点；支持手机与桌面，适配指定尺寸并尽量一屏展示，不得有内容重叠、控件被遮挡或文案/按钮被裁切。尊重 `prefers-reduced-motion`：减少动态时关闭自动轮播及非必要运动，分页点仍可手动切换。继续保留 Entry 底部既定两行协议文案，Terms of Use 与 Privacy Policy 各自有独立可点击目标；引导页验收时核对文案结构、安全区、对齐和可读性，不得挤压或遮挡 `Continue`。原始 URL 的注册及两个目标的绑定在通过引导页专项验收后的 URL 回接阶段完成。
+
+将该同一 `aduit/site/index.html` 作为 Flutter 欢迎/引导阶段实际显示的本地随包 WebView 页面，不维护第二份 HTML。提供 WebView 的原生 `AppBridge.postMessage` 消息通道：收到唯一消息 `continue` 时调用现有进入 App 流程；Web 页面 Continue 按钮必须调用以下函数，不增删分支或改写其行为：
+
+```javascript
+function continueToApp() {
+  if (window.AppBridge && typeof window.AppBridge.postMessage === 'function') {
+    window.AppBridge.postMessage('continue');
+    return;
+  }
+  window.location.href = 'go://continue';
+}
+```
+
+当 Bridge 不可用时，原生 WebView 导航代理必须截获 `go://continue` 并调用相同的现有进入流程，不向外部浏览器放行，不绕过初始化、权限提示或 App 自身状态。引导页中的 `Continue` 是该欢迎阶段唯一的继续控件，不重复显示旧入口按钮。
+
+验收实际随包页面而非独立样稿：核对 UTF-8 文件字节数 `< 262144`、页面不存在外部资源请求、全部卡片文案与当前功能一致、仅一份 HTML 被 App 加载；在 `390×667`、`390×844`、`1024×768`、`1440×900` 分别检查安全区、完整显示、无重叠/裁切与滚动情况。实际验证自动轮播、每个分页圆点点击、系统减少动态效果、Bridge 存在时只发送一次 `continue` 且不触发回退、Bridge 缺失时精确导航到 `go://continue` 并由原生代理接续。使用不发起网络请求的 Bridge/WebView stub 核验；截图与结果写入项目 `.codex-work/`，不能写入 `aduit/`。在这些检查完成前不得开始 Review Remarks；检查失败则先修复并复验，客观受阻项据实记为 `Blocked`/`Not verified`，不得只检查 About HTML 生成器原页或宣称通过。
+
 **About 完成后、Review Remarks 前的欢迎页文案与协议入口回接**：在 About/AppListing 本地生成、配色核对并整理为 `aduit/` 后、生成 `remarks.md` 前执行。先读取 `aduit/intro.md` 的 `All URL` 区域，逐字复制其中四个 URL 到 App 的固定 URL 注册表，按文档名称对应绑定。将值作为原始字符串保存和传递，不以 URI 预解析/有效性检查作为复制、保存或导航前置条件。此时实际替换 App 的 Entry 欢迎页底部协议文案，严格分为以下两行，显式在 `our` 后换行，无句末句号：
 
 ```text
@@ -41,7 +62,7 @@ By continuing, you agree to our
 Terms of Use and Privacy Policy
 ```
 
-两行居中放在底部安全区内，不遮挡 `Enter`，不截断文本；第二行的 `Terms of Use` 与 `Privacy Policy` 分别可点击，使用 All URL 中对应的原始值，`and` 为普通文本。不能只改 About HTML、字符串文件或规划说明而不更新 App 实际显示。不增加勾选或额外确认，不保存个人协议同意记录，也不将继续使用等同于媒体授权或 ATT 同意；Terms 正文应与这项实际提示一致。Settings 同一页面只提供三个链接：Privacy Policy、Terms of Use、Support；About Home 保留为 `index.html` 交付页面，但不写入 Settings。三个 Settings 入口使用 All URL 中对应的原始值，第四个 About Home URL 仍保存在固定注册表但不提供 Settings 入口。无论 URL 格式是否正常、目标是否可达，均直接复制，不校验、规范化、补全、替换或删去；WebView 加载失败时显示可读错误、返回与有限重试，不能阻断 `Enter`、Settings、清除数据或其他 App 功能，也不回退到开发期本地预览页面。回归时按第 7.2 节核验完整原文、显式换行、底部安全区和两个独立链接，并用不发起网络请求的 WebView stub/fake 核验注册值、实际入口 URL、Settings 不含 About Home、失败/返回状态和主流程，不访问或探测真实目标；完成后继续 Review Remarks，不重开总体 UI 审批。
+两行居中放在底部安全区内，不遮挡引导页的 `Continue`，不截断文本；第二行的 `Terms of Use` 与 `Privacy Policy` 分别可点击，使用 All URL 中对应的原始值，`and` 为普通文本。不能只改 About HTML、字符串文件或规划说明而不更新 App 实际显示。不增加勾选或额外确认，不保存个人协议同意记录，也不将继续使用等同于媒体授权或 ATT 同意；Terms 正文应与这项实际提示一致。Settings 同一页面只提供三个链接：Privacy Policy、Terms of Use、Support；引导页作为站点 `index.html` 交付，但不写入 Settings。三个 Settings 入口使用 All URL 中对应的原始值，第四个 About Home URL 仍保存在固定注册表但不提供 Settings 入口。无论 URL 格式是否正常、目标是否可达，均直接复制，不校验、规范化、补全、替换或删去；WebView 加载失败时显示可读错误、返回与有限重试，不能阻断 `Continue`、Settings、清除数据或其他 App 功能，也不回退到开发期本地预览页面。回归时按第 7.2 节核验完整原文、显式换行、底部安全区和两个独立链接，并用不发起网络请求的 WebView stub/fake 核验注册值、实际入口 URL、Settings 不含引导页、失败/返回状态和主流程，不访问或探测真实目标；完成后继续 Review Remarks，不重开总体 UI 审批。
 
 7. **完成 AppListing 与协议入口阶段**：报告远程 `ios-app-listing` checkout 的来源、分支与 revision、当前智能体撰写的 description、About 配色核验和修正结果、`AppListing/` 生成与改名/整理为 `aduit/` 的结果、站点白名单核验及额外文件移出位置，以及四个 URL 的原样接入和定向回归结果。若远程技能缺失或执行失败，报告 `AppListing: Blocked` 及证据，不写“真实替代流程”，不使用资料包副本或手写页面。备份放在 `.codex-work/` 并说明可恢复位置。远程阶段成功后，随后必须继续第 12.2 节生成 Review Remarks，再做完整白名单核验；不在此阶段提前宣布最终交付。不询问用户意见、继续许可或交付确认。
 
@@ -54,7 +75,7 @@ Terms of Use and Privacy Policy
 1. Real Device：写入用户已提供的真实设备记录 `iPhone 17 Pro Max, iOS 26.5`。不得自行添加或替换机型、系统版本、视频、账号或测试结果。
 2. Test Devices and Operating Systems：从用户提供且符合 iPhone-only 范围的已完成自测记录中随机抽取 2–5 个设备，不重复；不纳入任何非 iPhone 设备。当前提供的有效样本为 `iPhone 15 Pro, iOS 18.6` 和 `iPhone 13, iOS 17.7.1`，因此当前样本量为 2。用户提供的记录声明这些设备已完成启动、主要功能、权限提示及计费流程自测且没有阻塞问题；不得扩写为其他未提及的测试。当前产品按既定要求没有账号或注册/登录功能，因此这些流程写 `No such feature`，不宣称已测试。计费/内购状态必须检查当前源码与配置：若实际存在，备注可按用户提供的记录说明已完成计费测试；若不存在则写 `No such feature`，不得声称测试过不存在的流程。
 3. App Purpose, Intended Audience, and Problem Solved：只依据 `aduit/intro.md` 和当前实现说明产品用途、主要用户及解决的实际问题，不夸大。
-4. Setup Steps：按审核人员可执行的顺序写安装/启动、点击 `Enter` 进入主要功能、分别打开摄像机/相册/麦克风的真实入口并触发权限提示、权限拒绝后的可用路径、`Settings` 中 `Clear Data` 的入口与二次确认及成功后返回欢迎页；写明 ATT 是否出现及其实际触发条件，无追踪时依据事实说明不显示 ATT 提示。计费或内购步骤仅在实际存在时提供，并按审核人员可执行顺序说明。按当前产品要求说明无需注册、登录、验证码、邀请码或测试账号；不存在的项目写 `No such feature`，无需特殊设置时明确写 `No additional setup is required.`
+4. Setup Steps：按审核人员可执行的顺序写安装/启动、点击最终引导页的 `Continue` 进入主要功能（仅改名前开发预览可用 `Enter`）、分别打开摄像机/相册/麦克风的真实入口并触发权限提示、权限拒绝后的可用路径、`Settings` 中 `Clear Data` 的入口与二次确认及成功后返回欢迎页；写明 ATT 是否出现及其实际触发条件，无追踪时依据事实说明不显示 ATT 提示。计费或内购步骤仅在实际存在时提供，并按审核人员可执行顺序说明。按当前产品要求说明无需注册、登录、验证码、邀请码或测试账号；不存在的项目写 `No such feature`，无需特殊设置时明确写 `No additional setup is required.`
 5. External Services：列出实际使用的外部平台、API、分析工具、支付服务、云服务及第三方 SDK，并逐项写用途；另设 `Advertising`、`AI services`、`Third-party SDKs` 三行，分别明确写 `Used: [confirmed service and purpose]`、`Not used.` 或 `Not provided; pending confirmation.`。将 App 当前配置的四个 WebView 协议目的地描述为已配置的链接及其用途，并明确目的地址可达性未验证；不得据此声称对应网站或服务已上线。只列项目实际依赖的外部服务，不暴露自有私有 package、内部模块、目录或实现细节。不得把仅供本地生成的 URL/占位地址说成已公开上线；需要公开地址但未确认时按缺失规则标注，不查询或要求域名。
 6. Regional Differences：核对功能、内容、价格、权限、可用性和审核流程的地区差异；确认无差异时必须原样写 `All regions are the same.`；事实不足时写 `Not provided; pending confirmation.`，不能猜测。
 7. Unique Value：用一句具体、可信且与当前功能一致的话概括与同类产品的差异和用户价值，避免空泛营销语。
@@ -66,7 +87,7 @@ Terms of Use and Privacy Policy
 1. 根据实际数据流填写 App Store Connect 隐私披露，覆盖 App 本身、第三方 SDK 与 App 功能内 WebView。纯设备端处理的照片与录音不因访问系统权限就自动属于 Apple 定义的“收集”；若其他数据离开设备，按 Apple 当前定义分别判断用途、保留、关联身份与追踪，不直接套用 `Data Not Collected`。
 2. App 内必须提供隐私政策入口；最终 Entry/Settings 目标按 `aduit/intro.md` `All URL` 原样配置，不执行公开部署或可达性验证。目标地址可达性须记为未验证，不通过回归测试发送网络请求，也不自行修复地址。若正式提交仍需要公开可访问的隐私政策 URL，单独记录为未验证发布前置条件；公开链接、真实开发者身份或联系渠道缺失时保留本地产物并记录缺口，不编造信息、不要求用户提供域名，也不因此停止其他本地实现。
 3. 明确采用 Apple 标准 EULA，或在确需自定义 EULA 时依据 Apple 当前最低条款完整准备并正确配置；App 内 `Terms of Use` 不自动等同于 App Store 的自定义 EULA，不能宣称四份 HTML 已覆盖所有提交协议。
-4. 审核说明必须给出无需登录的 `Enter` 路径、三项媒体功能的具体入口与用途、权限拒绝后的可用路径、清除本地数据的入口/二次确认/欢迎页返回，以及 ATT 适用性和触发条件；无追踪时明确无需 ATT 弹窗。截图、描述、年龄分级与二进制一致，不展示未实现能力或用户私有素材。
+4. 审核说明必须写明无需登录，并给出从最终引导页点击 `Continue` 到达主要功能的步骤；另列摄像机/相册/麦克风的具体入口与用途、权限拒绝后的可用路径、清除本地数据的入口/二次确认/欢迎页返回，以及 ATT 适用性和触发条件。无追踪时明确无需 ATT 弹窗。截图、描述、年龄分级与二进制一致，不展示未实现能力或用户私有素材。
 5. 检查最终构建的权限声明、隐私清单、SDK 要求、公开政策、协议版本、支持链接与审核说明。已知错误须修复，证据不足须明确标记；正式提交流程遵守用户已有授权与实际平台能力，不因宣称“协议完整”跳过 Apple 当前验证。
 
 官方核对来源：开发与正式发布时重新查看适用版本并记录核对日期，不能假定本文永远覆盖后续政策变动。

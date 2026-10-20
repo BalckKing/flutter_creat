@@ -13,7 +13,7 @@
 使用 $flutter-engine-runner，请开始执行。
 ```
 
-5. 缺少输入时，Codex 会先询问创意主题和项目名称。提供后，查看完整思维导图，回复“确认，按此执行”。之后继续自主开发；质量复核后只使用安装器同步的远程 `ios-app-listing` checkout 生成 AppListing 和对应 About 页面，校对配色后改名/整理为 `aduit`。About 完成后、生成英文审核备注前，会从 `aduit/intro.md` 的 `All URL` 原样复制四个地址，并将欢迎页底部改为以下两行（Terms of Use 与 Privacy Policy 分别可点击）：
+5. 缺少输入时，Codex 会先询问创意主题和项目名称。提供后，查看完整思维导图，回复“确认，按此执行”。之后继续自主开发；质量复核后只使用安装器同步的远程 `ios-app-listing` checkout 生成 AppListing 和对应 About 页面，校对配色并改名/整理为 `aduit`。紧接着，用项目实际功能和主题色完全替换 `aduit/site/index.html`，将单文件引导页接入 Entry 本地 WebView；核验英文介绍卡片、轮播、分页点、Continue bridge 与回退，以及四个指定视口。通过后、生成英文审核备注前，才从 `aduit/intro.md` 的 `All URL` 原样复制四个地址，并将引导页底部改为以下两行（Terms of Use 与 Privacy Policy 分别可点击）：
 
 ```text
 By continuing, you agree to our
@@ -88,6 +88,8 @@ Logo 实际生成失败时，会先在 Stargate 的生成参数里切换其他�
 
 Logo 下载后还必须实际替换 iPhone 桌面 App 图标、启动品牌图、Loading/Entry 欢迎封面及现有 App/About 品牌位置，重新构建并检查最终显示，不能仅保存图片。详见 `工作流文档/06-素材与真实照片.md` 第 10.4 节；内容照片封面仍使用贴题的第三方素材，`aduit/site/img/` 仍只保留 `logo.png`。
 
+最后检查还会扫描项目解析出的本地依赖、构建目录和 App bundle，清除其中的 `aduit/` 副本并确认依赖中不得残留；项目根目录的 `aduit/` 交付物必须保留。App 品牌引用 `assets/logo.png`；Entry/Settings 协议链接直接使用 `aduit/intro.md` 中 `All URL` 的原始网址，通过无网络 stub 核对映射，不访问或探测真实 URL，也不把本地协议 HTML 打包进依赖。详细边界见第 10.7 节。
+
 启动视觉分为两层：iOS 原生冷启动页静态呈现更大的 Logo、独立 `PRYRIN` 字标、品牌定位文案和装饰线；随后 Flutter Loading 使用深色品牌渐变、光晕/呼吸效果及真实步骤、百分比和进度条。进度必须由已完成的真实启动里程碑驱动；系统开启减少动态时立即停用循环和过渡动画。初始化错误页保留 `Try again` 与复用原二次确认流程的 `Clear Data`。详情见第 7.1 节及第 10.4 节。
 
 Listing 生成器优先使用有效的 `assets/logo.png`，不再优先选旧 AppIcon。没有正式 Logo 时可用已有有效图标或 `.codex-work/development-brand.png` 继续本地生成，并保留品牌未验证状态；完全无有效图片时仍输出介绍与四页 HTML，缺图和目录契约检查如实失败，后续 `aduit/` 整理及 Remarks 继续执行。
@@ -146,4 +148,4 @@ aduit/
     └── remarks.md
 ```
 
-免责与版权说明合并在现有法律页；样式与脚本内联，使用系统字体。`aduit/` 顶层仅允许 `intro.md`、`site/`、`review/remarks.md`；`site/` 只允许四个 HTML 页面与 `img/logo.png`，`review/` 只允许 `remarks.md`。执行记录、质量报告、截图、备份及额外文件放在目标工程的 `.codex-work/`，不进入交付目录。审核备注全英文、不超过 4,000 字符，基于已确认事实；生成后检查七项内容与白名单，并清理目标工程的 `AppListing/` 和旧 `aduit/html/`。
+免责与版权说明合并在现有法律页；样式与脚本内联，使用系统字体。最终 `aduit/site/index.html` 是替换生成 About Home 后的自包含引导页，App 与工作流共用此唯一文件；它仍占原四页名额，不新增文件。`aduit/` 顶层仅允许 `intro.md`、`site/`、`review/remarks.md`；`site/` 只允许四个 HTML 页面与 `img/logo.png`，`review/` 只允许 `remarks.md`。执行记录、质量报告、截图、备份及额外文件放在目标工程的 `.codex-work/`，不进入交付目录。审核备注全英文、不超过 4,000 字符，基于已确认事实；生成后检查七项内容与白名单，并清理目标工程的 `AppListing/` 和旧 `aduit/html/`。
