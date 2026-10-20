@@ -4,6 +4,8 @@ emulate -L zsh
 set -euo pipefail
 
 TASK_ROOT="${0:A:h:h}"
+TASK_IDEA="$TASK_ROOT/工作流文档/02-创意与思维导图.md"
+TASK_VISUAL="$TASK_ROOT/工作流文档/04-视觉与页面功能.md"
 TASK_MATERIALS="$TASK_ROOT/工作流文档/06-素材与真实照片.md"
 TASK_PUBLISH="$TASK_ROOT/工作流文档/08-发布与About材料.md"
 TASK_QA="$TASK_ROOT/工作流文档/07-测试与质量验收.md"
@@ -33,6 +35,18 @@ task_ordered() {
     return 1
   }
 }
+
+task_require "$TASK_IDEA" '不能呈现冷峻、灰暗或近乎单色的整体色调'
+task_require "$TASK_IDEA" '至少三种清晰可辨的鲜明色彩'
+task_require "$TASK_IDEA" '多色平滑渐变'
+task_require "$TASK_VISUAL" '鲜明、非单调的 Logo 配色'
+task_require "$TASK_MATERIALS" '不能呈现冷峻、灰暗或近乎单色的整体色调'
+task_require "$TASK_MATERIALS" '多色平滑渐变'
+task_require "$TASK_QA" '不能呈现冷峻或单调色调'
+task_require "$TASK_ORDER" 'Logo 色调鲜明且不单调'
+task_require "$TASK_SKILL" 'avoid a cold, austere, monochromatic look'
+task_require "$TASK_SKILL" 'at least three distinct vivid color families'
+task_require "$TASK_README" '不能呈现冷峻、灰暗或近乎单色的整体色调'
 
 task_require "$TASK_PUBLISH" 'aduit/site/index\.html'
 task_require "$TASK_PUBLISH" '3–5 张真实介绍卡片'
@@ -73,10 +87,14 @@ task_require "$TASK_MATERIALS" 'assets/logo\.png'
 task_require "$TASK_MATERIALS" 'All URL.*原始地址'
 task_require "$TASK_MATERIALS" '协议 HTML.*不复制或打包进 Flutter 依赖'
 task_require "$TASK_MATERIALS" '不访问或探测真实 URL'
+task_require "$TASK_MATERIALS" '禁止 3D'
+task_require "$TASK_MATERIALS" '明显 AI 生成感'
 task_require "$TASK_ORDER" 'aduit/site/index\.html'
 task_ordered "$TASK_ORDER" '17\. 按第 12\.1 节先核对' '18\. \*\*验收首页引导页'
 task_ordered "$TASK_ORDER" '18\. \*\*验收首页引导页' '19\. \*\*最终图片加载检查'
 task_ordered "$TASK_ORDER" '引导页通过验收后' '生成不超过 4,000 字符的全英文'
+task_require "$TASK_ORDER" '禁止 3D'
+task_require "$TASK_ORDER" '手绘与写实风格由项目主题决定'
 task_require "$TASK_ORDER" '依赖树.*aduit.*不得残留'
 task_require "$TASK_ORDER" '项目根目录.*aduit.*保留'
 task_require "$TASK_ORDER" 'All URL.*原始地址'
@@ -96,10 +114,29 @@ task_require "$TASK_SKILL" 'raw URLs.*All URL'
 task_require "$TASK_SKILL" 'Protocol HTML.*dependenc'
 task_require "$TASK_SKILL" 'Do not visit or probe real URLs'
 task_require "$TASK_SKILL" 'Do not add a duplicate HTML file'
+task_require "$TASK_SKILL" 'choose a refined hand-drawn illustration or non-3D realistic style based on the theme'
+task_require "$TASK_SKILL" 'Avoid a conspicuous AI-generated look'
+task_require "$TASK_SKILL" 'forbid 3D'
 task_ordered "$TASK_SKILL" '5\. Immediately after that rename' '6\. After the guide is accepted'
 task_ordered "$TASK_SKILL" '6\. After the guide is accepted' '7\. After every implementation'
 task_require "$TASK_SKILL" 'bind each to its corresponding raw URL'
 task_require "$TASK_README" '引导页'
 task_require "$TASK_README" '依赖.*aduit.*不得残留'
+task_require "$TASK_README" '手绘插画或非 3D 写实风格'
+task_require "$TASK_README" '禁止 3D'
+task_require "$TASK_README" '明显 AI 生成感'
+
+task_require "$TASK_IDEA" '按项目主题在精致手绘插画风格与非 3D 写实风格之间选择'
+task_require "$TASK_IDEA" '精致手绘不等于粗糙简笔'
+task_require "$TASK_MATERIALS" '手绘插画风格或非 3D 写实风格'
+task_require "$TASK_ROOT/工作流文档/02-创意与思维导图.md" '避免明显 AI 生成感'
+task_require "$TASK_ROOT/工作流文档/02-创意与思维导图.md" '禁止 3D'
+task_require "$TASK_IDEA" '至少三个实际 Flutter 页面/组件消费 Logo 派生色'
+task_require "$TASK_VISUAL" 'Logo 原始 HEX → Flutter 主题令牌 → 实际页面/组件 → iPhone 截图'
+task_require "$TASK_MATERIALS" '主页面、真实操作页和至少一个其他 App 页面'
+task_require "$TASK_QA" '至少三个实际页面/组件的 iPhone 截图'
+task_require "$TASK_ORDER" '截图证明主题令牌已被实际页面/组件消费'
+task_require "$TASK_SKILL" 'at least three real App screens'
+task_require "$TASK_README" '至少三个实际 App 页面/组件'
 
 print -r -- 'PASS: onboarding-guide content, exact placement, accessibility, acceptance order, Bridge fallback, and target viewports are specified across the workflow.'
