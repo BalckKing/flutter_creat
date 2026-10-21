@@ -13,7 +13,7 @@
 使用 $flutter-engine-runner，请开始执行。
 ```
 
-5. 缺少输入时，Codex 会先询问创意主题和项目名称。提供后，查看完整思维导图，回复“确认，按此执行”。之后继续自主开发；质量复核后只使用安装器同步的远程 `ios-app-listing` checkout 生成 AppListing 和对应 About 页面，校对配色并改名/整理为 `aduit`。紧接着，用项目实际功能和主题色完全替换 `aduit/site/index.html`，将单文件引导页接入 Entry 本地 WebView；核验英文介绍卡片、轮播、分页点、Continue bridge 与回退，以及四个指定视口。通过后、生成英文审核备注前，才从 `aduit/intro.md` 的 `All URL` 原样复制四个地址，并将引导页底部改为以下两行（Terms of Use 与 Privacy Policy 分别可点击）：
+5. 缺少输入时，Codex 会先询问创意主题和项目名称。提供后，查看完整思维导图，回复“确认，按此执行”。之后继续自主开发；质量复核后只使用安装器同步的远程 `ios-app-listing` checkout 生成 AppListing 和对应 About 页面，校对配色并改名/整理为 `aduit`。紧接着，用项目实际功能和主题色完全替换 `aduit/site/index.html`，将单文件引导页接入 Entry 本地 WebView；所有显示图片均以内嵌 Base64 data URI 提供，不能依赖工程内图片资源或远程图片地址，含图片编码的 HTML 总大小严格小于 262,144 字节。核验每张图片可解码、格式/尺寸/可读性与离线 WebView 显示，并检查英文介绍卡片、轮播、分页点、Continue bridge 与回退，以及四个指定视口。通过后、生成英文审核备注前，才从 `aduit/intro.md` 的 `All URL` 原样复制四个地址，并将引导页底部改为以下两行（Terms of Use 与 Privacy Policy 分别可点击）：
 
 ```text
 By continuing, you agree to our
@@ -150,4 +150,4 @@ aduit/
     └── remarks.md
 ```
 
-免责与版权说明合并在现有法律页；样式与脚本内联，使用系统字体。最终 `aduit/site/index.html` 是替换生成 About Home 后的自包含引导页，App 与工作流共用此唯一文件；它仍占原四页名额，不新增文件。`aduit/` 顶层仅允许 `intro.md`、`site/`、`review/remarks.md`；`site/` 只允许四个 HTML 页面与 `img/logo.png`，`review/` 只允许 `remarks.md`。执行记录、质量报告、截图、备份及额外文件放在目标工程的 `.codex-work/`，不进入交付目录。审核备注全英文、不超过 4,000 字符，基于已确认事实；生成后检查七项内容与白名单，并清理目标工程的 `AppListing/` 和旧 `aduit/html/`。
+免责与版权说明合并在现有法律页；样式与脚本内联，使用系统字体。最终 `aduit/site/index.html` 是替换生成 About Home 后的自包含引导页，App 与工作流共用此唯一文件；引导页所显示图片以 Base64 data URI 内嵌，HTML 总大小（含全部编码图片）严格小于 262,144 字节，不引用项目图片路径、`file://` 或远程图片 URL；它仍占原四页名额，不新增文件。`aduit/` 顶层仅允许 `intro.md`、`site/`、`review/remarks.md`；`site/` 只允许四个 HTML 页面与 `img/logo.png`，`review/` 只允许 `remarks.md`。执行记录、质量报告、截图、备份及额外文件放在目标工程的 `.codex-work/`，不进入交付目录。审核备注全英文、不超过 4,000 字符，基于已确认事实；生成后检查七项内容与白名单，并清理目标工程的 `AppListing/` 和旧 `aduit/html/`。

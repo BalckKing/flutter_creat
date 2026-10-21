@@ -8,6 +8,8 @@ TASK_IDEA="$TASK_ROOT/工作流文档/02-创意与思维导图.md"
 TASK_VISUAL="$TASK_ROOT/工作流文档/04-视觉与页面功能.md"
 TASK_MATERIALS="$TASK_ROOT/工作流文档/06-素材与真实照片.md"
 TASK_PUBLISH="$TASK_ROOT/工作流文档/08-发布与About材料.md"
+TASK_PRODUCT="$TASK_ROOT/工作流文档/03-产品定义与导航.md"
+TASK_DESIGN="$TASK_ROOT/工作流文档/04-视觉与页面功能.md"
 TASK_QA="$TASK_ROOT/工作流文档/07-测试与质量验收.md"
 TASK_ORDER="$TASK_ROOT/工作流文档/09-实施顺序与交付报告.md"
 TASK_ENTRY="$TASK_ROOT/工作流文档/00-总入口.md"
@@ -51,6 +53,11 @@ task_require "$TASK_README" '不能呈现冷峻、灰暗或近乎单色的整体
 task_require "$TASK_PUBLISH" 'aduit/site/index\.html'
 task_require "$TASK_PUBLISH" '3–5 张真实介绍卡片'
 task_require "$TASK_PUBLISH" '单一自包含 HTML 文件'
+task_require "$TASK_PUBLISH" '每张需在引导页显示的图片.*Base64 data URI.*直接内嵌在同一个 `aduit/site/index\.html`'
+task_require "$TASK_PUBLISH" '不得让 `index\.html` 引用 Flutter assets、工程内相对图片路径、`file://` 路径或远程图片 URL'
+task_require "$TASK_PUBLISH" 'site/img/logo\.png.*交付白名单保留.*内嵌数据'
+task_require "$TASK_PUBLISH" '包含所有 Base64 图片内容'
+task_require "$TASK_PUBLISH" '逐个解码.*Base64.*确认图像格式、尺寸与可读性'
 task_require "$TASK_PUBLISH" '262,144 字节'
 task_require "$TASK_PUBLISH" 'viewport-fit=cover'
 task_require "$TASK_PUBLISH" 'safe-area-inset-top'
@@ -77,6 +84,8 @@ task_ordered "$TASK_PUBLISH" '引导页验收时核对文案结构' '原始 URL 
 
 task_require "$TASK_QA" '390×667'
 task_require "$TASK_QA" '1440×900'
+task_require "$TASK_QA" 'Base64 图片内容'
+task_require "$TASK_QA" '逐个解码并确认图像格式、尺寸与可读性'
 task_require "$TASK_QA" 'Bridge 可用时仅发送一次'
 task_require "$TASK_QA" 'go://continue'
 task_require "$TASK_QA" 'prefers-reduced-motion'
@@ -90,6 +99,8 @@ task_require "$TASK_MATERIALS" '不访问或探测真实 URL'
 task_require "$TASK_MATERIALS" '禁止 3D'
 task_require "$TASK_MATERIALS" '明显 AI 生成感'
 task_require "$TASK_ORDER" 'aduit/site/index\.html'
+task_require "$TASK_ORDER" 'Base64 data URI'
+task_require "$TASK_ORDER" 'UTF-8 字节数.*262,144'
 task_ordered "$TASK_ORDER" '17\. 按第 12\.1 节先核对' '18\. \*\*验收首页引导页'
 task_ordered "$TASK_ORDER" '18\. \*\*验收首页引导页' '19\. \*\*最终图片加载检查'
 task_ordered "$TASK_ORDER" '引导页通过验收后' '生成不超过 4,000 字符的全英文'
@@ -100,8 +111,15 @@ task_require "$TASK_ORDER" '项目根目录.*aduit.*保留'
 task_require "$TASK_ORDER" 'All URL.*原始地址'
 task_require "$TASK_ORDER" '不访问或探测真实 URL'
 task_require "$TASK_ENTRY" '首页引导页'
+task_require "$TASK_ENTRY" 'Base64 data URI'
 task_require "$TASK_ENTRY" '依赖.*aduit.*不得残留'
+task_require "$TASK_PRODUCT" 'Base64 data URI'
+task_require "$TASK_DESIGN" 'Base64 data URI'
 task_require "$TASK_SKILL" 'aduit/site/index\.html'
+task_require "$TASK_SKILL" 'Embed every displayed guide image.*directly in.*index\.html.*as a Base64 data URI'
+task_require "$TASK_SKILL" 'Do not reference project assets, relative image files, `file://` URLs, or remote image URLs'
+task_require "$TASK_SKILL" 'Count all Base64 image payload bytes against the 262144-byte limit'
+task_require "$TASK_SKILL" 'Decode and inspect every embedded image'
 task_require "$TASK_SKILL" 'window\.AppBridge\.postMessage\('
 task_require "$TASK_SKILL" 'go://continue'
 task_require "$TASK_SKILL" 'prefers-reduced-motion'
@@ -121,6 +139,7 @@ task_ordered "$TASK_SKILL" '5\. Immediately after that rename' '6\. After the gu
 task_ordered "$TASK_SKILL" '6\. After the guide is accepted' '7\. After every implementation'
 task_require "$TASK_SKILL" 'bind each to its corresponding raw URL'
 task_require "$TASK_README" '引导页'
+task_require "$TASK_README" 'Base64 data URI'
 task_require "$TASK_README" '依赖.*aduit.*不得残留'
 task_require "$TASK_README" '主题元素.*模拟现实画风.*手绘画风.*油画画风.*艺术画风'
 task_require "$TASK_README" '禁止 3D'
