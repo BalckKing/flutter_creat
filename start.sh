@@ -15,7 +15,12 @@ TASK_CODEX_DIR="${CODEX_HOME:-$HOME/.codex}"
 TASK_SKILLS_DIR="$TASK_CODEX_DIR/skills"
 TASK_APP_LISTING_REPO="${FLUTTER_APP_LISTING_REPO:-git@codeup.aliyun.com:6366640f0cd435624679b545/Aurora/Agent/aurora_skills/ios-app-listing.git}"
 TASK_APP_LISTING_BRANCH="feature/1.2.1-A1"
+TASK_APP_LISTING_FALLBACK="${FLUTTER_APP_LISTING_FALLBACK:-/Applications/config/ios-app-listing}"
 TASK_APP_LISTING_COMMIT=""
+TASK_APP_LISTING_SOURCE=""
+TASK_APP_LISTING_MODE=""
+TASK_APP_LISTING_CHECKOUT_BRANCH=""
+TASK_APP_LISTING_OPTIONAL_VALIDATOR="not-run"
 TASK_STAGE=""
 TASK_INSTALL_ONLY=0
 TASK_OPEN=1
@@ -114,34 +119,79 @@ cp -R "$TASK_DOCS_DIR" "$TASK_STAGE/references/工作流文档"
 
 TASK_APP_LISTING_DIR="$TASK_STAGE/references/ios-app-listing"
 TASK_GIT_SSH_COMMAND="${GIT_SSH_COMMAND:-ssh -o BatchMode=yes -o ConnectTimeout=10}"
-if ! GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND="$TASK_GIT_SSH_COMMAND" git clone \
-  --branch "$TASK_APP_LISTING_BRANCH" --single-branch "$TASK_APP_LISTING_REPO" "$TASK_APP_LISTING_DIR"; then
-  print -u2 -- "无法从远程仓库获取 ios-app-listing 分支：$TASK_APP_LISTING_BRANCH"
-  print -u2 -- "旧安装未更改；请检查网络、SSH 凭据和仓库权限后重新运行。"
-  exit 1
-fi
+task_listing_source_complete() {
+  local task_listing_root="$1"
+  [[ -d "$task_listing_root" ]] || return 1
+  for TASK_LISTING_REQUIRED in \
+    SKILL.md \
+    references/output-contract.md \
+    references/privacy-ai-rules.md \
+    scripts/inspect_app.py \
+    scripts/generate_app_listing.py \
+    scripts/render_app_listing.py \
+    assets/site-render/templates-manifest.json; do
+    [[ -f "$task_listing_root/$TASK_LISTING_REQUIRED" ]] || return 1
+  done
+}
 
-if [[ "$(git -C "$TASK_APP_LISTING_DIR" branch --show-current)" != "$TASK_APP_LISTING_BRANCH" ]]; then
-  print -u2 -- "远程检出分支不匹配，未更新技能：$TASK_APP_LISTING_DIR"
-  exit 1
-fi
-
-for TASK_LISTING_REQUIRED in \
-  SKILL.md \
-  references/output-contract.md \
-  references/privacy-ai-rules.md \
-  scripts/inspect_app.py \
-  scripts/generate_app_listing.py \
-  scripts/validate_site_publication_ready.py \
-  scripts/render_app_listing.py \
-  assets/site-render/templates-manifest.json; do
-  if [[ ! -f "$TASK_APP_LISTING_DIR/$TASK_LISTING_REQUIRED" ]]; then
-    print -u2 -- "远程 ios-app-listing 不完整，缺少：$TASK_LISTING_REQUIRED"
-    print -u2 -- "旧安装未更改。"
-    exit 1
+task_record_listing_source() {
+  local task_listing_root="$1"
+  if git -C "$task_listing_root" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    TASK_APP_LISTING_CHECKOUT_BRANCH="$(git -C "$task_listing_root" branch --show-current)"
+    TASK_APP_LISTING_COMMIT="$(git -C "$task_listing_root" rev-parse HEAD)"
+  else
+    TASK_APP_LISTING_CHECKOUT_BRANCH="unversioned"
+    TASK_APP_LISTING_COMMIT="unversioned"
   fi
-done
-TASK_APP_LISTING_COMMIT="$(git -C "$TASK_APP_LISTING_DIR" rev-parse HEAD)"
+  if [[ -f "$task_listing_root/scripts/validate_site_publication_ready.py" ]]; then
+    TASK_APP_LISTING_OPTIONAL_VALIDATOR="available"
+  else
+    TASK_APP_LISTING_OPTIONAL_VALIDATOR="missing; use the available output-contract and rendered-page checks"
+    print -u2 -- "提示：所选 ios-app-listing 来源没有可选的 validate_site_publication_ready.py；继续使用其余生成器，并对全部产物执行现有契约检查与人工页面复核。"
+  fi
+}
+
+if GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND="$TASK_GIT_SSH_COMMAND" git clone \
+  --branch "$TASK_APP_LISTING_BRANCH" --single-branch "$TASK_APP_LISTING_REPO" "$TASK_APP_LISTING_DIR"; then
+  if [[ "$(git -C "$TASK_APP_LISTING_DIR" branch --show-current)" == "$TASK_APP_LISTING_BRANCH" ]] && \
+    task_listing_source_complete "$TASK_APP_LISTING_DIR"; then
+    TASK_APP_LISTING_SOURCE="$TASK_APP_LISTING_REPO"
+    TASK_APP_LISTING_MODE="remote"
+    task_record_listing_source "$TASK_APP_LISTING_DIR"
+  else
+    print -u2 -- "远程 ios-app-listing 检出不完整或分支不匹配，将尝试本机后备目录。"
+    rm -rf -- "$TASK_APP_LISTING_DIR"
+  fi
+else
+  print -u2 -- "远程同步失败：无法获取 ios-app-listing 分支 $TASK_APP_LISTING_BRANCH；将尝试后备生成。"
+  rm -rf -- "$TASK_APP_LISTING_DIR"
+fi
+
+if [[ -z "$TASK_APP_LISTING_SOURCE" ]] && task_listing_source_complete "$TASK_APP_LISTING_FALLBACK"; then
+  ln -s "$TASK_APP_LISTING_FALLBACK" "$TASK_APP_LISTING_DIR"
+  TASK_APP_LISTING_SOURCE="$TASK_APP_LISTING_FALLBACK"
+  TASK_APP_LISTING_MODE="local-fallback"
+  task_record_listing_source "$TASK_APP_LISTING_FALLBACK"
+  print -r -- "已切换到本机 ios-app-listing 后备生成：$TASK_APP_LISTING_FALLBACK"
+fi
+
+if [[ -z "$TASK_APP_LISTING_SOURCE" ]]; then
+  TASK_APP_LISTING_MODE="contract-fallback"
+  TASK_APP_LISTING_CHECKOUT_BRANCH="none"
+  TASK_APP_LISTING_OPTIONAL_VALIDATOR="unavailable"
+  print -u2 -- "远程与本机 ios-app-listing 来源均不可用；仍安装核心流程，并按随包生成契约继续完成 AppListing、About、aduit 整理、引导页与 Review Remarks。"
+  print -r -- "不得因此停止或等待用户；逐项完成可交付产物，未通过的校验如实标记，不得伪报通过。具体错误与验证结果写入目标工程 .codex-work/。"
+fi
+
+print -r -- "远程同步失败时使用 /Applications/config/ios-app-listing；所有 AppListing、About 与 Review Remarks 任务继续执行。"
+print -r -- "local_generation_complete、failures 与 verification 状态必须分开记录，不得将未验证结果伪报为通过。" \
+  > "$TASK_STAGE/references/app-listing-fallback-contract.md"
+print -r -- "source=$TASK_APP_LISTING_SOURCE" > "$TASK_STAGE/references/ios-app-listing-source.txt"
+print -r -- "mode=$TASK_APP_LISTING_MODE" >> "$TASK_STAGE/references/ios-app-listing-source.txt"
+print -r -- "branch=$TASK_APP_LISTING_BRANCH" >> "$TASK_STAGE/references/ios-app-listing-source.txt"
+print -r -- "checkout_branch=$TASK_APP_LISTING_CHECKOUT_BRANCH" >> "$TASK_STAGE/references/ios-app-listing-source.txt"
+print -r -- "commit=$TASK_APP_LISTING_COMMIT" >> "$TASK_STAGE/references/ios-app-listing-source.txt"
+print -r -- "optional_publication_validator=$TASK_APP_LISTING_OPTIONAL_VALIDATOR" >> "$TASK_STAGE/references/ios-app-listing-source.txt"
 
 TASK_PREVIOUS=""
 if [[ -d "$TASK_INSTALLED_DIR" ]]; then
@@ -186,8 +236,12 @@ if [[ -n "$TASK_PROJECT_DIR" ]]; then
 fi
 
 print -r -- "技能已安装：$TASK_INSTALLED_DIR"
-print -r -- "AppListing 技能来源：$TASK_APP_LISTING_REPO ($TASK_APP_LISTING_BRANCH @ $TASK_APP_LISTING_COMMIT)"
-print -r -- "总入口与 $(( ${#TASK_DOCUMENTS} - 1 )) 份规范正文已安装；AppListing 每次从远程指定分支同步。"
+if [[ -n "$TASK_APP_LISTING_SOURCE" ]]; then
+  print -r -- "AppListing 技能来源：$TASK_APP_LISTING_SOURCE ($TASK_APP_LISTING_MODE; $TASK_APP_LISTING_BRANCH @ $TASK_APP_LISTING_COMMIT)"
+else
+  print -r -- "AppListing 技能来源：未取得 checkout；已启用本地生成后备契约"
+fi
+print -r -- "总入口与 $(( ${#TASK_DOCUMENTS} - 1 )) 份规范正文已安装；AppListing 来源顺序为远程指定分支，失败时自动使用 $TASK_APP_LISTING_FALLBACK，再失败时按本地生成契约继续。"
 if [[ -n "$TASK_PREVIOUS" ]]; then
   print -r -- "旧安装可恢复：$TASK_PREVIOUS"
 fi

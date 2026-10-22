@@ -13,6 +13,7 @@ TASK_REMOTE="$TASK_TMP/remote.git"
 TASK_PORTABLE="$TASK_TMP/portable"
 TASK_INSTALLED="$TASK_TMP/skills/flutter-engine-runner"
 TASK_CODEX_HOME="$TASK_TMP/codex"
+TASK_LOCAL_FALLBACK="$TASK_TMP/local-listing"
 mkdir -p "$TASK_SOURCE/references" "$TASK_SOURCE/scripts" "$TASK_SOURCE/assets/site-render" "$TASK_PORTABLE"
 
 git init --bare "$TASK_REMOTE" >/dev/null
@@ -46,7 +47,7 @@ cp -R "$TASK_BUNDLE_DIR/flutter-engine-runner" "$TASK_PORTABLE/flutter-engine-ru
 cp -R "$TASK_BUNDLE_DIR/工作流文档" "$TASK_PORTABLE/工作流文档"
 [[ ! -e "$TASK_PORTABLE/ios-app-listing" ]]
 
-FLUTTER_APP_LISTING_REPO="$TASK_REMOTE" CODEX_HOME="$TASK_CODEX_HOME" \
+FLUTTER_APP_LISTING_REPO="$TASK_REMOTE" FLUTTER_APP_LISTING_FALLBACK="$TASK_TMP/no-local" CODEX_HOME="$TASK_CODEX_HOME" \
   /bin/zsh "$TASK_PORTABLE/start.sh" --install-only --skills-dir "$TASK_TMP/skills" >/dev/null
 
 [[ "$(<"$TASK_INSTALLED/references/ios-app-listing/REVISION.txt")" == "latest" ]]
@@ -54,12 +55,49 @@ FLUTTER_APP_LISTING_REPO="$TASK_REMOTE" CODEX_HOME="$TASK_CODEX_HOME" \
 [[ "$(git -C "$TASK_INSTALLED/references/ios-app-listing" rev-parse HEAD)" == "$TASK_LATEST_COMMIT" ]]
 [[ "$(git -C "$TASK_INSTALLED/references/ios-app-listing" remote get-url origin)" == "$TASK_REMOTE" ]]
 
-if FLUTTER_APP_LISTING_REPO="$TASK_TMP/missing.git" CODEX_HOME="$TASK_CODEX_HOME" \
-  /bin/zsh "$TASK_PORTABLE/start.sh" --install-only --skills-dir "$TASK_TMP/skills" >/dev/null 2>&1; then
-  print -u2 -- "Expected installation to fail when the remote repository is unavailable."
-  exit 1
-fi
+TASK_INSTALL_OUTPUT="$(FLUTTER_APP_LISTING_REPO="$TASK_TMP/missing.git" FLUTTER_APP_LISTING_FALLBACK="$TASK_TMP/no-local" CODEX_HOME="$TASK_CODEX_HOME" \
+  /bin/zsh "$TASK_PORTABLE/start.sh" --install-only --skills-dir "$TASK_TMP/skills" 2>&1)"
 
-[[ "$(<"$TASK_INSTALLED/references/ios-app-listing/REVISION.txt")" == "latest" ]]
-[[ "$(git -C "$TASK_INSTALLED/references/ios-app-listing" rev-parse HEAD)" == "$TASK_LATEST_COMMIT" ]]
-print -r -- "PASS: installs latest remote branch without a bundled copy and preserves the prior install on fetch failure."
+[[ -d "$TASK_INSTALLED" ]]
+[[ -f "$TASK_INSTALLED/SKILL.md" ]]
+[[ ! -e "$TASK_INSTALLED/references/ios-app-listing" ]]
+[[ "$TASK_INSTALL_OUTPUT" == *"后备生成"* ]]
+[[ "$TASK_INSTALL_OUTPUT" == *"远程同步失败"* ]]
+[[ "$(<"$TASK_INSTALLED/references/ios-app-listing-source.txt")" == *"mode=contract-fallback"* ]]
+[[ "$(<"$TASK_INSTALLED/references/ios-app-listing-source.txt")" == *"checkout_branch=none"* ]]
+[[ "$TASK_INSTALL_OUTPUT" == *"仍安装核心流程"* ]]
+TASK_PRIOR_CHECKOUTS=("$TASK_TMP"/skill-backups/flutter-engine-runner/previous-*/references/ios-app-listing(N))
+[[ ${#TASK_PRIOR_CHECKOUTS} -ge 1 ]]
+[[ "$(git -C "${TASK_PRIOR_CHECKOUTS[1]}" rev-parse HEAD)" == "$TASK_LATEST_COMMIT" ]]
+
+# A local Skill can be a non-Git directory and may lack a newer optional validator.
+mkdir -p "$TASK_LOCAL_FALLBACK"
+cp -R "$TASK_SOURCE/" "$TASK_LOCAL_FALLBACK/"
+rm -rf -- "$TASK_LOCAL_FALLBACK/.git"
+rm -- "$TASK_LOCAL_FALLBACK/scripts/validate_site_publication_ready.py"
+TASK_INSTALL_OUTPUT="$(FLUTTER_APP_LISTING_REPO="$TASK_TMP/missing.git" FLUTTER_APP_LISTING_FALLBACK="$TASK_LOCAL_FALLBACK" CODEX_HOME="$TASK_CODEX_HOME" \
+  /bin/zsh "$TASK_PORTABLE/start.sh" --install-only --skills-dir "$TASK_TMP/skills" 2>&1)"
+[[ -L "$TASK_INSTALLED/references/ios-app-listing" ]]
+[[ "$(readlink "$TASK_INSTALLED/references/ios-app-listing")" == "$TASK_LOCAL_FALLBACK" ]]
+[[ "$(<"$TASK_INSTALLED/references/ios-app-listing-source.txt")" == *"mode=local-fallback"* ]]
+[[ "$(<"$TASK_INSTALLED/references/ios-app-listing-source.txt")" == *"commit=unversioned"* ]]
+[[ "$(<"$TASK_INSTALLED/references/ios-app-listing-source.txt")" == *"optional_publication_validator=missing; use the available output-contract and rendered-page checks"* ]]
+[[ "$TASK_INSTALL_OUTPUT" == *"本机 ios-app-listing 后备生成"* ]]
+[[ "$TASK_INSTALL_OUTPUT" == *"没有可选的 validate_site_publication_ready.py"* ]]
+
+# An incomplete remote checkout must not masquerade as a usable remote Skill.
+git -C "$TASK_SOURCE" rm scripts/render_app_listing.py >/dev/null
+git -C "$TASK_SOURCE" commit -m "incomplete listing fixture" >/dev/null
+git -C "$TASK_SOURCE" push origin feature/1.2.1-A1 >/dev/null 2>&1
+FLUTTER_APP_LISTING_REPO="$TASK_REMOTE" FLUTTER_APP_LISTING_FALLBACK="$TASK_LOCAL_FALLBACK" CODEX_HOME="$TASK_CODEX_HOME" \
+  /bin/zsh "$TASK_PORTABLE/start.sh" --install-only --skills-dir "$TASK_TMP/skills" >/dev/null 2>&1
+[[ -L "$TASK_INSTALLED/references/ios-app-listing" ]]
+[[ "$(readlink "$TASK_INSTALLED/references/ios-app-listing")" == "$TASK_LOCAL_FALLBACK" ]]
+
+# A first installation also succeeds when neither source exists.
+FLUTTER_APP_LISTING_REPO="$TASK_TMP/missing.git" FLUTTER_APP_LISTING_FALLBACK="$TASK_TMP/no-local" CODEX_HOME="$TASK_CODEX_HOME" \
+  /bin/zsh "$TASK_PORTABLE/start.sh" --install-only --skills-dir "$TASK_TMP/fresh-skills" >/dev/null 2>&1
+[[ -f "$TASK_TMP/fresh-skills/flutter-engine-runner/SKILL.md" ]]
+[[ ! -e "$TASK_TMP/fresh-skills/flutter-engine-runner/references/ios-app-listing" ]]
+[[ "$(<"$TASK_TMP/fresh-skills/flutter-engine-runner/references/ios-app-listing-source.txt")" == *"mode=contract-fallback"* ]]
+print -r -- "PASS: latest remote, missing/incomplete remote, local fallback without optional validator, recoverable prior install, and fresh contract fallback."
