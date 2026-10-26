@@ -56,6 +56,12 @@ The current newly created folder or explicitly specified target folder is always
 
 Record the absolute target path and original user name in the plan. After creation, verify `pubspec.yaml`, the iOS display name, and the actual app root before proceeding. Keep `assets/`, `AppListing/`, `aduit/`, and `.codex-work/` inside the target app.
 
+## Theme-specific product differentiation
+
+Before presenting the mind map, derive a product-specific brief from the current `Effective idea`: target user and concrete trigger/problem, current workaround (source-backed or labeled as an assumption), distinctive outcome, signature action, first useful result, a named artifact or carry-forward state the user can save and revisit locally, and at least one theme-specific content or interaction rule. Aim for the first useful result within about one minute where the real task allows; never fake timing or claim an unmeasured result. Map every main Tab and page to this core loop or a concrete supporting role. Camera, photo-library, and microphone paths must contribute meaningfully to actual theme tasks, with distinct information value. Do not treat Logo, gradients, cards, illustrations, or a generic visual reskin as product differentiation; do not add unrelated features, accounts, social sharing, or cloud behavior to manufacture novelty. Do not assume a fixed `Home / Explore` structure. Cite competitor claims only when verifiable; otherwise mark them unverified and continue. Include this brief in the existing mind map, trace table, and validation, without adding another approval gate.
+
+Stargate generates the Logo and page-specific UI background decorations. Use third-party websites for licensed real content photography; do not use the image generator as a substitute for photographic content.
+
 ## Execute the current stage
 
 1. Once required inputs are ready, create and show the complete Mermaid mind map, coverage table, validation result, and implementation plan required by specification sections 2.4, 3, and 3.5. Wait for explicit approval of the shown version. Theme-generation consent does not approve development.
