@@ -13,7 +13,7 @@
 使用 $flutter-engine-runner，请开始执行。
 ```
 
-5. 缺少输入时，Codex 会先询问创意主题和项目名称。提供后，查看完整思维导图，回复“确认，按此执行”。之后继续自主开发；质量复核后只使用安装器同步的远程 `ios-app-listing` checkout 生成 AppListing 和对应 About 页面，校对配色并改名/整理为 `aduit`。紧接着，用项目实际功能和主题色完全替换 `aduit/site/index.html`，将单文件引导页接入每次启动进入的 Welcome 本地 WebView；所有显示图片均以内嵌 Base64 data URI 提供，不能依赖工程内图片资源或远程图片地址，含图片编码的 HTML 总大小严格小于 262,144 字节。核验图片解码、格式/尺寸/可读性与离线显示，并检查英文介绍卡片、轮播、分页点、Continue bridge 与回退，以及四个指定视口。该 Welcome 页和 HTML 引导页不显示协议通用文案或 Terms/Privacy 页脚。通过后、生成英文审核备注前，才从 `aduit/intro.md` 的 `All URL` 原样复制四个地址；协议通用文案只加入 Clear Data 确认清理成功后出现的 Initialization 页底部，Terms of Use 与 Privacy Policy 分别可点击：
+5. 缺少输入时，Codex 会先询问创意主题和项目名称。提供后，查看完整思维导图，回复“确认，按此执行”。之后继续自主开发；质量复核后只使用安装器同步的远程 `ios-app-listing` checkout 生成 AppListing 和对应 About 页面。`aduit/intro.md` 的 `Description` 必须充分说明已实现的用途、主模块、典型任务、摄像机/相册/麦克风、成果回访和数据边界，遵守生成器选定结构与 4,000 字符上限；生成后复核并精修该正文，删除重复 URL 栏目和多余网址，只在 `All URL` 保留首页、隐私政策、用户协议、Support 四个完整原始地址，四值与其他事实字段不变。随后校对配色并改名/整理为 `aduit`。紧接着，用项目实际功能和主题色完全替换 `aduit/site/index.html`，将单文件引导页接入每次启动进入的 Welcome 本地 WebView；所有显示图片均以内嵌 Base64 data URI 提供，不能依赖工程内图片资源或远程图片地址，含图片编码的 HTML 总大小严格小于 262,144 字节。核验图片解码、格式/尺寸/可读性与离线显示，并检查英文介绍卡片、轮播、分页点、Continue bridge 与回退，以及四个指定视口。该 Welcome 页和 HTML 引导页不显示协议通用文案或 Terms/Privacy 页脚。通过后、生成英文审核备注前，才从 `aduit/intro.md` 的 `All URL` 原样复制四个地址；协议通用文案只加入 Clear Data 确认清理成功后出现的 Initialization 页底部，Terms of Use 与 Privacy Policy 分别可点击：
 
 ```text
 By continuing, you agree to our
@@ -152,6 +152,8 @@ Emoji、渐变、矢量插画、AI 拟真图或仅写素材清单不能代替真
 
 本流程只创建、构建和验证 iOS iPhone App，最低 iOS 部署版本为 15.6；实际依赖要求更高时保留更高版本，并按正文核对 Podfile、所有构建 target 的解析设置及可用产物。运行与截图必须明确指定 iPhone 机型及 UDID；没有可用 iPhone 时继续可执行检查，不回退到其他设备或平台。按实际权限插件检查 `ios/Podfile` 并尽力设置最小权限宏；使用 PhotoKit 整库读取 API 时，必须设置并从 Pods 解析后的编译设置证实 `PERMISSION_PHOTOS=1`；只用系统照片选择器时不启用整库权限宏。宏配置失败需记录，但不得因此中止 Pods 安装或 iOS 打包尝试。默认无追踪；确认无 Apple 定义的追踪后，对 ATT 进行清理移除，包括请求、用途说明、框架链接、IDFA 访问及不必要追踪依赖，并核验最终产物。宏配置、构建结果与权限运行验证分开报告，失败的权限路径不能标为通过。详情见工作流文档第 0.7、11.7 节。
 
+最终 `aduit/intro.md` 的 `## Description` 会依据项目实际功能充分展开，覆盖定位与受众、各主模块、典型使用过程、摄像机/相册/麦克风、可回访成果、进入与清除流程和数据边界；遵守生成器选定的文案结构及最多 4,000 字符限制。生成后重新读取并核对覆盖，避免只留下几句短文或功能清单；仅在 `All URL` 保留首页、隐私政策、用户协议、Support 四个完整 URL；移除重复的独立 URL 栏目及其他多余网址，这四个地址（含大小写、路径、参数）和其他事实字段保持原样，不因暂不可访问而删改。详细写作与验收见第 12.1、11.1 节，审核备注仍单独按其格式生成。
+
 ## 最终交付目录
 
 目标工程中的 `aduit/` 必须严格保持（由最终生成的 `AppListing/` 改名/整理而来，不执行公开部署）。改名完成后立即在其根目录新建空的 `imgs/` 文件夹，并在后续清理与最终交付中保留为空，不能放入图片、`.gitkeep` 或隐藏文件；原有 `site/img/logo.png` 保持原位置：
@@ -171,4 +173,4 @@ aduit/
     └── remarks.md
 ```
 
-免责与版权说明合并在现有法律页；样式与脚本内联，使用系统字体。最终 `aduit/site/index.html` 是替换生成 About Home 后的自包含引导页，App 与工作流共用此唯一文件；引导页所显示图片以 Base64 data URI 内嵌，HTML 总大小（含全部编码图片）严格小于 262,144 字节，不引用项目图片路径、`file://` 或远程图片 URL；它仍占原四页名额，不新增文件。`aduit/` 顶层仅允许 `intro.md`、`imgs/`、`site/`、`review/`；`site/` 只允许四个 HTML 页面与 `img/logo.png`，`review/` 只允许 `remarks.md`。执行记录、质量报告、截图、备份及额外文件放在目标工程的 `.codex-work/`，不进入交付目录。审核备注全英文、不超过 4,000 字符，基于已确认事实；生成后检查七项内容与白名单，并清理目标工程的 `AppListing/` 和旧 `aduit/html/`。
+免责与版权说明合并在现有法律页；样式与脚本内联，使用系统字体。最终 `aduit/site/index.html` 是替换生成 About Home 后的自包含引导页，App 与工作流共用此唯一文件；引导页所显示图片以 Base64 data URI 内嵌，HTML 总大小（含全部编码图片）严格小于 262,144 字节，不引用项目图片路径、`file://` 或远程图片 URL；它仍占原四页名额，不新增文件。`aduit/` 顶层仅允许 `intro.md`、`imgs/`、`site/`、`review/`；`site/` 只允许四个 HTML 页面与 `img/logo.png`，`review/` 只允许 `remarks.md`。执行记录、质量报告、截图、备份及额外文件放在目标工程的 `.codex-work/`，不进入交付目录。审核备注全英文、不超过 4,000 字符，基于已确认事实；基本信息逐项列出，七章正文分点描述、设置流程按操作顺序编号；全文不出现 WebView、WebKit 或网页容器等实现描述，外部服务仍据实说明；全文仅保留 iPhone 机型、对应 iOS 版本及有据测试记录，生成或更新时清除其他设备及其测试、兼容性说明，不改名套用其测试结果；生成后检查七项内容与白名单，并清理目标工程的 `AppListing/` 和旧 `aduit/html/`。

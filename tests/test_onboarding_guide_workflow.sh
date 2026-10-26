@@ -147,6 +147,18 @@ if rg -q -- 'create a user-named subdirectory|receives the user-named subdirecto
 fi
 
 task_require "$TASK_PUBLISH" 'aduit/site/index\.html'
+task_require "$TASK_PUBLISH" '完整英文产品介绍'
+task_require "$TASK_PUBLISH" '目标用户和主要用途.*用户在什么场景遇到什么问题'
+task_require "$TASK_PUBLISH" '每个主要模块至少写清'
+task_require "$TASK_PUBLISH" '至少三个不同用户结果的任务'
+task_require "$TASK_PUBLISH" '摄像机、相册与麦克风'
+task_require "$TASK_PUBLISH" '数据、权限与服务边界'
+task_require "$TASK_PUBLISH" 'URL 完整保护'
+task_require "$TASK_PUBLISH" 'description_style_label` 必须与其实际选定结果一致'
+task_require "$TASK_PUBLISH" '最多 4,000 字符'
+task_require "$TASK_QA" 'Intro 描述深度专项'
+task_require "$TASK_ORDER" 'description 由当前智能体按第 12\.1 节以真实功能充分展开'
+task_require "$TASK_SKILL" 'fully describe the verified product experience'
 task_require "$TASK_PUBLISH" '3–5 张真实介绍卡片'
 task_require "$TASK_PUBLISH" '单一自包含 HTML 文件'
 task_require "$TASK_PUBLISH" '每张需在引导页显示的图片.*Base64 data URI.*直接内嵌在同一个 `aduit/site/index\.html`'
