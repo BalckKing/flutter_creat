@@ -24,6 +24,12 @@ require_text() {
   rg -q -- "$task_pattern" "$task_file" || fail "缺少契约：$task_file：$task_pattern"
 }
 
+forbid_text() {
+  if rg -q -- "$2" "$1"; then
+    fail "残留旧版冲突规则：$1：$2"
+  fi
+}
+
 line_of() {
   local task_file="$1"
   local task_pattern="$2"
@@ -100,37 +106,88 @@ TASK_RUNNER="$TASK_ROOT/flutter-engine-runner/SKILL.md"
 TASK_README="$TASK_ROOT/README.md"
 
 require_text "$TASK_CONVENTIONS" '0\.11 Apple 4\.3 与 5\.6 工程级发布门槛'
+require_text "$TASK_CONVENTIONS" '0\.2\.1 随机范围与全量硬门槛'
+require_text "$TASK_CONVENTIONS" '本流程只允许两类内容由智能体随机或自主变化'
+require_text "$TASK_CONVENTIONS" '所有规格都是硬门槛'
+require_text "$TASK_CONVENTIONS" '不能以随机性解释字体、渐变、点击特效、权限、资源、目录或验收缺失'
+require_text "$TASK_CONVENTIONS" '所有 UI 视觉表现均属于硬门槛'
 require_text "$TASK_CONVENTIONS" 'app-review-risk\.md'
 require_text "$TASK_CONVENTIONS" '只更换名称、Logo、渐变、字体、图片、文案、卡片尺寸或导航外壳不构成差异化'
 require_text "$TASK_CONVENTIONS" 'Release readiness: Ready for submission'
+require_text "$TASK_CONVENTIONS" '0\.12 最新用户硬性覆盖与历史要求对照'
+require_text "$TASK_CONVENTIONS" '共 12 张、每任务 1 张'
+require_text "$TASK_CONVENTIONS" '旧的总共 1 张或 5 张不再适用'
+require_text "$TASK_DOCS_DIR/00-总入口.md" '0\.12.*历史要求'
+require_text "$TASK_README" '0\.12.*历史要求'
+forbid_text "$TASK_DOCS_DIR/02-创意与思维导图.md" '清除成功后返回 Welcome|清除成功.*返回欢迎页'
+require_text "$TASK_DOCS_DIR/06-素材与真实照片.md" '之后仍须执行第 11\.6 节最终 iOS 权限双向校验'
 
 require_text "$TASK_ARCHITECTURE" '9\.4 产品差异化与真实功能边界'
+require_text "$TASK_ARCHITECTURE" '9\.3\.1 项目自有资源、文件夹与文件短名（硬门槛）'
+require_text "$TASK_ARCHITECTURE" '改名与引用是同一任务'
+require_text "$TASK_ARCHITECTURE" '父目录改名须更新全部后代引用'
+require_text "$TASK_ARCHITECTURE" '四个原始协议 URL 逐字符不变'
+require_text "$TASK_QA" 'path-names\.md'
+require_text "$TASK_RUNNER" 'all project-owned resources, files and folders'
+require_text "$TASK_README" '所有项目自有资源、文件夹与文件能简写就统一简写'
+forbid_text "$TASK_ORDER" '直接维护到 `aduit/site/` 与 `aduit/intro.md` 并接入统一 WebView'
+forbid_text "$TASK_QA" 'WebView 预览随包本地正文'
 require_text "$TASK_ARCHITECTURE" 'differentiation-brief\.md'
 require_text "$TASK_ARCHITECTURE" '4\.3 risk: Failed'
 
 require_text "$TASK_QA" '11\.10 Apple 4\.3/5\.6 审核风险专项'
 require_text "$TASK_QA" '评价与发现'
 require_text "$TASK_QA" 'Release readiness: Blocked'
+require_text "$TASK_QA" '11\.3\.1 视觉实现硬门槛'
+require_text "$TASK_QA" 'validate_visual_implementation\.py'
+require_text "$TASK_QA" 'validate_review_remarks\.py'
+require_text "$TASK_QA" 'validate_public_copy\.py'
+require_text "$TASK_QA" 'particle-evidence\.md'
+require_text "$TASK_QA" 'ui-visual-gates\.json'
+require_text "$TASK_QA" '至少两个不同的 `gradient_tokens`'
+require_text "$TASK_QA" '至少三个 Logo 派生 `palette_hex`'
+require_text "$TASK_QA" '背景文件只能位于对应的 `assets/backgrounds/<page_id>/`'
 
 require_text "$TASK_RELEASE" '12\.4 4\.3/5\.6 发布材料与身份复核'
 require_text "$TASK_RELEASE" 'Apple 系统评价 API'
+require_text "$TASK_RELEASE" '未知或未提供的项目从最终备注中删除'
+require_text "$TASK_RELEASE" '第 1 项固定为 `iPhone 17 Pro Max, iOS 26.5`'
+require_text "$TASK_RELEASE" '第 6 项固定为 `All regions are the same.`'
+require_text "$TASK_RELEASE" '不能当作每个新项目已经完成的测试'
+require_text "$TASK_RELEASE" '不写 `Not provided; pending confirmation\.`'
+require_text "$TASK_RELEASE" '不将验收通过作为后续材料生成的无限等待条件'
+forbid_text "$TASK_RELEASE" '以引导页替换生成的 About Home|供离线 WebView 使用|在这些检查完成前不得开始 Review Remarks'
+forbid_text "$TASK_RUNNER" 'four untouched site HTML pages|Do not modify the four files in|begin Review Remarks before the guide is accepted'
 
 require_text "$TASK_ORDER" '15\.1 4\.3/5\.6 最终报告门槛'
 require_text "$TASK_ORDER" '唯一 Bundle ID'
 require_text "$TASK_ORDER" '差异化证据'
 
 require_text "$TASK_RUNNER" 'Apple 4\.3 and 5\.6 release gate'
+require_file "$TASK_ROOT/flutter-engine-runner/scripts/validate_visual_implementation.py"
+require_file "$TASK_ROOT/flutter-engine-runner/scripts/validate_review_remarks.py"
+require_file "$TASK_ROOT/flutter-engine-runner/scripts/validate_public_copy.py"
 require_text "$TASK_RUNNER" 'Release readiness: Blocked'
+require_text "$TASK_RUNNER" 'Delete every unknown, unconfirmed, pending, or not-provided field'
+require_text "$TASK_RUNNER" 'Background variety is an explicit hard gate'
+require_text "$TASK_RUNNER" 'background\.asset'
 require_text "$TASK_README" '4\.3/5\.6 工程审核风险门槛'
+require_text "$TASK_README" '背景点缀也是硬门槛'
+require_text "$TASK_README" '至少两个 Logo 派生渐变令牌'
+require_text "$TASK_README" 'validate_public_copy\.py'
 
 require_before '^17\. ' '^18\. \*\*验收首页引导页'
 require_before '^18\. \*\*验收首页引导页' '^19\. \*\*最终图片加载检查'
 require_before '^19\. \*\*最终图片加载检查' '^20\. \*\*最终 iOS 权限校验'
-require_text "$TASK_ORDER" '引导页通过验收后.*生成不超过 4,000 字符的全英文'
+require_text "$TASK_ORDER" '首页引导页完成验收尝试并记录结果后.*生成不超过 4,000 字符的全英文'
 require_text "$TASK_ORDER" '第 19 步之后、最终报告之前.*全部适用项完成后才提交最终报告'
+require_text "$TASK_ORDER" '每个 Flutter 页面、根目录 `welcome.html`、四个 About HTML 页面和原生 Launch Screen.*独立背景图案'
 
 require_text "$TASK_START" 'TASK_DOC_MANIFEST'
 require_text "$TASK_START" 'TASK_RUNNER_SOURCE/scripts/validate_about_copy.py'
+require_text "$TASK_START" 'TASK_RUNNER_SOURCE/scripts/validate_visual_implementation.py'
+require_text "$TASK_START" 'TASK_RUNNER_SOURCE/scripts/validate_review_remarks.py'
+require_text "$TASK_START" 'TASK_RUNNER_SOURCE/scripts/validate_public_copy.py'
 require_text "$TASK_START" 'TASK_DOCUMENTS'
 
 task_execution_step_count() {

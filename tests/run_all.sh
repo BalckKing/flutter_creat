@@ -7,6 +7,9 @@ TASK_ROOT="${0:A:h:h}"
 typeset -a TASK_CHECKS=(
   "$TASK_ROOT/tests/test_workflow_integrity.sh"
   "$TASK_ROOT/tests/test_onboarding_guide_workflow.sh"
+  "$TASK_ROOT/tests/test_validate_visual_implementation.py"
+  "$TASK_ROOT/tests/test_validate_review_remarks.py"
+  "$TASK_ROOT/tests/test_validate_public_copy.py"
   "$TASK_ROOT/tests/test_start_remote_listing.sh"
   "$TASK_ROOT/tests/test_validate_about_copy.py"
 )
