@@ -90,6 +90,39 @@ require_text "$TASK_ORDER" '依赖树和 App bundle 中的 `aduit/` 副本必须
 require_text "$TASK_ORDER" 'All URL.*四值.*逐字不变'
 require_text "$TASK_ORDER" '缺少证据不能标为 `Verified`'
 
+# Apple 4.3/5.6 gates must remain executable contracts, not prose that can
+# silently disappear while the runner still reports a green workflow.
+TASK_CONVENTIONS="$TASK_DOCS_DIR/01-执行约定.md"
+TASK_ARCHITECTURE="$TASK_DOCS_DIR/05-数据与工程架构.md"
+TASK_QA="$TASK_DOCS_DIR/07-测试与质量验收.md"
+TASK_RELEASE="$TASK_DOCS_DIR/08-发布与About材料.md"
+TASK_RUNNER="$TASK_ROOT/flutter-engine-runner/SKILL.md"
+TASK_README="$TASK_ROOT/README.md"
+
+require_text "$TASK_CONVENTIONS" '0\.11 Apple 4\.3 与 5\.6 工程级发布门槛'
+require_text "$TASK_CONVENTIONS" 'app-review-risk\.md'
+require_text "$TASK_CONVENTIONS" '只更换名称、Logo、渐变、字体、图片、文案、卡片尺寸或导航外壳不构成差异化'
+require_text "$TASK_CONVENTIONS" 'Release readiness: Ready for submission'
+
+require_text "$TASK_ARCHITECTURE" '9\.4 产品差异化与真实功能边界'
+require_text "$TASK_ARCHITECTURE" 'differentiation-brief\.md'
+require_text "$TASK_ARCHITECTURE" '4\.3 risk: Failed'
+
+require_text "$TASK_QA" '11\.10 Apple 4\.3/5\.6 审核风险专项'
+require_text "$TASK_QA" '评价与发现'
+require_text "$TASK_QA" 'Release readiness: Blocked'
+
+require_text "$TASK_RELEASE" '12\.4 4\.3/5\.6 发布材料与身份复核'
+require_text "$TASK_RELEASE" 'Apple 系统评价 API'
+
+require_text "$TASK_ORDER" '15\.1 4\.3/5\.6 最终报告门槛'
+require_text "$TASK_ORDER" '唯一 Bundle ID'
+require_text "$TASK_ORDER" '差异化证据'
+
+require_text "$TASK_RUNNER" 'Apple 4\.3 and 5\.6 release gate'
+require_text "$TASK_RUNNER" 'Release readiness: Blocked'
+require_text "$TASK_README" '4\.3/5\.6 工程审核风险门槛'
+
 require_before '^17\. ' '^18\. \*\*验收首页引导页'
 require_before '^18\. \*\*验收首页引导页' '^19\. \*\*最终图片加载检查'
 require_before '^19\. \*\*最终图片加载检查' '^20\. \*\*最终 iOS 权限校验'

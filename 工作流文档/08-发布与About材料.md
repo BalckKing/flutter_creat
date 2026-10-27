@@ -178,3 +178,15 @@ Terms of Use and Privacy Policy
 - [隐私清单](https://developer.apple.com/documentation/bundleresources/privacy-manifest-files)
 - [第三方 SDK 要求](https://developer.apple.com/support/third-party-SDK-requirements/)
 - [自定义 EULA 最低条款](https://www.apple.com/legal/internet-services/itunes/dev/minterms/)
+
+### 12.4 4.3/5.6 发布材料与身份复核
+
+发布材料必须和当前二进制一起审计，不能把生成器输出当成事实证明。对 `App Store Connect` 元数据、截图、`aduit/intro.md`、四个站点页面、Support 和 `aduit/review/remarks.md` 执行以下检查，并将结果写入 `.codex-work/app-review-risk.md`：
+
+- 只有一个产品身份：Bundle ID、显示名称、类别、应用图标、描述、支持信息和审核备注互相一致，不创建同一产品的地区/品牌/主题副本，也不把共享模板当成独立产品。
+- 描述产品的差异来自真实目标问题、领域内容、任务路径、交互规则和用户可回访结果。只更换 Logo、颜色、字体、素材、文案或卡片外观的版本不能提交；无法证明实质差异时标记 `4.3 risk: Failed`。
+- 公开材料只写已确认的开发者身份、支持渠道、服务、权限、设备测试、地区和计费事实；不编造测试账号、购买结果、用户规模、合作关系、可用地区或公开部署状态。缺失项留在内部记录，不在 About 或 Remarks 中补写推测。
+- 不加入自定义评分/评论弹窗、五星引导、评价奖励、搜索词堆叠、虚假推荐、引荐或安装量操纵。需要评价时只允许 Apple 系统评价 API，且必须有真实产品需求和测试证据。
+- 质量缺陷、无效链接、占位资源、错误权限、白屏、崩溃、数据损坏和未完成核心任务必须先修复；材料完成不等于发布就绪。把专项结果与 `Verified`、`Blocked`、`Not verified` 分开记录。
+
+4.3 或 5.6 的关键项失败时，仍可继续生成本地 `aduit/` 和其他不依赖项，但最终报告必须写 `Release readiness: Blocked`，说明具体阻断和下一步；不得以“已生成材料”或“流程未中断”替代审核合规结论。

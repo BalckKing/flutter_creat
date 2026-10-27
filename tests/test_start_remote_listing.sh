@@ -43,6 +43,7 @@ git -C "$TASK_SOURCE" push origin feature/1.2.1-A1 >/dev/null 2>&1
 TASK_LATEST_COMMIT="$(git -C "$TASK_SOURCE" rev-parse HEAD)"
 
 cp "$TASK_BUNDLE_DIR/start.sh" "$TASK_PORTABLE/start.sh"
+cp "$TASK_BUNDLE_DIR/README.md" "$TASK_PORTABLE/README.md"
 cp -R "$TASK_BUNDLE_DIR/flutter-engine-runner" "$TASK_PORTABLE/flutter-engine-runner"
 cp -R "$TASK_BUNDLE_DIR/工作流文档" "$TASK_PORTABLE/工作流文档"
 mkdir -p "$TASK_PORTABLE/tests"
