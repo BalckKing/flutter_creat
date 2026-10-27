@@ -184,6 +184,8 @@ About 使用由正式 Logo 派生的小尺寸 PNG（通常 128–256 像素，�
 
 背景点缀也是硬门槛：每个页面和交付 HTML/原生启动表面都必须实际显示自己的主题背景图案或纹理，而不是只写入资源目录。每个表面必须在 `.codex-work/ui-visual-gates.json` 登记独立的 `assets/backgrounds/<page_id>/<page_id>_background.*`、至少两个 Logo 派生渐变令牌、至少三个真实 HEX 色值、代码引用和当前 iPhone 截图/录屏。页面之间要有可辨认的图案、纹理、方向或布局差异，不能用同一张背景或一个单一渐变覆盖全项目；缺失、未引用、被不透明容器遮住或只有首页证据时直接阻断视觉验收。
 
+Settings 页最底部的版本文案也是硬门槛：只显示 `项目名称 · 数字版本号`，例如 `ProjectName · 1.2.3`。使用当前 App 的真实版本，`1.2.3+45` 只显示 `1.2.3`；版本不含 `feat`、`release`、分支/渠道、`Version`/`v` 或构建号。规则与最终画面核验见第 7.6、11.3 节。
+
 ## 真实照片素材要求
 
 可通过 Google 图片搜索找到并下载许可适用的原图，也可使用下述素材网站；文件先进入本项目专属 `~/Downloads/<sanitized-project-name>/content/` 暂存区，再复制到当前项目 `assets/`，背景先进入 `~/Downloads/<sanitized-project-name>/backgrounds/<page_id>/`，再复制到 `assets/backgrounds/<page_id>/`；不把公共 Downloads 当项目资源库。不同独立内容展示位使用不同原图，不用改名/裁切图凑数。制作阶段完成下载与打包，App 不运行网络图片加载或首次打开再下载缓存；按本地 key 加载并完成最终构建的断网冷启动/逐图解码检查，避免图片异常卡住页面或崩溃。
