@@ -55,13 +55,23 @@ while (( $# > 0 )); do
   esac
 done
 
-for TASK_REQUIRED in "$TASK_DOC" "$TASK_DOC_MANIFEST" "$TASK_RUNNER_SOURCE/SKILL.md" "$TASK_RUNNER_SOURCE/agents/openai.yaml"; do
+for TASK_REQUIRED in "$TASK_DOC" "$TASK_DOC_MANIFEST" "$TASK_RUNNER_SOURCE/SKILL.md" "$TASK_RUNNER_SOURCE/agents/openai.yaml" "$TASK_RUNNER_SOURCE/scripts/validate_about_copy.py"; do
   if [[ ! -f "$TASK_REQUIRED" ]]; then
     print -u2 -- "资料包不完整，缺少：$TASK_REQUIRED"
     print -u2 -- "请复制整个 Flutter工程 文件夹，不要只复制启动器或 Markdown。"
     exit 1
   fi
 done
+
+TASK_WORKFLOW_INTEGRITY="$TASK_BUNDLE_DIR/tests/test_workflow_integrity.sh"
+if [[ ! -f "$TASK_WORKFLOW_INTEGRITY" || -L "$TASK_WORKFLOW_INTEGRITY" ]]; then
+  print -u2 -- "资料包不完整，缺少工作流完整性检查：$TASK_WORKFLOW_INTEGRITY"
+  exit 1
+fi
+if ! /bin/zsh "$TASK_WORKFLOW_INTEGRITY"; then
+  print -u2 -- "工作流完整性检查失败；未更新技能安装。"
+  exit 1
+fi
 
 # Validate every ordered document before modifying the current installation.
 TASK_DOCUMENTS=()
@@ -114,6 +124,7 @@ trap task_cleanup_staging EXIT
 mkdir -p "$TASK_STAGE/agents" "$TASK_STAGE/references"
 cp "$TASK_RUNNER_SOURCE/SKILL.md" "$TASK_STAGE/SKILL.md"
 cp "$TASK_RUNNER_SOURCE/agents/openai.yaml" "$TASK_STAGE/agents/openai.yaml"
+cp -R "$TASK_RUNNER_SOURCE/scripts" "$TASK_STAGE/scripts"
 cp "$TASK_DOC" "$TASK_STAGE/references/workflow.md"
 cp -R "$TASK_DOCS_DIR" "$TASK_STAGE/references/工作流文档"
 

@@ -45,6 +45,8 @@ TASK_LATEST_COMMIT="$(git -C "$TASK_SOURCE" rev-parse HEAD)"
 cp "$TASK_BUNDLE_DIR/start.sh" "$TASK_PORTABLE/start.sh"
 cp -R "$TASK_BUNDLE_DIR/flutter-engine-runner" "$TASK_PORTABLE/flutter-engine-runner"
 cp -R "$TASK_BUNDLE_DIR/工作流文档" "$TASK_PORTABLE/工作流文档"
+mkdir -p "$TASK_PORTABLE/tests"
+cp "$TASK_BUNDLE_DIR/tests/test_workflow_integrity.sh" "$TASK_PORTABLE/tests/test_workflow_integrity.sh"
 [[ ! -e "$TASK_PORTABLE/ios-app-listing" ]]
 
 FLUTTER_APP_LISTING_REPO="$TASK_REMOTE" FLUTTER_APP_LISTING_FALLBACK="$TASK_TMP/no-local" CODEX_HOME="$TASK_CODEX_HOME" \
@@ -54,6 +56,7 @@ FLUTTER_APP_LISTING_REPO="$TASK_REMOTE" FLUTTER_APP_LISTING_FALLBACK="$TASK_TMP/
 [[ "$(git -C "$TASK_INSTALLED/references/ios-app-listing" branch --show-current)" == "feature/1.2.1-A1" ]]
 [[ "$(git -C "$TASK_INSTALLED/references/ios-app-listing" rev-parse HEAD)" == "$TASK_LATEST_COMMIT" ]]
 [[ "$(git -C "$TASK_INSTALLED/references/ios-app-listing" remote get-url origin)" == "$TASK_REMOTE" ]]
+cmp "$TASK_BUNDLE_DIR/flutter-engine-runner/scripts/validate_about_copy.py" "$TASK_INSTALLED/scripts/validate_about_copy.py"
 
 TASK_INSTALL_OUTPUT="$(FLUTTER_APP_LISTING_REPO="$TASK_TMP/missing.git" FLUTTER_APP_LISTING_FALLBACK="$TASK_TMP/no-local" CODEX_HOME="$TASK_CODEX_HOME" \
   /bin/zsh "$TASK_PORTABLE/start.sh" --install-only --skills-dir "$TASK_TMP/skills" 2>&1)"
@@ -98,6 +101,7 @@ FLUTTER_APP_LISTING_REPO="$TASK_REMOTE" FLUTTER_APP_LISTING_FALLBACK="$TASK_LOCA
 FLUTTER_APP_LISTING_REPO="$TASK_TMP/missing.git" FLUTTER_APP_LISTING_FALLBACK="$TASK_TMP/no-local" CODEX_HOME="$TASK_CODEX_HOME" \
   /bin/zsh "$TASK_PORTABLE/start.sh" --install-only --skills-dir "$TASK_TMP/fresh-skills" >/dev/null 2>&1
 [[ -f "$TASK_TMP/fresh-skills/flutter-engine-runner/SKILL.md" ]]
+cmp "$TASK_BUNDLE_DIR/flutter-engine-runner/scripts/validate_about_copy.py" "$TASK_TMP/fresh-skills/flutter-engine-runner/scripts/validate_about_copy.py"
 [[ ! -e "$TASK_TMP/fresh-skills/flutter-engine-runner/references/ios-app-listing" ]]
 [[ "$(<"$TASK_TMP/fresh-skills/flutter-engine-runner/references/ios-app-listing-source.txt")" == *"mode=contract-fallback"* ]]
 print -r -- "PASS: latest remote, missing/incomplete remote, local fallback without optional validator, recoverable prior install, and fresh contract fallback."
