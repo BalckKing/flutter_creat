@@ -22,6 +22,10 @@ BASIC_LABELS = (
     "Purpose:",
     "Category:",
 )
+TEST_DEVICE_LINES = (
+    "- iPhone 15 Pro, iOS 18.6",
+    "- iPhone 13, iOS 17.7.1",
+)
 PENDING_RE = re.compile(
     r"\b(?:not\s+provided|pending(?:\s+confirmation)?|to\s+be\s+confirmed|"
     r"awaiting\s+confirmation|unconfirmed|unknown)\b",
@@ -84,15 +88,20 @@ def validate(path: Path) -> list[str]:
     first_body = text[sections[0][1]:sections[0][2]].split('\n', 1)[1].strip()
     if first_body != "- iPhone 17 Pro Max, iOS 26.5":
         findings.append("Actual Device must be exactly '- iPhone 17 Pro Max, iOS 26.5'")
+    test_body = text[sections[1][1]:sections[1][2]].split('\n', 1)[1].strip()
+    test_lines = [line.strip() for line in test_body.splitlines() if line.strip()]
+    if test_lines[:2] != list(TEST_DEVICE_LINES):
+        findings.append("Test Devices must start with the two exact bullets in order: "
+                        + '; '.join(TEST_DEVICE_LINES))
+    if (len(re.findall(r"\biPhone\b", test_body, re.IGNORECASE)) != 2
+            or len(re.findall(r"\biOS\b", test_body, re.IGNORECASE)) != 2):
+        findings.append("Test Devices must list only the two specified iPhone/iOS configurations, once each")
     regional_body = text[sections[5][1]:sections[5][2]].split('\n', 1)[1].strip()
     if regional_body != "- All regions are the same.":
         findings.append("Regional Differences must be exactly '- All regions are the same.'")
 
     for index, (_, start, end) in enumerate(sections, start=1):
         body = text[start:end]
-        if index == 2 and not body.split('\n', 1)[1].strip():
-            # Unknown device records are omitted from the public artifact.
-            continue
         if index == 4:
             if not re.search(r"^\s*\d+\.\s+\S", body, re.MULTILINE):
                 findings.append("Setup Steps must use an ordered list")

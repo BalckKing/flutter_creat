@@ -12,6 +12,49 @@ SPEC.loader.exec_module(MODULE)
 
 
 class VisualImplementationContractTests(unittest.TestCase):
+    def test_dart_welcome_and_delivery_only_html_are_accepted(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "lib").mkdir()
+            welcome = root / "lib/welcome.dart"
+            welcome.write_text("class WelcomePage extends StatelessWidget { final cards = PageView(); }", encoding="utf-8")
+            (root / "aduit").mkdir()
+            (root / "aduit/welcome.html").write_text("<html>Standalone delivery</html>", encoding="utf-8")
+            (root / "lib/policy_page.dart").write_text(
+                "class PolicyPage { final view = WebViewWidget(); "
+                "final rawUrl = 'https://example.invalid/aduit/PrivacyPolicy.html'; }", encoding="utf-8"
+            )
+            self.assertEqual(MODULE.validate_welcome_source(root), [])
+            self.assertIn(welcome, MODULE.page_files([welcome]))
+
+    def test_welcome_migration_rejects_wrappers_scrollers_and_stale_assets(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "lib").mkdir()
+            welcome = root / "lib/welcome.dart"
+            self.assertTrue(MODULE.validate_welcome_source(root))
+            for token in ("WebViewWidget()", "HtmlWidget()", "AppBridge", "SingleChildScrollView()", "ListView()"):
+                with self.subTest(token=token):
+                    welcome.write_text("class WelcomePage {} " + token, encoding="utf-8")
+                    self.assertTrue(MODULE.validate_welcome_source(root))
+            welcome.write_text("class WelcomePage {}", encoding="utf-8")
+            pubspec = root / "pubspec.yaml"
+            pubspec.write_text("flutter: {assets: [aduit/welcome.html]}", encoding="utf-8")
+            self.assertTrue(any("runtime source" in item for item in MODULE.validate_welcome_source(root)))
+            pubspec.unlink()
+            legacy = root / "welcome.html"
+            legacy.write_text("old", encoding="utf-8")
+            self.assertTrue(any("obsolete Welcome" in item for item in MODULE.validate_welcome_source(root)))
+
+    def test_welcome_is_a_required_visual_surface(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "lib").mkdir()
+            (root / "lib/welcome.dart").write_text("class WelcomePage {}", encoding="utf-8")
+            (root / ".codex-work").mkdir()
+            (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps({"build": {"id": "1", "device": "iPhone 17 Pro Max", "os": "iOS 26.5"}, "surfaces": [], "checks": []}), encoding="utf-8")
+            self.assertIn("visual surface is not inventoried: lib/welcome.dart", MODULE.validate_visual_ledger(root))
+
     def test_alternative_theme_directory_cannot_replace_fixed_brand_entry(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -92,16 +135,51 @@ class VisualImplementationContractTests(unittest.TestCase):
                             "implementation": ["lib/page_module/home_page.dart"],
                             "evidence": [".codex-work/home.png"], "result": "Observed on the recorded build."}
                            for gate in ("brand_palette", "gradients", "typography", "particles", "motion",
-                                        "backgrounds", "decoration", "media", "content", "layout", "controls", "states",
+                                        "backgrounds", "decoration", "icons", "emoji", "text_density", "media", "content", "layout", "controls", "states",
                                         "appearance", "accessibility", "launch_flow", "app_icon", "html", "refinement")]
             }), encoding="utf-8")
             self.assertEqual(MODULE.validate_visual_ledger(root), [])
 
             ledger_path = evidence / "ui-visual-gates.json"
             ledger = json.loads(ledger_path.read_text())
-            ledger["checks"] = [row for row in ledger["checks"] if row["id"] != "decoration"]
+            for gate in ("decoration", "icons", "emoji", "text_density"):
+                with self.subTest(missing_gate=gate):
+                    incomplete = dict(ledger, checks=[row for row in ledger["checks"] if row["id"] != gate])
+                    ledger_path.write_text(json.dumps(incomplete))
+                    self.assertIn(f"missing visual gate: {gate}", MODULE.validate_visual_ledger(root))
+            for gate in ("icons", "emoji", "text_density"):
+                with self.subTest(uncovered_gate=gate):
+                    incomplete = dict(ledger, checks=[dict(row, targets=[]) if row["id"] == gate else row
+                                                    for row in ledger["checks"]])
+                    ledger_path.write_text(json.dumps(incomplete))
+                    self.assertIn(f"{gate}: surface has no acceptance result: home", MODULE.validate_visual_ledger(root))
+
+            # The independent HTML is a second representation of the same
+            # Welcome UI, not a different runtime page requiring another image.
+            welcome_background = root / "assets/backgrounds/welcome/welcome_background.png"
+            welcome_background.parent.mkdir(parents=True)
+            welcome_background.write_bytes(b"distinct-welcome-background")
+            (root / "lib/welcome.dart").write_text(
+                "class WelcomePage {} const bg = 'welcome_background.png';", encoding="utf-8"
+            )
+            (root / "aduit").mkdir()
+            (root / "aduit/welcome.html").write_text(
+                '<img src="data:image/png;base64,aGVsbG8=">', encoding="utf-8"
+            )
+            for kind, surface_id, source in (("html", "welcome_html", "aduit/welcome.html"),
+                                             ("flutter", "welcome", "lib/welcome.dart")):
+                ledger["surfaces"].append({
+                    "id": surface_id, "kind": kind, "source": source,
+                    "background": {
+                        "asset": "assets/backgrounds/welcome/welcome_background.png",
+                        "gradient_tokens": ["welcomeGradient", "accentGradient"],
+                        "palette_hex": ["#F05A3C", "#FFB347", "#6F2DBD"],
+                    },
+                })
+                for row in ledger["checks"]:
+                    row["targets"].append(surface_id)
             ledger_path.write_text(json.dumps(ledger))
-            self.assertTrue(any("decoration" in item for item in MODULE.validate_visual_ledger(root)))
+            self.assertEqual(MODULE.validate_visual_ledger(root), [])
 
     def test_visual_ledger_rejects_uncovered_pages_and_missing_evidence(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -142,7 +220,7 @@ class VisualImplementationContractTests(unittest.TestCase):
                        "implementation": ["lib/page_module/home_page.dart"],
                        "evidence": [".codex-work/screen.png"], "result": "Observed."}
                       for gate in ("brand_palette", "gradients", "typography", "particles", "motion",
-                                   "backgrounds", "decoration", "media", "content", "layout", "controls", "states",
+                                   "backgrounds", "decoration", "icons", "emoji", "text_density", "media", "content", "layout", "controls", "states",
                                    "appearance", "accessibility", "launch_flow", "app_icon", "html", "refinement")]
             ledger = {"build": {"id": "1", "device": "iPhone 17 Pro Max", "os": "iOS 26.5"},
                       "surfaces": surfaces, "checks": checks}

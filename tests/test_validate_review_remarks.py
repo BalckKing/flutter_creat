@@ -25,8 +25,8 @@ Other submission details: Local content only.
 - iPhone 17 Pro Max, iOS 26.5
 
 ## 2. Test Devices and Operating Systems
-- iPhone 15 Pro, iOS 18.6 completed launch and core-flow checks.
-- iPhone 13, iOS 17.7.1 completed launch and core-flow checks.
+- iPhone 15 Pro, iOS 18.6
+- iPhone 13, iOS 17.7.1
 
 ## 3. App Purpose, Intended Audience, and Problem Solved
 - The app helps readers organize verified production observations.
@@ -88,17 +88,44 @@ class ReviewRemarksChecks(unittest.TestCase):
         result = self.run_check(bad)
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
 
-    def test_omits_unknown_basic_fields_and_device_records(self):
+    def test_omits_unknown_basic_fields_but_keeps_specified_devices(self):
         text = CLEAN.replace('Other submission details: Local content only.\n', '')
         text = text.replace('Billing: No such feature\n', '')
-        text = text.replace('- iPhone 15 Pro, iOS 18.6 completed launch and core-flow checks.\n', '')
-        text = text.replace('- iPhone 13, iOS 17.7.1 completed launch and core-flow checks.\n', '')
         result = self.run_check(text)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_rejects_missing_replaced_duplicate_extra_or_reordered_devices(self):
+        devices = '- iPhone 15 Pro, iOS 18.6\n- iPhone 13, iOS 17.7.1'
+        for replacement in (
+            '',
+            '- iPhone 15 Pro, iOS 18.6',
+            '- iPhone 13, iOS 17.7.1',
+            devices.replace('iPhone 13', 'iPhone 16'),
+            devices.replace('iOS 18.6', 'iOS 18.7'),
+            devices.replace('iPhone 13, iOS 17.7.1', 'iPhone 15 Pro, iOS 18.6'),
+            devices + '\n- iPhone 17 Pro Max, iOS 26.5',
+            '- iPhone 13, iOS 17.7.1\n- iPhone 15 Pro, iOS 18.6',
+            devices + '\n- Also checked on iphone 16, ios 18.6.',
+        ):
+            with self.subTest(devices=replacement):
+                result = self.run_check(CLEAN.replace(devices, replacement))
+                self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+                self.assertIn('Test Devices', result.stdout)
+
+    def test_accepts_separate_verified_test_scope_after_device_bullets(self):
+        source = CLEAN.replace(
+            '- iPhone 13, iOS 17.7.1',
+            '- iPhone 13, iOS 17.7.1\n- Verified scope: launch and core navigation.',
+        )
+        result = self.run_check(source)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_does_not_accept_other_text_in_fixed_sections(self):
         for text in (
             CLEAN.replace('- All regions are the same.', '- All regions are the same. Except for different prices.'),
+            CLEAN.replace('- iPhone 17 Pro Max, iOS 26.5', ''),
+            CLEAN.replace('- iPhone 17 Pro Max, iOS 26.5', '- iPhone 15 Pro, iOS 18.6'),
+            CLEAN.replace('- iPhone 17 Pro Max, iOS 26.5', '- iPhone 17 Pro Max, iOS 25.6'),
             CLEAN.replace('- iPhone 17 Pro Max, iOS 26.5', '- iPhone 17 Pro Max, iOS 26.5\n- iPhone 16, iOS 18.6'),
             CLEAN.replace('Account: No such feature', 'Account: No such feature **'),
         ):

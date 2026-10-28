@@ -10,6 +10,7 @@ typeset -a TASK_CHECKS=(
   "$TASK_ROOT/tests/test_validate_visual_implementation.py"
   "$TASK_ROOT/tests/test_validate_review_remarks.py"
   "$TASK_ROOT/tests/test_validate_public_copy.py"
+  "$TASK_ROOT/tests/test_validate_path_names.py"
   "$TASK_ROOT/tests/test_start_remote_listing.sh"
   "$TASK_ROOT/tests/test_validate_about_copy.py"
 )

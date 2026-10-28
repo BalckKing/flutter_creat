@@ -119,6 +119,31 @@ require_text "$TASK_CONVENTIONS" '共 12 张、每任务 1 张'
 require_text "$TASK_CONVENTIONS" '旧的总共 1 张或 5 张不再适用'
 require_text "$TASK_DOCS_DIR/00-总入口.md" '0\.12.*历史要求'
 require_text "$TASK_README" '0\.12.*历史要求'
+
+# Product depth must stay connected from the approved plan to observed delivery;
+# do not let the older small seed-data floor become the completion target.
+TASK_PRODUCT="$TASK_DOCS_DIR/03-产品定义与导航.md"
+TASK_PLANNING="$TASK_DOCS_DIR/02-创意与思维导图.md"
+require_text "$TASK_PRODUCT" '^### 4\.3 产品规模与深度表（硬门槛）'
+require_text "$TASK_PRODUCT" '80–150 条总量'
+require_text "$TASK_PRODUCT" '参考范围不是所有产品的统一数量硬门槛'
+require_text "$TASK_PRODUCT" '计划目标.*实际实现.*实际验证.*证据'
+require_text "$TASK_PRODUCT" '未接入可达页面.*不计入交付数量'
+require_text "$TASK_PLANNING" '^### 3\.2\.1 产品规模与深度映射'
+require_text "$TASK_PLANNING" '产品规模与深度表.*同一轮.*整体确认'
+require_text "$TASK_PLANNING" '检查产品规模与深度'
+require_text "$TASK_QA" '产品规模与深度逐项验收'
+require_text "$TASK_QA" '计划目标 / 实际实现 / 实际验证 / 缺口'
+require_text "$TASK_ORDER" '^2\. .*产品规模与深度表'
+require_text "$TASK_ORDER" '^3\. .*产品规模与深度表'
+require_text "$TASK_ORDER" '^16\. .*产品规模与深度'
+require_text "$TASK_RUNNER" 'Product scale and depth'
+require_text "$TASK_RUNNER" 'section 4\.3'
+require_text "$TASK_CONVENTIONS" '产品规模与深度表'
+require_text "$TASK_README" '产品规模与深度表'
+forbid_text "$TASK_PRODUCT" '至少覆盖三个有实际差异的主题分类|每类至少八条|至少提供三个实用工作流|至少提供三个有不同用户结果'
+forbid_text "$TASK_QA" '至少三个不同结果的完整任务'
+
 forbid_text "$TASK_DOCS_DIR/02-创意与思维导图.md" '清除成功后返回 Welcome|清除成功.*返回欢迎页'
 require_text "$TASK_DOCS_DIR/06-素材与真实照片.md" '之后仍须执行第 11\.6 节最终 iOS 权限双向校验'
 
@@ -167,6 +192,7 @@ require_text "$TASK_RUNNER" 'Apple 4\.3 and 5\.6 release gate'
 require_file "$TASK_ROOT/flutter-engine-runner/scripts/validate_visual_implementation.py"
 require_file "$TASK_ROOT/flutter-engine-runner/scripts/validate_review_remarks.py"
 require_file "$TASK_ROOT/flutter-engine-runner/scripts/validate_public_copy.py"
+require_file "$TASK_ROOT/flutter-engine-runner/scripts/validate_path_names.py"
 require_text "$TASK_RUNNER" 'Release readiness: Blocked'
 require_text "$TASK_RUNNER" 'Delete every unknown, unconfirmed, pending, or not-provided field'
 require_text "$TASK_RUNNER" 'Background variety is an explicit hard gate'
@@ -176,18 +202,29 @@ require_text "$TASK_README" '背景点缀也是硬门槛'
 require_text "$TASK_README" '至少两个 Logo 派生渐变令牌'
 require_text "$TASK_README" 'validate_public_copy\.py'
 
+# One reusable App installation must not bypass updates or runtime evidence.
+require_text "$TASK_DOCS_DIR/01-执行约定.md" '^### 0\.9\.1 测试安装与构建产物复用'
+require_text "$TASK_DOCS_DIR/01-执行约定.md" '增量构建并覆盖安装同一 Bundle ID'
+require_text "$TASK_DOCS_DIR/07-测试与质量验收.md" '稳定输出目录、单一串行 runner'
+require_text "$TASK_ORDER" '验证复用贯穿第 6–20 步'
+require_text "$TASK_RUNNER" 'Unchanged builds need no reinstall'
+require_text "$TASK_RUNNER" 'incrementally rebuild and overwrite the same installation'
+require_text "$TASK_RUNNER" 'at most one necessary rollback artifact'
+require_text "$TASK_README" '验证复用是硬门槛'
+
 require_before '^17\. ' '^18\. \*\*验收首页引导页'
 require_before '^18\. \*\*验收首页引导页' '^19\. \*\*最终图片加载检查'
 require_before '^19\. \*\*最终图片加载检查' '^20\. \*\*最终 iOS 权限校验'
 require_text "$TASK_ORDER" '首页引导页完成验收尝试并记录结果后.*生成不超过 4,000 字符的全英文'
 require_text "$TASK_ORDER" '第 19 步之后、最终报告之前.*全部适用项完成后才提交最终报告'
-require_text "$TASK_ORDER" '每个 Flutter 页面、根目录 `welcome.html`、四个 About HTML 页面和原生 Launch Screen.*独立背景图案'
+require_text "$TASK_ORDER" '每个 Flutter 页面.*lib/welcome.*独立.*aduit/welcome.*四个 About HTML 页面和原生 Launch Screen.*独立背景图案'
 
 require_text "$TASK_START" 'TASK_DOC_MANIFEST'
 require_text "$TASK_START" 'TASK_RUNNER_SOURCE/scripts/validate_about_copy.py'
 require_text "$TASK_START" 'TASK_RUNNER_SOURCE/scripts/validate_visual_implementation.py'
 require_text "$TASK_START" 'TASK_RUNNER_SOURCE/scripts/validate_review_remarks.py'
 require_text "$TASK_START" 'TASK_RUNNER_SOURCE/scripts/validate_public_copy.py'
+require_text "$TASK_START" 'TASK_RUNNER_SOURCE/scripts/validate_path_names.py'
 require_text "$TASK_START" 'TASK_DOCUMENTS'
 
 task_execution_step_count() {

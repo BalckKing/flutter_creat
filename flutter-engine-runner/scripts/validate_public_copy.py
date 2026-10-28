@@ -68,7 +68,7 @@ def validate(root: Path) -> list[str]:
     if not (root / "lib").is_dir():
         return [f"{root}: missing Flutter lib directory; public copy was not scanned"]
     files = list((root / "lib").rglob("*.dart")) if (root / "lib").exists() else []
-    files += [root / "welcome.html"]
+    files += [root / "aduit/welcome.html"]
     site = root / "aduit" / "site"
     if site.exists():
         files += list(site.glob("*.html"))

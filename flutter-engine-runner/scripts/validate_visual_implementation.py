@@ -34,16 +34,50 @@ def require(pattern, text, label, findings):
 
 
 def page_files(files):
-    return [path for path in files if "page" in path.name.lower() or "page_module" in path.parts]
+    return [path for path in files if "page" in path.name.lower()
+            or "page_module" in path.parts or path.name == "welcome.dart"]
+
+
+def validate_welcome_source(root: Path):
+    """Check the Dart/HTML boundary; runtime layout still needs verification."""
+    findings = []
+    welcome = root / "lib/welcome.dart"
+    if not welcome.is_file() or welcome.is_symlink():
+        findings.append("missing regular Welcome source lib/welcome.dart")
+    else:
+        source = welcome.read_text(encoding="utf-8", errors="replace")
+        require(r"\bclass\s+WelcomePage\b", source,
+                "lib/welcome.dart must define WelcomePage", findings)
+        if re.search(r"WebView|HtmlWidget|loadHtmlString|AppBridge|go://continue", source):
+            findings.append("Welcome must use Flutter Widgets and direct Dart navigation, not HTML or a web bridge")
+        if re.search(r"\b(?:SingleChildScrollView|ListView|CustomScrollView|NestedScrollView)\b"
+                     r"|scrollDirection\s*:\s*Axis\.vertical", source):
+            findings.append("Welcome must not contain a vertical scrolling layout; use responsive non-scrolling content and horizontal cards")
+    for relative in ("welcome.html", "enter.html", "aduit/enter.html"):
+        path = root / relative
+        if path.exists() or path.is_symlink():
+            findings.append(f"obsolete Welcome HTML path: {relative}; preserve standalone HTML only at aduit/welcome.html")
+    runtime_files = list((root / "lib").rglob("*.dart"))
+    runtime_files += [root / "pubspec.yaml"]
+    for path in runtime_files:
+        if not path.is_file():
+            continue
+        source = path.read_text(encoding="utf-8", errors="replace")
+        # Preserve the four raw policy URLs even if their server paths contain
+        # a delivery directory name. A web URL is not an asset filesystem path.
+        source = re.sub(r"https?://[^\s\x22\x27<>]+", "", source)
+        if re.search(r"(?:welcome|enter)\.html|aduit[/\\]", source, re.IGNORECASE):
+            findings.append(f"runtime source must not reference delivery HTML or aduit paths: {path.relative_to(root)}")
+    return findings
 
 
 VISUAL_GATES = {
     "brand_palette", "gradients", "typography", "particles", "motion",
-    "backgrounds", "decoration", "media", "content", "layout", "controls", "states",
+    "backgrounds", "decoration", "icons", "emoji", "text_density", "media", "content", "layout", "controls", "states",
     "appearance", "accessibility", "launch_flow", "app_icon", "html", "refinement",
 }
 PAGE_GATES = {
-    "brand_palette", "gradients", "typography", "backgrounds", "decoration", "media", "content",
+    "brand_palette", "gradients", "typography", "backgrounds", "decoration", "icons", "emoji", "text_density", "media", "content",
     "layout", "controls", "states", "appearance", "accessibility",
 }
 MEDIA_EXTENSIONS = {".png", ".jpg", ".jpeg", ".heic", ".mp4", ".mov"}
@@ -103,6 +137,7 @@ def validate_visual_ledger(root: Path):
     background_hashes = {}
     background_signatures = set()
     page_ids = set()
+    runtime_page_ids = set()
     for surface in surfaces:
         if not isinstance(surface, dict) or not isinstance(surface.get("id"), str) or not surface["id"].strip():
             findings.append("each visual surface needs a nonempty id")
@@ -118,6 +153,11 @@ def validate_visual_ledger(root: Path):
         path = local_file(surface.get("source"), f"surface {surface_id}")
         if path:
             recorded_sources.add(path)
+        standalone_welcome = bool(path and path == root / "aduit/welcome.html"
+                                  and surface.get("kind") == "html")
+
+        if surface.get("kind") in {"flutter", "html"} and not standalone_welcome:
+            runtime_page_ids.add(surface_id)
 
         background = surface.get("background")
         if not isinstance(background, dict):
@@ -128,20 +168,22 @@ def validate_visual_ledger(root: Path):
         if background_path:
             if background_path.suffix.lower() not in IMAGE_EXTENSIONS:
                 findings.append(f"{surface_id}: background asset is not an image: {background_asset}")
-            if background_path in background_assets:
+            if background_path in background_assets and not standalone_welcome:
                 findings.append(f"{surface_id}: background asset is reused by another surface: {background_asset}")
-            background_assets.add(background_path)
+            if not standalone_welcome:
+                background_assets.add(background_path)
             digest = hashlib.sha256(background_path.read_bytes()).hexdigest()
             previous_surface = background_hashes.get(digest)
-            if previous_surface:
+            if previous_surface and not standalone_welcome:
                 findings.append(
                     f"{surface_id}: background bytes duplicate surface {previous_surface}; "
                     "each surface needs its own decoration"
                 )
-            else:
+            elif not standalone_welcome:
                 background_hashes[digest] = surface_id
             if surface.get("kind") in {"flutter", "html"}:
-                expected_prefix = f"assets/backgrounds/{surface_id}/{surface_id}_background"
+                background_id = "welcome" if standalone_welcome else surface_id
+                expected_prefix = f"assets/backgrounds/{background_id}/{background_id}_background"
                 if not str(background_asset).replace("\\", "/").startswith(expected_prefix):
                     findings.append(
                         f"{surface_id}: background asset must be page-specific under "
@@ -158,7 +200,7 @@ def validate_visual_ledger(root: Path):
         )
         if not valid_hex:
             findings.append(f"{surface_id}: background needs at least three valid Logo-derived HEX colors")
-        if isinstance(gradient_tokens, list) and isinstance(palette_hex, list):
+        if not standalone_welcome and isinstance(gradient_tokens, list) and isinstance(palette_hex, list):
             background_signatures.add((tuple(sorted(set(gradient_tokens))), tuple(sorted(set(palette_hex)))))
         if path and background_asset:
             source = path.read_text(encoding="utf-8", errors="replace")
@@ -171,7 +213,7 @@ def validate_visual_ledger(root: Path):
             if not source_has_reference:
                 findings.append(f"{surface_id}: source does not reference its background asset")
 
-    if len(page_ids) > 1 and len(background_signatures) == 1:
+    if len(runtime_page_ids) > 1 and len(background_signatures) == 1:
         findings.append("all visual surfaces use one identical background palette/gradient signature")
 
     dart_files, _ = read_dart_files(root)
@@ -180,7 +222,7 @@ def validate_visual_ledger(root: Path):
     expected_sources = [path for path in page_files(dart_files) if re.search(
         r"\bclass\s+\w*(?:Page|Screen)\b", path.read_text(encoding="utf-8", errors="replace")
     )]
-    expected_sources += [root / "welcome.html"] if (root / "welcome.html").is_file() else []
+    expected_sources += [root / "aduit/welcome.html"] if (root / "aduit/welcome.html").is_file() else []
     expected_sources += list((root / "aduit/site").glob("*.html"))
     expected_sources += list((root / "ios").glob("**/LaunchScreen.storyboard"))
     for path in expected_sources:
@@ -246,7 +288,7 @@ def validate(root: Path):
         return [error]
 
     all_dart = joined(files)
-    findings = []
+    findings = validate_welcome_source(root)
 
     # Particle implementation must be real code, not a mention in a plan.
     require(r"\bAnimationController\b", all_dart, "missing AnimationController", findings)

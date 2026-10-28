@@ -55,7 +55,7 @@ while (( $# > 0 )); do
   esac
 done
 
-for TASK_REQUIRED in "$TASK_DOC" "$TASK_DOC_MANIFEST" "$TASK_RUNNER_SOURCE/SKILL.md" "$TASK_RUNNER_SOURCE/agents/openai.yaml" "$TASK_RUNNER_SOURCE/scripts/validate_about_copy.py" "$TASK_RUNNER_SOURCE/scripts/validate_visual_implementation.py" "$TASK_RUNNER_SOURCE/scripts/validate_review_remarks.py" "$TASK_RUNNER_SOURCE/scripts/validate_public_copy.py"; do
+for TASK_REQUIRED in "$TASK_DOC" "$TASK_DOC_MANIFEST" "$TASK_RUNNER_SOURCE/SKILL.md" "$TASK_RUNNER_SOURCE/agents/openai.yaml" "$TASK_RUNNER_SOURCE/scripts/validate_about_copy.py" "$TASK_RUNNER_SOURCE/scripts/validate_visual_implementation.py" "$TASK_RUNNER_SOURCE/scripts/validate_review_remarks.py" "$TASK_RUNNER_SOURCE/scripts/validate_public_copy.py" "$TASK_RUNNER_SOURCE/scripts/validate_path_names.py"; do
   if [[ ! -f "$TASK_REQUIRED" ]]; then
     print -u2 -- "资料包不完整，缺少：$TASK_REQUIRED"
     print -u2 -- "请复制整个 Flutter工程 文件夹，不要只复制启动器或 Markdown。"
