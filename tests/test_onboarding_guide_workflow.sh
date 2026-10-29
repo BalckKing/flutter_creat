@@ -117,6 +117,16 @@ task_require "$TASK_README" 'iOS 原生启动页.*欢迎页.*初始化页'
 task_require "$TASK_README" '欢迎页.*不显示.*协议文本.*初始化页.*底部'
 task_require "$TASK_README" '任何 AI 生成图都不得采用简约线条.*纯色块堆叠'
 task_require "$TASK_README" 'AnimationController.*CustomPainter'
+task_require "$TASK_VISUAL" '^### 6\.14 主题化复杂动画与动态场景（硬门槛）'
+task_require "$TASK_VISUAL" '纯色几何形状沿直线平移'
+task_require "$TASK_VISUAL" '每个 App 自有 Flutter 页面.*至少两个'
+for task_motion_tool in Rive Flame flutter_animate Lottie animator simple_animations FragmentProgram confetti particle_field particles_flutter shimmer liquid_swipe page_transition glassmorphism motion_tab_bar animated_text_kit flame_forge2d three_dart fl_chart CustomPainter PathMetric BlendMode BackdropFilter Ticker AnimationController Curves Matrix4; do
+  task_require "$TASK_VISUAL" "$task_motion_tool"
+done
+task_require "$TASK_VISUAL" '动画前、进行中、结束/完成'
+task_require "$TASK_QA" '复杂动态场景逐页验收'
+task_require "$TASK_SKILL" 'Never construct animation or dynamic effects from solid color blocks'
+task_require "$TASK_SKILL" 'Verify each exact package'
 task_require "$TASK_README" 'onTapUp'
 task_require "$TASK_README" '至少三种有意且可复用的字体风格'
 task_require "$TASK_README" 'assets/logo\.png.*common_module/theme/app_theme\.dart'

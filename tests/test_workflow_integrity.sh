@@ -174,10 +174,27 @@ require_text "$TASK_PLANNING" '工期无限制.*不触发硬件升级'
 require_text "$TASK_PLANNING" '只有高端设备或模拟器时不能据此声称中端真机达标'
 forbid_text "$TASK_RUNNER" 'Treat top-tier high-end iPhone hardware as the baseline'
 require_text "$TASK_QA" '性能与功能目标水平逐项验收'
+require_text "$TASK_QA" '动画前.*进行中.*结束状态'
 require_text "$TASK_ORDER" '目标水平 / 实际实现 / 实际验证 / 缺口'
 for task_input_entry in "$TASK_START" "$TASK_ROOT/flutter-engine-runner/agents/openai.yaml" "$TASK_README"; do
   require_text "$task_input_entry" '性能与功能目标水平'
 done
+
+# Motion is a visual hard gate: reject slide-deck block motion and require
+# theme-specific multi-layer animation plans, implementation and runtime proof.
+require_text "$TASK_DOCS_DIR/04-视觉与页面功能.md" '^### 6\.14 主题化复杂动画与动态场景（硬门槛）'
+require_text "$TASK_DOCS_DIR/04-视觉与页面功能.md" '每个 App 页面至少两个可见且不同的动态元素'
+require_text "$TASK_DOCS_DIR/04-视觉与页面功能.md" '纯色块拼凑的动画和动态效果绝对禁止'
+require_text "$TASK_DOCS_DIR/04-视觉与页面功能.md" '效果提示词公式'
+for task_motion_tool in Rive Flame flutter_animate Lottie animator simple_animations FragmentProgram confetti particle_field particles_flutter shimmer liquid_swipe page_transition glassmorphism motion_tab_bar animated_text_kit flame_forge2d three_dart fl_chart CustomPainter PathMetric BlendMode BackdropFilter Ticker AnimationController Curves Matrix4; do
+  require_text "$TASK_DOCS_DIR/04-视觉与页面功能.md" "$task_motion_tool"
+done
+require_text "$TASK_DOCS_DIR/04-视觉与页面功能.md" 'Native Launch Screen 为系统静态例外'
+require_text "$TASK_QA" '复杂动态场景逐页验收'
+require_text "$TASK_QA" '动画前.*进行中.*结束状态'
+require_text "$TASK_RUNNER" 'Never construct animation or dynamic effects from solid color blocks'
+require_text "$TASK_RUNNER" 'At least two distinct visible dynamic elements on every App-owned screen'
+require_text "$TASK_README" '纯色块.*动画.*绝对禁止'
 
 # Every logical page must have separate, detailed planning artifacts that are
 # consumed during implementation and checked again at delivery.
