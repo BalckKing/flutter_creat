@@ -82,6 +82,77 @@ PAGE_GATES = {
 }
 MEDIA_EXTENSIONS = {".png", ".jpg", ".jpeg", ".heic", ".mp4", ".mov"}
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".heic", ".webp"}
+LAYOUT_AXES = (
+    "composition", "region_order", "media_structure", "content_structure",
+    "action_structure", "navigation_structure",
+)
+
+
+def validate_layout_diversity(surfaces, history=()):
+    """Reject missing/near-identical structural records; screenshots need review."""
+    findings = []
+
+    def signature(row, label):
+        layout = row.get("layout")
+        if not isinstance(layout, dict):
+            findings.append(f"{label}: missing layout record")
+            return None
+        values = []
+        for axis in LAYOUT_AXES:
+            value = layout.get(axis)
+            parts = value if axis == "region_order" else [value]
+            if not isinstance(parts, list) or not parts or any(
+                not isinstance(part, str) or not part.strip() for part in parts
+            ):
+                findings.append(f"{label}: invalid layout axis {axis}")
+                return None
+            normalized = tuple(re.sub(r"[\W_]+", "_", part.casefold()).strip("_") for part in parts)
+            if not all(normalized):
+                findings.append(f"{label}: empty layout axis {axis}")
+                return None
+            values.append(normalized)
+        return tuple(values)
+
+    valid_rows = [row for row in surfaces if isinstance(row, dict)
+                  and isinstance(row.get("id"), str) and row["id"].strip()]
+    by_id = {row["id"]: row for row in valid_rows}
+    current = []
+    for row in valid_rows:
+        label = str(row["id"])
+        value = signature(row, label)
+        alias = row.get("same_layout_as")
+        if alias is not None:
+            target = by_id.get(alias) if isinstance(alias, str) else None
+            allowed = bool(target and (
+                (row.get("kind") == "html" and row.get("source") == "aduit/welcome.html"
+                 and target.get("kind") == "flutter" and target.get("source") == "lib/welcome.dart")
+                or (row.get("kind") == target.get("kind") == "native"
+                    and row.get("role") == "native_cover" and target.get("role") == "native_launch")
+            ))
+            if not allowed or target.get("same_layout_as") is not None:
+                findings.append(f"{label}: invalid same_layout_as representation")
+            elif value != signature(target, str(alias)):
+                findings.append(f"{label}: representation layout differs from {alias}")
+            continue
+        if value:
+            current.append((label, value))
+
+    previous = []
+    for row in history:
+        if not isinstance(row, dict) or not isinstance(row.get("project"), str) or not row["project"].strip():
+            findings.append("invalid layout history project record")
+            continue
+        label = f"history {row['project']}/{row.get('id', '?')}"
+        value = signature(row, label)
+        if value:
+            previous.append((label, value))
+
+    for index, (label, value) in enumerate(current):
+        for other_label, other_value in current[:index] + previous:
+            difference = sum(left != right for left, right in zip(value, other_value))
+            if difference < 3:
+                findings.append(f"{label}: insufficient structural difference from {other_label} ({difference}/6 axes; need 3)")
+    return findings
 
 
 def is_within(path: Path, root: Path) -> bool:
@@ -131,6 +202,22 @@ def validate_visual_ledger(root: Path):
     if not isinstance(surfaces, list) or not surfaces:
         findings.append("visual ledger needs a nonempty surfaces list")
         surfaces = []
+    history = ledger.get("layout_history")
+    records = []
+    if (not isinstance(history, dict) or not isinstance(history.get("scope"), str)
+            or history["scope"] not in {"available_records", "first_record", "unavailable"}):
+        findings.append("missing layout_history scope and records")
+    elif not isinstance(history.get("records"), list):
+        findings.append("layout_history records must be a list")
+    else:
+        records = history["records"]
+        if history["scope"] == "unavailable":
+            findings.append("cross-project layout comparison is not verified")
+        if history["scope"] == "available_records" and not records:
+            findings.append("available layout history must contain records")
+        if history["scope"] == "first_record" and records:
+            findings.append("first_record layout history cannot contain prior records")
+    findings.extend(validate_layout_diversity(surfaces, records))
     surface_ids = set()
     recorded_sources = set()
     background_assets = set()

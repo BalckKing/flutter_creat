@@ -12,6 +12,62 @@ SPEC.loader.exec_module(MODULE)
 
 
 class VisualImplementationContractTests(unittest.TestCase):
+    def layout_record(self, variant=0):
+        if variant == 0:
+            return {
+                "composition": "editorial_split", "region_order": ["summary", "feature", "collection"],
+                "media_structure": "inset_landscape", "content_structure": "chapter_rails",
+                "action_structure": "inline_contextual", "navigation_structure": "section_index",
+            }
+        return {
+            "composition": "layered_task_canvas", "region_order": ["workspace", "result", "controls"],
+            "media_structure": "annotated_subject", "content_structure": "process_stages",
+            "action_structure": "docked_tools", "navigation_structure": "contextual_return",
+        }
+
+    def test_layout_records_require_structural_dimensions(self):
+        findings = MODULE.validate_layout_diversity([{"id": "home", "kind": "flutter"}])
+        self.assertTrue(any("layout record" in item for item in findings))
+
+    def test_layout_rejects_reskins_and_minor_structural_changes(self):
+        first = {"id": "home", "kind": "flutter", "layout": self.layout_record()}
+        second = {"id": "explore", "kind": "flutter", "layout": dict(self.layout_record(),
+                  composition="  EDITORIAL-SPLIT  ", color="orange", title="Different")}
+        self.assertTrue(any("insufficient structural difference" in item
+                            for item in MODULE.validate_layout_diversity([first, second])))
+        second["layout"]["composition"] = "masonry_gallery"
+        second["layout"]["media_structure"] = "portrait_tiles"
+        self.assertTrue(MODULE.validate_layout_diversity([first, second]))
+
+    def test_layout_accepts_distinct_pages_and_checks_previous_projects(self):
+        surfaces = [{"id": "home", "kind": "flutter", "layout": self.layout_record()},
+                    {"id": "task", "kind": "flutter", "layout": self.layout_record(1)}]
+        self.assertEqual(MODULE.validate_layout_diversity(surfaces), [])
+        history = [{"project": "previous-project", "id": "previous-home", "layout": self.layout_record()}]
+        self.assertTrue(any("previous-project" in item
+                            for item in MODULE.validate_layout_diversity(surfaces, history)))
+
+    def test_only_same_surface_representations_can_share_layout(self):
+        surfaces = [
+            {"id": "welcome", "kind": "flutter", "source": "lib/welcome.dart", "layout": self.layout_record()},
+            {"id": "welcome_html", "kind": "html", "source": "aduit/welcome.html",
+             "same_layout_as": "welcome", "layout": self.layout_record()},
+        ]
+        self.assertEqual(MODULE.validate_layout_diversity(surfaces), [])
+        surfaces[1].update(id="entry", kind="flutter", source="lib/page_module/entry/entry_page.dart")
+        self.assertTrue(any("invalid same_layout_as" in item
+                            for item in MODULE.validate_layout_diversity(surfaces)))
+
+    def test_layout_rejects_malformed_values_and_unknown_aliases(self):
+        for bad in ({"region_order": []}, {"composition": []}, {"region_order": [False]},
+                    {"composition": ""}):
+            with self.subTest(bad=bad):
+                self.assertTrue(MODULE.validate_layout_diversity([
+                    {"id": "home", "kind": "flutter", "layout": dict(self.layout_record(), **bad)}]))
+        self.assertTrue(MODULE.validate_layout_diversity([
+            {"id": "x", "kind": "html", "source": "aduit/welcome.html",
+             "same_layout_as": "missing", "layout": self.layout_record()}]))
+
     def test_dart_welcome_and_delivery_only_html_are_accepted(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -127,7 +183,9 @@ class VisualImplementationContractTests(unittest.TestCase):
             background.write_bytes(b"background-fixture")
             (evidence / "ui-visual-gates.json").write_text(json.dumps({
                 "build": {"id": "1.0.0+1", "device": "iPhone 17 Pro Max", "os": "iOS 26.5"},
+                "layout_history": {"scope": "first_record", "records": []},
                 "surfaces": [{"id": "home", "kind": "flutter", "source": "lib/page_module/home_page.dart",
+                              "layout": self.layout_record(),
                               "background": {"asset": "assets/backgrounds/home/home_background.png",
                                              "gradient_tokens": ["brandGradient", "sunsetGradient"],
                                              "palette_hex": ["#F05A3C", "#FFB347", "#6F2DBD"]}}],
@@ -142,6 +200,16 @@ class VisualImplementationContractTests(unittest.TestCase):
 
             ledger_path = evidence / "ui-visual-gates.json"
             ledger = json.loads(ledger_path.read_text())
+            for history, expected in (
+                (None, "missing layout_history"),
+                ({"scope": [], "records": []}, "missing layout_history"),
+                ({"scope": "available_records", "records": []}, "must contain records"),
+                ({"scope": "unavailable", "records": []}, "not verified"),
+                ({"scope": "first_record", "records": [{}]}, "cannot contain prior records"),
+            ):
+                with self.subTest(layout_history=history):
+                    ledger_path.write_text(json.dumps(dict(ledger, layout_history=history)))
+                    self.assertTrue(any(expected in item for item in MODULE.validate_visual_ledger(root)))
             for gate in ("decoration", "icons", "emoji", "text_density"):
                 with self.subTest(missing_gate=gate):
                     incomplete = dict(ledger, checks=[row for row in ledger["checks"] if row["id"] != gate])
@@ -170,6 +238,8 @@ class VisualImplementationContractTests(unittest.TestCase):
                                              ("flutter", "welcome", "lib/welcome.dart")):
                 ledger["surfaces"].append({
                     "id": surface_id, "kind": kind, "source": source,
+                    "layout": self.layout_record(1),
+                    **({"same_layout_as": "welcome"} if kind == "html" else {}),
                     "background": {
                         "asset": "assets/backgrounds/welcome/welcome_background.png",
                         "gradient_tokens": ["welcomeGradient", "accentGradient"],
