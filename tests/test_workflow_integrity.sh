@@ -154,12 +154,44 @@ require_text "$TASK_PRODUCT" '不重复、不遗漏、不循环回填'
 require_text "$TASK_ARCHITECTURE" '无重叠页边界'
 require_text "$TASK_PLANNING" '逐页结构与内容翻页校验'
 require_text "$TASK_QA" '全项目逐页骨架与内容翻页专项'
-require_text "$TASK_QA" '^### 11\.8 完整视觉效果与功能正确性核验（不做性能验收）'
-require_text "$TASK_CONVENTIONS" '本流程不做任何性能要求'
+require_text "$TASK_QA" '^### 11\.8 完整视觉效果与功能正确性核验（按用户目标档位）'
+require_text "$TASK_CONVENTIONS" '默认不设任何量化性能指标'
 require_text "$TASK_RUNNER" 'Every independent page needs a distinct skeleton'
 require_text "$TASK_RUNNER" 'at least three meaningful nonempty batches'
 require_text "$TASK_RUNNER" 'Do not impose any performance requirements'
 require_text "$TASK_README" '全项目每一个独立页面的骨架都不能重复'
+
+# The third required user input must reach planning and acceptance, while
+# numerical performance checks remain opt-in; hardware-tier semantics are explicit.
+require_text "$TASK_PLANNING" '^### 1\.4 用户提供的性能与功能目标水平'
+require_text "$TASK_PLANNING" 'Target level status.*Awaiting user target.*Ready'
+require_text "$TASK_PLANNING" '用户原话.*规范化目标.*页面/功能.*验收方式.*实际结果.*证据.*缺口'
+require_text "$TASK_RUNNER" 'All three inputs present'
+require_text "$TASK_RUNNER" 'Explicit performance targets override the default only for this project'
+require_text "$TASK_PLANNING" 'Target iPhone tier: mid-range'
+require_text "$TASK_PLANNING" 'Target iPhone tier: extreme-high-end'
+require_text "$TASK_PLANNING" '工期无限制.*不触发硬件升级'
+require_text "$TASK_PLANNING" '只有高端设备或模拟器时不能据此声称中端真机达标'
+forbid_text "$TASK_RUNNER" 'Treat top-tier high-end iPhone hardware as the baseline'
+require_text "$TASK_QA" '性能与功能目标水平逐项验收'
+require_text "$TASK_ORDER" '目标水平 / 实际实现 / 实际验证 / 缺口'
+for task_input_entry in "$TASK_START" "$TASK_ROOT/flutter-engine-runner/agents/openai.yaml" "$TASK_README"; do
+  require_text "$task_input_entry" '性能与功能目标水平'
+done
+
+# Every logical page must have separate, detailed planning artifacts that are
+# consumed during implementation and checked again at delivery.
+require_text "$TASK_PLANNING" '^### 3\.6 逐页独立思维导图与执行文档（硬门槛）'
+require_text "$TASK_PLANNING" '页面数 = 独立思维导图文件数 = 独立执行文档文件数'
+require_text "$TASK_PLANNING" 'plan_version.*doc_rev'
+require_text "$TASK_PLANNING" '同首页|同其他页面'
+for task_page_doc in "$TASK_PLANNING" "$TASK_RUNNER" "$TASK_ARCHITECTURE" "$TASK_QA" "$TASK_ORDER" "$TASK_README"; do
+  require_text "$task_page_doc" '\.codex-work/map/page/<page_id>\.md'
+  require_text "$task_page_doc" '\.codex-work/exec/page/<page_id>\.md'
+done
+require_text "$TASK_RUNNER" 'Before implementing each page, read both'
+require_text "$TASK_QA" '逐页文档配对与执行一致性验收'
+forbid_text "$TASK_PLANNING" '另存规划文档只能作为补充|详细文案、尺寸和字段定义放到图下表格'
 forbid_text "$TASK_PRODUCT" '不要求每个主要页面都完全不同'
 forbid_text "$TASK_DOCS_DIR/04-视觉与页面功能.md" '不要求每个主要页面都完全不同|实现单卡轮播'
 forbid_text "$TASK_RUNNER" 'Preserve the original Welcome UI|one card at a time|Maximum-performance iPhone'

@@ -1,4 +1,4 @@
 interface:
   display_name: "Flutter 工程执行"
-  short_description: "按用户创意和项目名称执行 Flutter 工程流程，支持跨机器安装"
-  default_prompt: "使用 $flutter-engine-runner 开始执行；缺少创意主题或项目名称时先询问，工程创建在我指定的目录，未指定时使用当前 Codex 工作目录。"
+  short_description: "按用户主题、项目名称及性能与功能目标水平执行完整 Flutter 工程流程"
+  default_prompt: "使用 $flutter-engine-runner 开始执行；合并询问缺少的项目名称、创意主题、性能与功能目标水平，默认中端 iPhone，性能不在乎/无限制则按极端高性能 iPhone；每页分别生成详细图与独立执行文档，展示全部图及执行摘要后等待一次整体确认；工程直接创建在指定目录，未指定时使用当前 Codex 工作目录。"
