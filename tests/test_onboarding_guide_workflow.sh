@@ -221,7 +221,7 @@ done
 task_require "$TASK_PUBLISH" '直接子项恰好为.*intro\.md.*welcome\.html.*imgs/.*site/.*review/'
 task_require "$TASK_PUBLISH" '完整英文产品介绍'
 task_require "$TASK_PUBLISH" '每个主要模块至少写清'
-task_require "$TASK_PUBLISH" '至少三个不同用户结果的任务'
+task_require "$TASK_PUBLISH" '至少 8 个不同用户结果的端到端任务'
 task_require "$TASK_PUBLISH" 'URL 完整保护'
 task_require "$TASK_PUBLISH" '最多 4,000 字符'
 task_require "$TASK_PUBLISH" '协议通用文案仅初始化页显示'
