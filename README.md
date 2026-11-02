@@ -240,6 +240,8 @@ Emoji、渐变、矢量插画、AI 拟真图或仅写素材清单不能代替真
 
 ### iPhone 与权限配置
 
+每个新建及复用项目都必须适配执行当日最新稳定版 iOS 生命周期，最低部署版本仍为 15.6 或真实依赖要求的更高值。流程会核实稳定 iOS/Xcode/Flutter 组合，成套核验 UIScene、AppDelegate/SceneDelegate、engine/插件/通道注册与原生窗口时机，并在当前 iPhone 构建检查冷启动、前后台、系统中断、Scene 恢复及清除恢复；原生承接层在 Welcome 实际就绪后前台保持 250ms 再淡出的规定继续生效。源码和编译成功不等于运行通过，缺最新 runtime 或真机时如实记录，不用旧系统结果冒充兼容证明；独立 AppListing/About/Remarks 继续生成。详见第 9.1.1、11.1.1 节，证据纳入已有 `.codex-work/quality.md`。
+
 本流程只创建、构建和验证 iOS iPhone App，最低 iOS 部署版本为 15.6；实际依赖要求更高时保留更高版本，并按正文核对 Podfile、所有构建 target 的解析设置及可用产物。运行与截图必须明确指定 iPhone 机型及 UDID；没有可用 iPhone 时继续可执行检查，不回退到其他设备或平台。按实际权限插件检查 `ios/Podfile` 并尽力设置最小权限宏；使用 PhotoKit 整库读取 API 时，必须设置并从 Pods 解析后的编译设置证实 `PERMISSION_PHOTOS=1`；只用系统照片选择器时不启用整库权限宏。宏配置失败需记录，但不得因此中止 Pods 安装或 iOS 打包尝试。不集成追踪功能；ATT 权限申请、弹窗、四状态、触发条件与启动任务全部移除，同时清除请求 API、用途键、框架链接、启用宏、IDFA 访问和追踪依赖。发现仍会追踪的组件时禁用、移除或替换，不恢复该授权流程；核验实际数据流与最终产物，并据实披露。宏配置、构建结果与权限运行验证分开报告，失败的权限路径不能标为通过。摄像机、相册和录音可自由或随机组合，也可全部不包含；未选项不添加页面、插件或权限。全部实现、发布材料、图片及依赖检查结束后，最后执行第 11.6 节 iOS 权限双向校验：实际 API 必需的用途键/宏/能力配置必须完整有效，无真实用途的配置、请求和依赖全部移除；无受保护能力时验证零无关权限。若修正后重建，刷新受影响的最终显示证据并再次核对产物权限。详情见工作流文档第 0.7、11.6–11.7 节，证据记录于项目 `.codex-work/ios-permissions.md`。
 
 最终 `aduit/intro.md` 的 `## Description` 会依据项目实际功能充分展开，覆盖定位与受众、各主模块、典型使用过程、实际媒体能力（如有）、可回访成果、进入与清除流程和数据边界；遵守生成器选定的文案结构及最多 4,000 字符限制。生成后重新读取并核对覆盖，避免只留下几句短文或功能清单；仅在 `All URL` 保留首页、隐私政策、用户协议、Support 四个完整 URL；移除重复的独立 URL 栏目及其他多余网址，这四个地址（含大小写、路径、参数）保持原样，其他事实字段仅允许按第 12.1 节统一科普展示标签，不因暂不可访问而删改。详细写作与验收见第 12.1、11.1 节，审核备注仍单独按其格式生成。
@@ -273,4 +275,4 @@ aduit/
 
 发布前会使用唯一 Bundle ID 核对产品身份，并扫描隐藏审核模式、远程换功能、虚假账号/计费/服务/权限、伪造测试记录、评价诱导、评分奖励、搜索/榜单/引荐/安装量操纵，以及崩溃、白屏、占位图、死链接、错误权限、数据丢失和核心流程失败。App Store 元数据、截图、About、Intro、Support 和 Remarks 只能写已确认事实，且必须互相一致。专项结果写入 `.codex-work/app-review-risk.md`；关键项失败会记录为 `Release readiness: Blocked`，不会因为其他材料已生成而报告为可上架。外部网络或素材失败仍按现有回退继续独立任务。
 
-免责与版权说明合并到原法律页。最终 `aduit/site/` 只保留四个生成 HTML 和 `img/logo.png`；`aduit/` 顶层仅 `intro.md`、`welcome.html`、空 `imgs/`、`site/`、`review/`，review 仅 remarks.md。Welcome 实际使用 `lib/welcome.dart`；独立 HTML 不使用，仍内联全部内容与 Base64 图片，严格小于 262,144 字节，无工程/网络资源依赖。检查两份 UI 和真实功能一致，HTML 未被加载或打包。证据/备份/额外产物只放 `.codex-work/`。Remarks 全英文、最多 4,000 字符、七章分点、设置按顺序编号、仅指定 iPhone 记录和已确认事实，无 WebView/WebKit/内部模块描述。清理旧 AppListing、aduit/html 和根目录旧 welcome/enter HTML，保留协议页与四 URL。
+免责与版权说明合并到原法律页。最终 `aduit/site/` 只保留四个生成 HTML 和 `img/logo.png`；`site/index.html` 原位保留生成器内容与结构，不被欢迎页、另写的 About Home 或其他模板替换。Logo 配色、草稿清理等只做有记录的必要定点修正；保存原副本/哈希，在两份欢迎产物制作与清理后复核其余内容字节一致。`aduit/` 顶层仅 `intro.md`、`welcome.html`、空 `imgs/`、`site/`、`review/`，review 仅 remarks.md。Welcome 实际使用 `lib/welcome.dart`；独立 HTML 不使用，仍内联全部内容与 Base64 图片，严格小于 262,144 字节，无工程/网络资源依赖。检查两份 UI 和真实功能一致，HTML 未被加载或打包。证据/备份/额外产物只放 `.codex-work/`。Remarks 全英文、最多 4,000 字符、七章分点、设置按顺序编号、仅指定 iPhone 记录和已确认事实，无 WebView/WebKit/内部模块描述。清理旧 AppListing、aduit/html 和根目录旧 welcome/enter HTML，保留协议页与四 URL。
