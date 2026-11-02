@@ -15,7 +15,7 @@ TASK_CODEX_DIR="${CODEX_HOME:-$HOME/.codex}"
 TASK_SKILLS_DIR="$TASK_CODEX_DIR/skills"
 TASK_APP_LISTING_REPO="${FLUTTER_APP_LISTING_REPO:-git@codeup.aliyun.com:6366640f0cd435624679b545/Aurora/Agent/aurora_skills/ios-app-listing.git}"
 TASK_APP_LISTING_BRANCH="feature/1.2.1-A1"
-TASK_APP_LISTING_FALLBACK="${FLUTTER_APP_LISTING_FALLBACK:-/Applications/config/ios-app-listing}"
+TASK_APP_LISTING_FALLBACK="${FLUTTER_APP_LISTING_FALLBACK:-/Users/admin/Desktop/config/ios-app-listing}"
 TASK_APP_LISTING_COMMIT=""
 TASK_APP_LISTING_SOURCE=""
 TASK_APP_LISTING_MODE=""
@@ -194,7 +194,7 @@ if [[ -z "$TASK_APP_LISTING_SOURCE" ]]; then
   print -r -- "不得因此停止或等待用户；逐项完成可交付产物，未通过的校验如实标记，不得伪报通过。具体错误与验证结果写入目标工程 .codex-work/。"
 fi
 
-print -r -- "远程同步失败时使用 /Applications/config/ios-app-listing；所有 AppListing、About 与 Review Remarks 任务继续执行。"
+print -r -- "远程同步失败时使用 $TASK_APP_LISTING_FALLBACK；所有 AppListing、About 与 Review Remarks 任务继续执行。"
 print -r -- "local_generation_complete、failures 与 verification 状态必须分开记录，不得将未验证结果伪报为通过。" \
   > "$TASK_STAGE/references/app-listing-fallback-contract.md"
 print -r -- "source=$TASK_APP_LISTING_SOURCE" > "$TASK_STAGE/references/ios-app-listing-source.txt"

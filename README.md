@@ -17,7 +17,7 @@
 使用 $flutter-engine-runner，请开始执行。
 ```
 
-5. 缺少输入时一并提供项目名称、创意主题、性能与功能目标水平，查看完整导图及目标验收标准并回复“确认，按此执行”，随后自主开发。质量复核后按远程 AppListing → `/Applications/config/ios-app-listing` → 随包契约生成完整材料，不因来源/资源失败取消后续步骤。详尽英文 Description 覆盖真实用途、主模块、任务、实际媒体、成果回访和数据边界，最多 4,000 字符；Intro 仅保留 `All URL` 四个完整原始地址，原文/大小写不变；教育展示标签改 `Popular Science`。改名 `aduit/` 后保留四站点页，更新并接入 `lib/welcome.dart`，保持原同等欢迎 UI、轮播/分页点、配色和 Continue 行为；原自包含 `welcome.html` 保留在 `aduit/`，不被 App 加载或打包。欢迎页禁止纵向滚动，只允许卡片横向切换，完整显示内容和 Continue；Dart 页用本地 assets、SafeArea 与直接 Dart callback；HTML 保留 Base64 data URI 图片、内联内容、严格小于 262,144 字节等原契约，独立验收。两份无协议页脚。完成检查后、Remarks 前，四原始 URL 写入固定配置；协议文本仅加入清除成功后的 Initialization 底部：
+5. 缺少输入时一并提供项目名称、创意主题、性能与功能目标水平，查看完整导图及目标验收标准并回复“确认，按此执行”，随后自主开发。质量复核后按远程 AppListing → `/Users/admin/Desktop/config/ios-app-listing` → 随包契约生成完整材料，不因来源/资源失败取消后续步骤。详尽英文 Description 覆盖真实用途、主模块、任务、实际媒体、成果回访和数据边界，最多 4,000 字符；Intro 仅保留 `All URL` 四个完整原始地址，原文/大小写不变；教育展示标签改 `Popular Science`。改名 `aduit/` 后保留四站点页，更新并接入 `lib/welcome.dart`，保持原同等欢迎 UI、轮播/分页点、配色和 Continue 行为；原自包含 `welcome.html` 保留在 `aduit/`，不被 App 加载或打包。欢迎页禁止纵向滚动，只允许卡片横向切换，完整显示内容和 Continue；Dart 页用本地 assets、SafeArea 与直接 Dart callback；HTML 保留 Base64 data URI 图片、内联内容、严格小于 262,144 字节等原契约，独立验收。两份无协议页脚。完成检查后、Remarks 前，四原始 URL 写入固定配置；协议文本仅加入清除成功后的 Initialization 底部：
 
 ```text
 By continuing, you agree to our
@@ -120,7 +120,7 @@ Flutter工程/
 
 无需复制个人机器上的 `.codex` 文件夹，也不要只复制 Markdown 或启动器。安装器默认使用当前用户的 `CODEX_HOME/skills`，未设置 `CODEX_HOME` 时使用 `~/.codex/skills`；另在 `~/.agents/skills` 建立指向同一安装的兼容链接。会复用旧版的 `flutter工程执行` 安装目录，避免留下同名的旧规则。实际安装路径以启动器输出为准。
 
-安装后的工作流文档来自资料包，AppListing 则每次由安装器优先从远程仓库 `feature/1.2.1-A1` 分支重新同步为 Git checkout；不会把资料包中的同名目录、旧安装或手写页面作为运行时来源。修改 `工作流文档/` 中的正文或执行技能后，重新双击 `start.command` 同步更新，再重新加载 Codex。安装器会在更新前逐项检查文档清单，缺少任何列出的正文或远程 AppListing 必要文件时不覆盖现有技能。远程同步失败或 checkout 不完整时，自动尝试 `/Applications/config/ios-app-listing`；两者均不可用时仍安装核心流程并按随包契约继续生成全部材料，单独记录受阻校验，不中断后续任务。旧安装保存在技能目录同级的 `skill-backups/flutter-engine-runner/`，可恢复；不会覆盖其他技能。
+安装后的工作流文档来自资料包，AppListing 则每次由安装器优先从远程仓库 `feature/1.2.1-A1` 分支重新同步为 Git checkout；不会把资料包中的同名目录、旧安装或手写页面作为运行时来源。修改 `工作流文档/` 中的正文或执行技能后，重新双击 `start.command` 同步更新，再重新加载 Codex。安装器会在更新前逐项检查文档清单，缺少任何列出的正文或远程 AppListing 必要文件时不覆盖现有技能。远程同步失败或 checkout 不完整时，自动尝试 `/Users/admin/Desktop/config/ios-app-listing`；两者均不可用时仍安装核心流程并按随包契约继续生成全部材料，单独记录受阻校验，不中断后续任务。旧安装保存在技能目录同级的 `skill-backups/flutter-engine-runner/`，可恢复；不会覆盖其他技能。
 
 Mac 若不允许双击启动器，可在终端输入 `/bin/zsh `，拖入 `start.sh` 并回车。终端入口也支持 `--project-dir` 指定完整工程目录；该路径会加入待发送的启动语句，不会直接创建工程。`--install-only` 只安装，`--help` 查看选项。
 
