@@ -73,6 +73,7 @@ def validate_welcome_source(root: Path):
 
 VISUAL_GATES = {
     "brand_palette", "gradients", "typography", "particles", "motion",
+    "page_transitions", "background_motion",
     "backgrounds", "decoration", "icons", "emoji", "text_density", "media", "content", "layout", "controls", "states",
     "appearance", "accessibility", "launch_flow", "app_icon", "html", "refinement",
 }
@@ -80,6 +81,7 @@ PAGE_GATES = {
     "brand_palette", "gradients", "typography", "backgrounds", "decoration", "icons", "emoji", "text_density", "media", "content",
     "layout", "controls", "states", "appearance", "accessibility",
 }
+FLUTTER_MOTION_GATES = {"page_transitions", "background_motion"}
 MEDIA_EXTENSIONS = {".png", ".jpg", ".jpeg", ".heic", ".mp4", ".mov"}
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".heic", ".webp"}
 LAYOUT_AXES = (
@@ -224,6 +226,7 @@ def validate_visual_ledger(root: Path):
     background_hashes = {}
     background_signatures = set()
     page_ids = set()
+    flutter_ids = set()
     runtime_page_ids = set()
     for surface in surfaces:
         if not isinstance(surface, dict) or not isinstance(surface.get("id"), str) or not surface["id"].strip():
@@ -237,6 +240,8 @@ def validate_visual_ledger(root: Path):
             findings.append(f"{surface_id}: kind must be flutter, html or native")
         if surface.get("kind") in {"flutter", "html"}:
             page_ids.add(surface_id)
+        if surface.get("kind") == "flutter":
+            flutter_ids.add(surface_id)
         path = local_file(surface.get("source"), f"surface {surface_id}")
         if path:
             recorded_sources.add(path)
@@ -354,6 +359,9 @@ def validate_visual_ledger(root: Path):
         if gate in PAGE_GATES:
             for missing in sorted(page_ids - set(targets) - set(exclusions)):
                 findings.append(f"{gate}: surface has no acceptance result: {missing}")
+        if gate in FLUTTER_MOTION_GATES:
+            for missing in sorted(flutter_ids - set(targets)):
+                findings.append(f"{gate}: Flutter surface has no motion acceptance result: {missing}")
         for field in ("implementation", "evidence"):
             values = row.get(field)
             if not isinstance(values, list) or not values:
@@ -362,6 +370,9 @@ def validate_visual_ledger(root: Path):
             paths = [local_file(value, f"{gate} {field}") for value in values]
             if field == "evidence" and not any(path and path.suffix.lower() in MEDIA_EXTENSIONS for path in paths):
                 findings.append(f"{gate}: needs a screenshot or recording file")
+            if (field == "evidence" and gate in FLUTTER_MOTION_GATES
+                    and not any(path and path.suffix.lower() in {".mp4", ".mov"} for path in paths)):
+                findings.append(f"{gate}: needs an iPhone motion recording file")
             if field == "implementation" and not any(path and not is_within(path, root / ".codex-work") for path in paths):
                 findings.append(f"{gate}: evidence prose cannot replace an implementation file")
     for missing in sorted(VISUAL_GATES - seen):

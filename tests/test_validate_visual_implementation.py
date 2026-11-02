@@ -178,6 +178,7 @@ class VisualImplementationContractTests(unittest.TestCase):
             evidence = root / ".codex-work"
             evidence.mkdir()
             (evidence / "home.png").write_bytes(b"runtime-evidence-fixture")
+            (evidence / "motion.mov").write_bytes(b"runtime-recording-fixture")
             background = root / "assets/backgrounds/home/home_background.png"
             background.parent.mkdir(parents=True)
             background.write_bytes(b"background-fixture")
@@ -191,8 +192,11 @@ class VisualImplementationContractTests(unittest.TestCase):
                                              "palette_hex": ["#F05A3C", "#FFB347", "#6F2DBD"]}}],
                 "checks": [{"id": gate, "status": "Verified", "targets": ["home"],
                             "implementation": ["lib/page_module/home_page.dart"],
-                            "evidence": [".codex-work/home.png"], "result": "Observed on the recorded build."}
+                            "evidence": [".codex-work/motion.mov" if gate in {"page_transitions", "background_motion"}
+                                         else ".codex-work/home.png"],
+                            "result": "Observed on the recorded build."}
                            for gate in ("brand_palette", "gradients", "typography", "particles", "motion",
+                                        "page_transitions", "background_motion",
                                         "backgrounds", "decoration", "icons", "emoji", "text_density", "media", "content", "layout", "controls", "states",
                                         "appearance", "accessibility", "launch_flow", "app_icon", "html", "refinement")]
             }), encoding="utf-8")
@@ -210,7 +214,7 @@ class VisualImplementationContractTests(unittest.TestCase):
                 with self.subTest(layout_history=history):
                     ledger_path.write_text(json.dumps(dict(ledger, layout_history=history)))
                     self.assertTrue(any(expected in item for item in MODULE.validate_visual_ledger(root)))
-            for gate in ("decoration", "icons", "emoji", "text_density"):
+            for gate in ("decoration", "icons", "emoji", "text_density", "page_transitions", "background_motion"):
                 with self.subTest(missing_gate=gate):
                     incomplete = dict(ledger, checks=[row for row in ledger["checks"] if row["id"] != gate])
                     ledger_path.write_text(json.dumps(incomplete))
@@ -221,6 +225,20 @@ class VisualImplementationContractTests(unittest.TestCase):
                                                     for row in ledger["checks"]])
                     ledger_path.write_text(json.dumps(incomplete))
                     self.assertIn(f"{gate}: surface has no acceptance result: home", MODULE.validate_visual_ledger(root))
+
+            for gate in ("page_transitions", "background_motion"):
+                with self.subTest(uncovered_flutter_motion=gate):
+                    incomplete = dict(ledger, checks=[dict(row, targets=[], exclusions={"home": "Focused page"})
+                                                     if row["id"] == gate else row for row in ledger["checks"]])
+                    ledger_path.write_text(json.dumps(incomplete))
+                    self.assertIn(f"{gate}: Flutter surface has no motion acceptance result: home",
+                                  MODULE.validate_visual_ledger(root))
+                with self.subTest(still_image_cannot_prove_motion=gate):
+                    incomplete = dict(ledger, checks=[dict(row, evidence=[".codex-work/home.png"])
+                                                     if row["id"] == gate else row for row in ledger["checks"]])
+                    ledger_path.write_text(json.dumps(incomplete))
+                    self.assertIn(f"{gate}: needs an iPhone motion recording file",
+                                  MODULE.validate_visual_ledger(root))
 
             # The independent HTML is a second representation of the same
             # Welcome UI, not a different runtime page requiring another image.
@@ -250,6 +268,25 @@ class VisualImplementationContractTests(unittest.TestCase):
                     row["targets"].append(surface_id)
             ledger_path.write_text(json.dumps(ledger))
             self.assertEqual(MODULE.validate_visual_ledger(root), [])
+
+            # Delivery-only HTML has separate motion rules; the two Flutter
+            # gates must cover every runtime Flutter page, without waivers.
+            flutter_only = dict(ledger, checks=[
+                dict(row, targets=[target for target in row["targets"] if target != "welcome_html"])
+                if row["id"] in {"page_transitions", "background_motion"} else row
+                for row in ledger["checks"]
+            ])
+            ledger_path.write_text(json.dumps(flutter_only))
+            self.assertEqual(MODULE.validate_visual_ledger(root), [])
+            for gate in ("page_transitions", "background_motion"):
+                with self.subTest(missing_second_flutter_page=gate):
+                    incomplete = dict(flutter_only, checks=[
+                        dict(row, targets=["home"], exclusions={"welcome": "Has native cover"})
+                        if row["id"] == gate else row for row in flutter_only["checks"]
+                    ])
+                    ledger_path.write_text(json.dumps(incomplete))
+                    self.assertIn(f"{gate}: Flutter surface has no motion acceptance result: welcome",
+                                  MODULE.validate_visual_ledger(root))
 
     def test_visual_ledger_rejects_uncovered_pages_and_missing_evidence(self):
         with tempfile.TemporaryDirectory() as tmp:

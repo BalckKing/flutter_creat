@@ -22,6 +22,10 @@ BASIC_LABELS = (
     "Purpose:",
     "Category:",
 )
+ACTUAL_DEVICE_LINES = (
+    "- iPhone 18 Pro, iOS 27",
+    "- Screenshot size: 1206 x 2622 pixels (portrait).",
+)
 TEST_DEVICE_LINES = (
     "- iPhone 15 Pro, iOS 18.6",
     "- iPhone 13, iOS 17.7.1",
@@ -86,8 +90,9 @@ def validate(path: Path) -> list[str]:
         return findings
 
     first_body = text[sections[0][1]:sections[0][2]].split('\n', 1)[1].strip()
-    if first_body != "- iPhone 17 Pro Max, iOS 26.5":
-        findings.append("Actual Device must be exactly '- iPhone 17 Pro Max, iOS 26.5'")
+    if first_body != '\n'.join(ACTUAL_DEVICE_LINES):
+        findings.append("Actual Device must contain exactly these two bullets in order: "
+                        + '; '.join(ACTUAL_DEVICE_LINES))
     test_body = text[sections[1][1]:sections[1][2]].split('\n', 1)[1].strip()
     test_lines = [line.strip() for line in test_body.splitlines() if line.strip()]
     if test_lines[:2] != list(TEST_DEVICE_LINES):

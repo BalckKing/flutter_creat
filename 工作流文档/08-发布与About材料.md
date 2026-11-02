@@ -153,7 +153,14 @@ Terms of Use and Privacy Policy
 
 先读取当前实际存在的介绍文件：AppListing 尚未规范化时为 `AppListing/Intro.md`；完成第 12.1 节转移/小写规范化后，以白名单中的 `aduit/intro.md` 为准。若输入材料写作 `aduit/Intro.md`，先核对实际大小写，不得因大小写不符漏读或另造重复文件。提取应用名称、用途、类别、功能、用户生成内容、账号、计费、权限和其他提审信息；必要时查看源码、配置、测试记录和现有审核材料核实事实。还要在内部逐字核对 App 固定协议 URL 配置与 `All URL` 四项映射，但不发起网络请求；映射和可达性状态只记录到 `.codex-work/`，不写入审核备注，也不据此宣称在线服务可用。不得把开发期占位文案当成最终事实。输出以 `# App Review Remarks` 开始，随后仅列出有确认依据的普通英文标签 `App name`、`Purpose`、`Category`、`User-generated content`、`Account`、`Billing`、`Permissions` 和 `Other submission details`；缺失或未确认字段直接删除，不写占位语。之后按以下七项顺序使用清晰的 Markdown 标题：`## 1. Actual Device`、`## 2. Test Devices and Operating Systems`、`## 3. App Purpose, Intended Audience, and Problem Solved`、`## 4. Setup Steps`、`## 5. External Services`、`## 6. Regional Differences`、`## 7. Unique Value`。
 
-1. Actual Device：默认且固定写入用户指定的 `- iPhone 17 Pro Max, iOS 26.5`，该章正文不能为空，不得自行添加或替换机型、系统版本、视频、账号或测试结果。此项与第 2 项的测试设备分别填写，不能用其中一项代替另一项；不得把模拟器结果称为真机结果。
+1. Actual Device：按“原生竖屏截图尺寸为 1206 × 2622 像素的机型中，选择当前性能最高的 iPhone”确定配置。本次规格核验日期为 2026-10-30：[Apple 官方 iPhone 18 Pro 技术规格](https://www.apple.com/iphone-18-pro/specs/)确认 iPhone 18 Pro 搭载 A20 Pro、屏幕原生像素为 2622-by-1206，出厂系统为 iOS 27；Pro Max 的原生像素为 2868-by-1320，不符合指定尺寸。因此覆盖旧的 Pro Max / iOS 26.5 固定值，第 1 章正文必须按顺序逐字写入以下两条：
+
+   ```markdown
+   - iPhone 18 Pro, iOS 27
+   - Screenshot size: 1206 x 2622 pixels (portrait).
+   ```
+
+   第 1 章不能为空，不增加其他机型、系统版本或测试通过声明。该配置与第 2 项的两台测试设备分别填写，不互相替代；型号与尺寸要求本身不构成当前 App 已经完成真机测试的证据，不得把模拟器结果称为真机结果。截图要求是原始竖屏 PNG 的实际像素宽 1206、高 2622，不能用裁切、缩放、补边或更改文件名把 Pro Max 等其他机型伪装成符合要求。对实际生成的截图读取像素尺寸，并把原始文件、机型/运行环境与尺寸检查证据记到现有 `.codex-work/quality.md`；没有运行或截图证据时不声明已实测，缺口留内部并继续独立材料生成，不为满足备注新增多个模拟器。此处固定值是本次已核验的配置快照，不凭未来机型名称推测规格；后续若更新配置，必须先核实 Apple 官方的芯片、原生像素和可用系统，再同步本文、执行摘要及校验器。
 2. Test Devices and Operating Systems：固定使用用户提供的两个测试设备配置，不再随机抽样，不增加、替换、合并或漏写，不把第 1 项实际设备挪到本项。该章正文不能为空；前两个非空正文行必须按以下顺序逐字写入，设备与系统版本分别准确对应，各出现一次：
 
    ```markdown
@@ -168,7 +175,7 @@ Terms of Use and Privacy Policy
 6. Regional Differences：本流程的功能、内容、价格、权限和可用性应保持地区一致；该章唯一条目固定写 `- All regions are the same.`，不改写或添加待确认语。若实现存在已确认差异，先修正实现和材料一致性，再使用固定句；不得把真实差异隐瞒成无差异，证据缺口只记内部。
 7. Unique Value：用一句具体、可信且与当前功能一致的话概括与同类产品的差异和用户价值，避免空泛营销语。
 
-七个章节标题须全部保留，基本信息仅写已确认字段；每章按事实使用项目符号，设置流程使用有序列表。只使用源码、配置、实际测试记录或用户明确提供的已确认事实；不能编造设备、系统版本、测试、视频、账号、服务、SDK、地区支持或功能。未知测试结果和其他未确认、待提供、待补充或无法核实的字段、句子均从最终 `remarks.md` 删除，不写 `Not provided; pending confirmation.` 或同义占位语；已确认不存在的能力才写 `No such feature` 或 `Not used.`。第 1 项固定为 `iPhone 17 Pro Max, iOS 26.5`，第 2 项固定为用户指定的 `iPhone 15 Pro, iOS 18.6`、`iPhone 13, iOS 17.7.1` 两条配置；两章不同且均不能为空，不因缺少测试结果而删除已指定配置，不以固定名单推导测试已经完成。第 6 项固定为 `All regions are the same.`。不要把 iPhone 模拟器测试写成真机测试。完成后运行 `python3 <flutter-engine-runner-root>/scripts/validate_review_remarks.py --remarks-file <project-root>/aduit/review/remarks.md`，校验器必须拒绝空设备章、漏项、顺序/机型/版本不符、重复或额外测试设备，再检查全文仅为英语、字符数不超过 4,000、基本信息及七项顺序/标题准确、无 `**`、不出现 H5、B-side、WebView、内部 package/模块信息，并与 App、实际存在且大小写正确的介绍文件及审核事实一致；不等待用户审批或补充意见。
+七个章节标题须全部保留，基本信息仅写已确认字段；每章按事实使用项目符号，设置流程使用有序列表。只使用源码、配置、实际测试记录或用户明确提供的已确认事实；不能编造设备、系统版本、测试、视频、账号、服务、SDK、地区支持或功能。未知测试结果和其他未确认、待提供、待补充或无法核实的字段、句子均从最终 `remarks.md` 删除，不写 `Not provided; pending confirmation.` 或同义占位语；已确认不存在的能力才写 `No such feature` 或 `Not used.`。第 1 项固定为 `iPhone 18 Pro, iOS 27`，另起项目符号逐字写 `Screenshot size: 1206 x 2622 pixels (portrait).`；第 2 项固定为用户指定的 `iPhone 15 Pro, iOS 18.6`、`iPhone 13, iOS 17.7.1` 两条配置；两章不同且均不能为空，不因缺少测试结果而删除已指定配置，不以固定名单推导测试已经完成。第 6 项固定为 `All regions are the same.`。不要把 iPhone 模拟器测试写成真机测试。完成后运行 `python3 <flutter-engine-runner-root>/scripts/validate_review_remarks.py --remarks-file <project-root>/aduit/review/remarks.md`，校验器必须拒绝空设备章、漏项、顺序/机型/版本不符、重复或额外测试设备，再检查全文仅为英语、字符数不超过 4,000、基本信息及七项顺序/标题准确、无 `**`、不出现 H5、B-side、WebView、内部 package/模块信息，并与 App、实际存在且大小写正确的介绍文件及审核事实一致；不等待用户审批或补充意见。
 
 ### 12.3 App Store 隐私披露、EULA 与提交材料
 

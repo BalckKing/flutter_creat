@@ -32,7 +32,7 @@ Terms of Use and Privacy Policy
 zsh tests/test_workflow_integrity.sh
 ```
 
-需要一次性回归全部本地契约时，运行 `tests/run_all.sh`。它按完整性、引导页、视觉实现、Review Remarks、公开文案、远程 AppListing 安装器、About 文案顺序执行；任一项失败都会返回非零状态，不会把后续结果误报为通过。Review Remarks 检查器固定要求第 1 项为 `iPhone 17 Pro Max, iOS 26.5`、第 2 项固定按顺序为 `iPhone 15 Pro, iOS 18.6` 和 `iPhone 13, iOS 17.7.1`，两项设备章独立且非空，不随机替换、遗漏、重复或新增设备、第 6 项为 `All regions are the same.`，并拒绝待确认占位语、非 iPhone 设备、网页容器术语、中文、`**` 和超过 4,000 字符的公开备注。固定设备配置来自用户指定，不自动证明当前 App 已完成测试；测试范围和完成结果须另对照当前 App 的记录或用户明确确认，缺少结果依据时保留配置、不编造通过声明。公开文案检查器提供 Dart 直接 UI 字符串、独立 `aduit/welcome.html`、About 静态 HTML 与无障碍属性的补充扫描；间接字符串、脚本动态内容、图片嵌字及运行画面仍需按第 11.4 节复核。它不扫描内部记录，也不替代 Remarks 中真实外部服务的披露。
+需要一次性回归全部本地契约时，运行 `tests/run_all.sh`。它按完整性、引导页、视觉实现、Review Remarks、公开文案、远程 AppListing 安装器、About 文案顺序执行；任一项失败都会返回非零状态，不会把后续结果误报为通过。Review Remarks 检查器固定要求第 1 项依次为 `- iPhone 18 Pro, iOS 27` 与 `- Screenshot size: 1206 x 2622 pixels (portrait).` 两条项目符号：按 2026-10-30 Apple 官方规格选择原生尺寸符合要求且搭载 A20 Pro 的最新 Pro 机型，不使用尺寸不符的 Pro Max；实际截图须读取像素宽高核验，不能裁切/缩放其他机型截图凑尺寸。第 2 项固定按顺序为 `iPhone 15 Pro, iOS 18.6` 和 `iPhone 13, iOS 17.7.1`，两项设备章独立且非空，不随机替换、遗漏、重复或新增设备、第 6 项为 `All regions are the same.`，并拒绝待确认占位语、非 iPhone 设备、网页容器术语、中文、`**` 和超过 4,000 字符的公开备注。固定设备配置来自用户指定，不自动证明当前 App 已完成测试；测试范围和完成结果须另对照当前 App 的记录或用户明确确认，缺少结果依据时保留配置、不编造通过声明。公开文案检查器提供 Dart 直接 UI 字符串、独立 `aduit/welcome.html`、About 静态 HTML 与无障碍属性的补充扫描；间接字符串、脚本动态内容、图片嵌字及运行画面仍需按第 11.4 节复核。它不扫描内部记录，也不替代 Remarks 中真实外部服务的披露。
 
 ```bash
 ./tests/run_all.sh
@@ -211,6 +211,8 @@ About 使用由正式 Logo 派生的小尺寸 PNG（通常 128–256 像素，�
 动画动态效果另设独立硬门槛：纯色块拼凑的动画和动态效果绝对禁止；每个 App 页面（系统强制静态的 iOS 原生 Launch Screen 除外）默认至少有两个不同的、主题相关的可见动态元素。纯色几何块移动、简单线性渐变加淡入/缓动不能充数。逐页执行文档写清主体材质/纹理、前中后景、不同轨迹与因果状态、技术手段、具体数值、循环/结束和 Reduce Motion 替代；使用 Rive、Flame、flutter_animate、Lottie、着色器、粒子或 Flutter 原生绘制工具时，只按真实需求选取，先核对精确包、版本、iOS 兼容、维护状态和许可证，不默认全装。`.codex-work/ui-motion-gates.json` 逐屏记录场景、实现引用与录屏证据；用当前 iPhone 实际播放录制并逐帧检查块状拼贴、对象失真、轨迹僵直、循环断裂和文字遮挡，修复后复录。静态 Reduce Motion 画面不代替默认动态验收。详见第 6.14、11.8 节。
 
 所有 UI 视觉表现都是发布硬门槛，而不是建议项。除随机主题和随机页面/功能组合外，页面层级、五类字体角色、标题斜体/斜切、Logo 派生渐变字、静态/动态渐变及 Reduce Motion 回退、点击按下/焦点/禁用/成功/失败态、页面专属装饰、圆角图片与边框、真实图文模块、列表尺寸层级与差异化编排、空/错误/权限/清除状态、Light/Dark/System、Dynamic Type、VoiceOver、安全区、对比度、横竖屏 iPhone 适配都必须实际落到页面代码并由当前 iPhone 构建截图或录屏证明。发布材料前必须运行 `python3 flutter-engine-runner/scripts/validate_visual_implementation.py --project-root <target-project-root>`；预检、运行证据或适用视觉项任一缺失都标记为 `Blocked`/`Not verified`，不能用主题令牌、设计稿、源码关键词、热重载或单一首页截图声称完成。
+
+逐页专属转场与 Flutter 实时背景也是独立硬门槛：每个目标页面绑定不同的 transition_id，在揭示机制、运动轨迹/空间、图层编排中至少两个维度有实质差异，覆盖实际路由与主目的地切换、对应返回和侧滑取消；同页再次进入保持一致，不随机抽效果，也不只换时长/方向。每页进入后持续运行至少两个主题化 Flutter 背景层，由控制器、绘制或着色器等驱动，结合本页 assets 纹理与 Logo 色板，不能只用静态图、GIF 或简单渐变。page_transitions、background_motion 两项覆盖全部 Flutter 表面并提供当前 iPhone 录屏，缺页或只有截图时预检失败；默认动效、减少动态、生命周期、触摸/阅读边界与静态原生启动衔接分别实测。详见第 6.14.1–6.14.3、11.3.1 节。
 
 背景点缀也是硬门槛：每个页面和交付 HTML/原生启动表面都必须实际显示自己的主题背景图案或纹理，而不是只写入资源目录。每个表面必须在 `.codex-work/ui-visual-gates.json` 登记独立的 `assets/backgrounds/<page_id>/<page_id>_background.*`、至少两个 Logo 派生渐变令牌、至少三个真实 HEX 色值、代码引用和当前 iPhone 截图/录屏。页面之间要有可辨认的图案、纹理、方向或布局差异，不能用同一张背景或一个单一渐变覆盖全项目；缺失、未引用、被不透明容器遮住或只有首页证据时直接阻断视觉验收。
 

@@ -22,7 +22,8 @@ Permissions: No protected permissions are used.
 Other submission details: Local content only.
 
 ## 1. Actual Device
-- iPhone 17 Pro Max, iOS 26.5
+- iPhone 18 Pro, iOS 27
+- Screenshot size: 1206 x 2622 pixels (portrait).
 
 ## 2. Test Devices and Operating Systems
 - iPhone 15 Pro, iOS 18.6
@@ -62,6 +63,25 @@ class ReviewRemarksChecks(unittest.TestCase):
     def test_accepts_current_contract(self):
         result = self.run_check(CLEAN)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_rejects_actual_device_or_screenshot_mismatch(self):
+        device = '- iPhone 18 Pro, iOS 27'
+        size = '- Screenshot size: 1206 x 2622 pixels (portrait).'
+        examples = (
+            CLEAN.replace(device, '- iPhone 17 Pro Max, iOS 26.5'),
+            CLEAN.replace(device, '- iPhone 17 Pro, iOS 26.5'),
+            CLEAN.replace(device, '- iPhone 18 Pro Max, iOS 27'),
+            CLEAN.replace(device, '- iPhone 18 Pro, iOS 26.5'),
+            CLEAN.replace(size, ''),
+            CLEAN.replace(size, '- Screenshot size: 1320 x 2868 pixels (portrait).'),
+            CLEAN.replace(size, '- Screenshot size: 2622 x 1206 pixels (portrait).'),
+            CLEAN.replace(size, size + '\n' + size),
+        )
+        for source in examples:
+            with self.subTest(actual_device=source.split('## 2.')[0]):
+                result = self.run_check(source)
+                self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+                self.assertIn('Actual Device', result.stdout)
 
     def test_rejects_pending_unknowns_and_non_iphone_devices(self):
         bad = CLEAN.replace("All regions are the same.", "Not provided; pending confirmation.")
@@ -103,7 +123,7 @@ class ReviewRemarksChecks(unittest.TestCase):
             devices.replace('iPhone 13', 'iPhone 16'),
             devices.replace('iOS 18.6', 'iOS 18.7'),
             devices.replace('iPhone 13, iOS 17.7.1', 'iPhone 15 Pro, iOS 18.6'),
-            devices + '\n- iPhone 17 Pro Max, iOS 26.5',
+            devices + '\n- iPhone 18 Pro, iOS 27',
             '- iPhone 13, iOS 17.7.1\n- iPhone 15 Pro, iOS 18.6',
             devices + '\n- Also checked on iphone 16, ios 18.6.',
         ):
@@ -123,10 +143,10 @@ class ReviewRemarksChecks(unittest.TestCase):
     def test_does_not_accept_other_text_in_fixed_sections(self):
         for text in (
             CLEAN.replace('- All regions are the same.', '- All regions are the same. Except for different prices.'),
-            CLEAN.replace('- iPhone 17 Pro Max, iOS 26.5', ''),
-            CLEAN.replace('- iPhone 17 Pro Max, iOS 26.5', '- iPhone 15 Pro, iOS 18.6'),
-            CLEAN.replace('- iPhone 17 Pro Max, iOS 26.5', '- iPhone 17 Pro Max, iOS 25.6'),
-            CLEAN.replace('- iPhone 17 Pro Max, iOS 26.5', '- iPhone 17 Pro Max, iOS 26.5\n- iPhone 16, iOS 18.6'),
+            CLEAN.replace('- iPhone 18 Pro, iOS 27', ''),
+            CLEAN.replace('- iPhone 18 Pro, iOS 27', '- iPhone 15 Pro, iOS 18.6'),
+            CLEAN.replace('- iPhone 18 Pro, iOS 27', '- iPhone 18 Pro, iOS 26.5'),
+            CLEAN.replace('- iPhone 18 Pro, iOS 27', '- iPhone 18 Pro, iOS 27\n- iPhone 16, iOS 18.6'),
             CLEAN.replace('Account: No such feature', 'Account: No such feature **'),
         ):
             with self.subTest(text=text[:80]):
