@@ -12,6 +12,134 @@ SPEC.loader.exec_module(MODULE)
 
 
 class VisualImplementationContractTests(unittest.TestCase):
+    def procedural_ledger(self, root, kind="flutter"):
+        source = "lib/page_module/home_page.dart" if kind == "flutter" else "aduit/site/index.html"
+        page = root / source
+        page.parent.mkdir(parents=True)
+        implementation = "lib/common_module/motion/home_bg.dart" if kind == "flutter" else source
+        renderer = root / implementation
+        renderer.parent.mkdir(parents=True, exist_ok=True)
+        if kind == "flutter":
+            page.write_text("class HomePage { final background = HomeBg(); }")
+            renderer.write_text("class HomeBg extends CustomPainter { void paint(Canvas canvas, Size size) {} }")
+        else:
+            page.write_text("<canvas id='bg'></canvas><script>function drawScene() {} drawScene();</script>")
+        evidence = root / ".codex-work"
+        evidence.mkdir()
+        (evidence / "screen.png").write_bytes(b"screen-fixture")
+        (evidence / "motion.mov").write_bytes(b"recording-fixture")
+        background = {
+            "mode": "procedural", "scene_id": "home_atmos",
+            "entrypoint": "HomeBg" if kind == "flutter" else "drawScene",
+            "implementation": [implementation], "recording": ".codex-work/motion.mov",
+            "gradient_tokens": ["brandGradient", "sunsetGradient"],
+            "palette_hex": ["#F05A3C", "#FFB347", "#D84315"],
+        }
+        ledger = {
+            "build": {"id": "1", "device": "iPhone 17 Pro", "os": "iOS 26.5"},
+            "layout_history": {"scope": "first_record", "records": []},
+            "surfaces": [{"id": "home", "kind": kind, "source": source,
+                          "layout": self.layout_record(), "background": background}],
+            "checks": [{"id": gate, "status": "Verified", "targets": ["home"],
+                        "implementation": [source], "evidence": [".codex-work/motion.mov"],
+                        "result": "Observed on current build; fixture does not certify visual quality."}
+                       for gate in MODULE.VISUAL_GATES],
+        }
+        return ledger
+
+    def test_procedural_background_needs_no_generated_image(self):
+        for kind in ("flutter", "html"):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                ledger = self.procedural_ledger(root, kind)
+                (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
+                self.assertFalse((root / "assets").exists())
+                self.assertEqual(MODULE.validate_visual_ledger(root), [])
+
+    def test_hybrid_background_retains_image_and_animation_validation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ledger = self.procedural_ledger(root)
+            background = ledger["surfaces"][0]["background"]
+            background.update(mode="hybrid", asset="assets/backgrounds/home/home_background.png")
+            image = root / background["asset"]
+            image.parent.mkdir(parents=True)
+            image.write_bytes(b"image-fixture")
+            page = root / ledger["surfaces"][0]["source"]
+            page.write_text(page.read_text() + " const texture = 'home_background.png';")
+            ledger_path = root / ".codex-work/ui-visual-gates.json"
+            ledger_path.write_text(json.dumps(ledger))
+            self.assertEqual(MODULE.validate_visual_ledger(root), [])
+            image.unlink()
+            self.assertTrue(any("missing or empty file" in item for item in MODULE.validate_visual_ledger(root)))
+
+    def test_component_and_generated_animation_backgrounds_use_local_resources(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ledger = self.procedural_ledger(root)
+            resource = root / "assets/media/anim/home/scene.riv"
+            resource.parent.mkdir(parents=True)
+            resource.write_bytes(b"local-animation-fixture")
+            background = ledger["surfaces"][0]["background"]
+            background.update(mode="animation", resources=["assets/media/anim/home/scene.riv"])
+            ledger_path = root / ".codex-work/ui-visual-gates.json"
+            ledger_path.write_text(json.dumps(ledger))
+            self.assertEqual(MODULE.validate_visual_ledger(root), [])
+            for resources, expected in (
+                (["https://example.com/bg.riv"], "missing or empty file"),
+                (["assets/missing.riv"], "missing or empty file"),
+                ([".codex-work/screen.png"], "bundled project assets"),
+                ("assets/media/anim/home/scene.riv", "must be a list"),
+            ):
+                with self.subTest(resources=resources):
+                    background["resources"] = resources
+                    ledger_path.write_text(json.dumps(ledger))
+                    self.assertTrue(any(expected in item for item in MODULE.validate_visual_ledger(root)))
+
+    def test_procedural_background_rejects_unwired_or_unverified_scene(self):
+        cases = (
+            ({"mode": "unknown"}, "unknown background mode"),
+            ({"mode": []}, "unknown background mode"),
+            ({"mode": None}, "unknown background mode"),
+            ({"scene_id": ""}, "scene_id"),
+            ({"implementation": []}, "implementation"),
+            ({"implementation": ["../outside.dart"]}, "inside project"),
+            ({"implementation": [".codex-work/screen.png"]}, "executable background implementation"),
+            ({"implementation": ["lib/missing.dart"]}, "missing or empty file"),
+            ({"entrypoint": "UnusedBg"}, "entrypoint"),
+            ({"recording": ".codex-work/screen.png"}, "motion recording"),
+            ({"recording": ".codex-work/missing.mov"}, "missing or empty file"),
+            ({"asset": "unused.png"}, "hybrid"),
+        )
+        for changes, expected in cases:
+            with self.subTest(changes=changes), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                ledger = self.procedural_ledger(root)
+                ledger["surfaces"][0]["background"].update(changes)
+                (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
+                self.assertTrue(any(expected in item for item in MODULE.validate_visual_ledger(root)))
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ledger = self.procedural_ledger(root)
+            (root / "lib/common_module/motion/home_bg.dart").write_text("class OtherBg {}")
+            (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
+            self.assertTrue(any("entrypoint" in item for item in MODULE.validate_visual_ledger(root)))
+
+    def test_procedural_background_rejects_scene_reuse_and_native_animation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ledger = self.procedural_ledger(root)
+            second = dict(ledger["surfaces"][0], id="task", layout=self.layout_record(1))
+            second["background"] = dict(second["background"], gradient_tokens=["taskGrad", "taskAccent"])
+            ledger["surfaces"].append(second)
+            ledger_path = root / ".codex-work/ui-visual-gates.json"
+            ledger_path.write_text(json.dumps(ledger))
+            self.assertTrue(any("scene_id is reused" in item for item in MODULE.validate_visual_ledger(root)))
+            ledger["surfaces"] = [dict(ledger["surfaces"][0], kind="native")]
+            ledger_path.write_text(json.dumps(ledger))
+            self.assertTrue(any("native Launch Screen must stay static" in item
+                                for item in MODULE.validate_visual_ledger(root)))
+
     def layout_record(self, variant=0):
         if variant == 0:
             return {

@@ -224,6 +224,7 @@ def validate_visual_ledger(root: Path):
     recorded_sources = set()
     background_assets = set()
     background_hashes = {}
+    background_scenes = set()
     background_signatures = set()
     page_ids = set()
     flutter_ids = set()
@@ -256,7 +257,15 @@ def validate_visual_ledger(root: Path):
             findings.append(f"{surface_id}: missing background record")
             continue
         background_asset = background.get("asset")
-        background_path = local_file(background_asset, f"surface {surface_id} background")
+        background_mode = background.get("mode", "image")
+        if not isinstance(background_mode, str) or background_mode not in {"image", "procedural", "animation", "hybrid"}:
+            findings.append(f"{surface_id}: unknown background mode: {background_mode}")
+            continue
+        uses_image = background_mode in {"image", "hybrid"}
+        uses_scene = background_mode in {"procedural", "animation", "hybrid"}
+        if background_mode in {"procedural", "animation"} and background_asset is not None:
+            findings.append(f"{surface_id}: use hybrid mode when declaring a background image asset")
+        background_path = local_file(background_asset, f"surface {surface_id} background") if uses_image else None
         if background_path:
             if background_path.suffix.lower() not in IMAGE_EXTENSIONS:
                 findings.append(f"{surface_id}: background asset is not an image: {background_asset}")
@@ -281,6 +290,51 @@ def validate_visual_ledger(root: Path):
                         f"{surface_id}: background asset must be page-specific under "
                         f"assets/backgrounds/{surface_id}/: {background_asset}"
                     )
+        if uses_scene:
+            if surface.get("kind") == "native":
+                findings.append(f"{surface_id}: native Launch Screen must stay static; export a still and use image mode")
+            scene_id = background.get("scene_id")
+            if not isinstance(scene_id, str) or not re.fullmatch(r"[a-z][a-z0-9_]*", scene_id):
+                findings.append(f"{surface_id}: background needs a stable scene_id")
+            elif scene_id in background_scenes and not standalone_welcome:
+                findings.append(f"{surface_id}: background scene_id is reused by another surface: {scene_id}")
+            elif not standalone_welcome:
+                background_scenes.add(scene_id)
+            implementation = background.get("implementation")
+            scene_code = []
+            if not isinstance(implementation, list) or not implementation:
+                findings.append(f"{surface_id}: missing executable background implementation file references")
+            else:
+                for value in implementation:
+                    scene_path = local_file(value, f"surface {surface_id} background implementation")
+                    if not scene_path:
+                        continue
+                    allowed_extensions = {".dart", ".frag", ".glsl"} if surface.get("kind") == "flutter" else {".html", ".css", ".js"}
+                    if (is_within(scene_path, root / ".codex-work")
+                            or scene_path.suffix.lower() not in allowed_extensions):
+                        findings.append(f"{surface_id}: expected executable background implementation: {value}")
+                    else:
+                        scene_code.append(scene_path.read_text(encoding="utf-8", errors="replace"))
+            entrypoint = background.get("entrypoint")
+            if not isinstance(entrypoint, str) or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", entrypoint):
+                findings.append(f"{surface_id}: background needs a callable entrypoint identifier")
+            else:
+                entry_pattern = rf"\b{re.escape(entrypoint)}\b"
+                source = path.read_text(encoding="utf-8", errors="replace") if path else ""
+                if not re.search(entry_pattern, source) or not any(re.search(entry_pattern, code) for code in scene_code):
+                    findings.append(f"{surface_id}: source and implementation must reference the background entrypoint")
+            resources = background.get("resources", [])
+            if not isinstance(resources, list):
+                findings.append(f"{surface_id}: background resources must be a list of bundled file paths")
+            else:
+                for value in resources:
+                    resource = local_file(value, f"surface {surface_id} background resource")
+                    if resource and (is_within(resource, root / ".codex-work") or is_within(resource, root / "aduit")):
+                        findings.append(f"{surface_id}: background resources must be bundled project assets: {value}")
+            if surface.get("kind") == "flutter":
+                recording = local_file(background.get("recording"), f"surface {surface_id} background motion recording")
+                if recording and recording.suffix.lower() not in {".mp4", ".mov"}:
+                    findings.append(f"{surface_id}: background needs an iPhone motion recording file")
         gradient_tokens = background.get("gradient_tokens")
         if not isinstance(gradient_tokens, list) or len(set(gradient_tokens)) < 2:
             findings.append(f"{surface_id}: background needs at least two distinct gradient tokens")
