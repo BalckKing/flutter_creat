@@ -79,10 +79,10 @@ for task_doc in "${task_expected_docs[@]}"; do
 done
 [[ "${task_manifest_docs[1]}" == '00-总入口.md' ]] || fail 'manifest 第一项必须是 00-总入口.md'
 
-for task_step in {1..20}; do
+for task_step in {1..21}; do
   rg -q -- "^${task_step}\\. " "$TASK_ORDER" || fail "实施顺序缺少第 ${task_step} 步"
 done
-[[ "$(rg -c -- '^([0-9]|1[0-9]|20)\. ' "$TASK_ORDER")" -ge 20 ]] || fail '实施顺序步骤数量不足'
+[[ "$(rg -c -- '^([0-9]|1[0-9]|2[01])\. ' "$TASK_ORDER")" -ge 21 ]] || fail '实施顺序步骤数量不足'
 
 require_text "$TASK_ORDER" '第 13 节是唯一的执行顺序'
 require_text "$TASK_ORDER" '第 14 节是唯一的最终报告格式'
@@ -314,7 +314,7 @@ require_text "$TASK_README" 'validate_public_copy\.py'
 require_text "$TASK_DOCS_DIR/01-执行约定.md" '^### 0\.9\.1 测试安装与构建产物复用'
 require_text "$TASK_DOCS_DIR/01-执行约定.md" '增量构建并覆盖安装同一 Bundle ID'
 require_text "$TASK_DOCS_DIR/07-测试与质量验收.md" '稳定输出目录、单一串行 runner'
-require_text "$TASK_ORDER" '验证复用贯穿第 6–20 步'
+require_text "$TASK_ORDER" '验证复用贯穿第 6–21 步'
 require_text "$TASK_RUNNER" 'Unchanged builds need no reinstall'
 require_text "$TASK_RUNNER" 'incrementally rebuild and overwrite the same installation'
 require_text "$TASK_RUNNER" 'at most one necessary rollback artifact'
@@ -324,7 +324,8 @@ require_before '^17\. ' '^18\. \*\*验收首页引导页'
 require_before '^18\. \*\*验收首页引导页' '^19\. \*\*最终图片加载检查'
 require_before '^19\. \*\*最终图片加载检查' '^20\. \*\*最终 iOS 权限校验'
 require_text "$TASK_ORDER" '首页引导页完成验收尝试并记录结果后.*生成不超过 4,000 字符的全英文'
-require_text "$TASK_ORDER" '第 19 步之后、最终报告之前.*全部适用项完成后才提交最终报告'
+require_before '^20\. \*\*最终 iOS 权限校验' '^21\. \*\*最终五张项目截图'
+require_text "$TASK_ORDER" '第 19 步之后、第 21 步截图之前.*全部适用项完成后进入第 21 步'
 require_text "$TASK_ORDER" '每个 Flutter 页面.*lib/welcome.*独立.*aduit/welcome.*四个 About HTML 页面和原生 Launch Screen.*独立背景图案'
 
 require_text "$TASK_START" 'TASK_DOC_MANIFEST'
@@ -344,8 +345,8 @@ task_execution_step_count() {
     END { print count + 0 }
   ' "$TASK_ORDER"
 }
-for task_step in {1..20}; do
+for task_step in {1..21}; do
   [[ "$(task_execution_step_count "$task_step")" -eq 1 ]] || fail "第 13 节的实施顺序缺少或重复第 ${task_step} 步"
 done
 
-print -r -- 'PASS: workflow manifest, 00-10 document set, steps 1-20, cross-document gates, and final-stage ordering are executable.'
+print -r -- 'PASS: workflow manifest, 00-10 document set, steps 1-21, cross-document gates, and final-stage ordering are executable.'
