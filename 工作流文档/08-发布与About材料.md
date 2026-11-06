@@ -32,7 +32,7 @@
 
 AppListing/About 生成、改名和最终精修时，按第 10.1.1 节移除生成器自动加入的不必要图片/视频来源列表、供应商标识、下载链接及 Credits 入口；不将内部素材清单批量转成公开页面或 Review Remarks。Terms 中的内容来源与许可说明保持概括、真实，不能据此生成逐项图库清单。保留实际许可强制要求的声明、软件必要许可通知及真实隐私/外部服务披露，四页白名单与协议 URL 原文不变。
 
-四个自有 HTML 页面同步第 6.5 节的背景规则：浅色外观使用 Logo 暖色渐变整体底色，不能回退纯白；正文采用稳定高对比表面，深色外观保持现有规则。另行制作的独立 `aduit/welcome.html`，继续遵守自包含、图片内嵌及体积限制。
+四个自有 HTML 页面同步第 6.5 节的背景规则：浅色外观使用 Logo 派生浅彩渐变整体底色，保留真实主色及多色关系，不统一套橙黄/奶油色；品牌背景、重点卡片、按钮等按用途使用有区别的渐变，不能回退纯白；正文采用稳定高对比表面，深色外观保持现有规则。另行制作的独立 `aduit/welcome.html`，继续遵守自包含、图片内嵌及体积限制。
 
 #### About 最终配色与小体积 Logo
 
@@ -118,7 +118,7 @@ CSS/JavaScript 内联到四个站点 HTML 与独立 `aduit/welcome.html`，字�
 
 **AppListing 改名后：Dart 欢迎页与独立 HTML 交付**：在最终 `AppListing/` 已改名/整理为 `aduit/` 后、URL 回接和 Review Remarks 之前，依据最终源码、配置、实际页面与 `aduit/intro.md` 同步完成以下两份产物。原位保留 `aduit/site/index.html` 的生成器内容与结构及其余三个站点 HTML 的职责与路径；本操作不替换、覆盖或移动四页，必要的品牌配色、Logo 优化及成品文案修正仍按本节执行，四个原始 URL 不变。
 
-1. **App 实际使用 `lib/welcome.dart`**：定义并导出 Flutter `WelcomePage`，将 `/welcome` 路由实际指向它。按第 6.13、7.1 节自由设计本项目独有、复杂且贴题的精致欢迎构图，不固定卡片形状、区域顺序或按钮位置，保持必要内容与行为：3–5 个真实介绍章节/卡片、自动轮播、可点击且有可访问名称的分页圆点、英文文案、Logo 派生暖色渐变与动态渐变、主题背景、圆角图片、图标、Emoji 和适用图片/GIF，以及 `Continue`、真实准备步骤/百分比/进度、错误态 `Try again` 与所选 `Clear Data` / `Exit App`。不能只放一个按钮、删除视觉效果或把 HTML 字符串包进 Dart。使用 Flutter Widget，可选择 `PageView` / `PageController` 或等价章节呈现与可释放的控制器/计时器；不能把组件选择当作固定整页骨架；复杂子组件按原页面分类拆分，欢迎入口固定在 `lib/welcome.dart`，其余页面不集中到该文件。图片/背景/GIF 使用已登记并随包的项目 `assets/`，通过 `Image.asset` 等加载，不从 `aduit/`、HTML、网络或超大 Base64 字符串读取。此 Dart 文件不适用 HTML 的 256 KiB、内联 CSS/JS 或 Base64 限制；正常资源解码、命名、圆角、许可和最终图片验收继续执行。
+1. **App 实际使用 `lib/welcome.dart`**：定义并导出 Flutter `WelcomePage`，将 `/welcome` 路由实际指向它。按第 6.13、7.1 节自由设计本项目独有、复杂且贴题的精致欢迎构图，不固定卡片形状、区域顺序或按钮位置，保持必要内容与行为：3–5 个真实介绍章节/卡片、自动轮播、可点击且有可访问名称的分页圆点、英文文案、Logo 派生多组协调渐变与动态渐变、主题背景、圆角图片、图标、Emoji 和适用图片/GIF，以及 `Continue`、真实准备步骤/百分比/进度、错误态 `Try again` 与所选 `Clear Data` / `Exit App`。不能只放一个按钮、删除视觉效果或把 HTML 字符串包进 Dart。使用 Flutter Widget，可选择 `PageView` / `PageController` 或等价章节呈现与可释放的控制器/计时器；不能把组件选择当作固定整页骨架；复杂子组件按原页面分类拆分，欢迎入口固定在 `lib/welcome.dart`，其余页面不集中到该文件。图片/背景/GIF 使用已登记并随包的项目 `assets/`，通过 `Image.asset` 等加载，不从 `aduit/`、HTML、网络或超大 Base64 字符串读取。此 Dart 文件不适用 HTML 的 256 KiB、内联 CSS/JS 或 Base64 限制；正常资源解码、命名、圆角、许可和最终图片验收继续执行。
 2. **原行为改为 Dart 调用**：`Continue` 直接调用现有 Welcome-to-main 的 Dart callback/路由逻辑，防重复点击/重复导航，不通过 WebView、JavaScript、AppBridge 或 URL scheme。保留原准备条件与进入目标，准备就绪且原生承接层淡出后才允许继续；不增加 `Enter` 或协议页脚。每次启动仍进入 Welcome；只有所选 `Clear Data` / `Exit App` 二次确认且真实成功后才进入独立 Initialization（`/entry`、`Entry`），协议通用文案仅初始化页显示。协议 WebView 与四个原始 URL 的原有逻辑不变。
 3. **保留 `aduit/welcome.html`，但不使用**：将原自包含 HTML 欢迎引导页保留/生成在 `aduit/` 顶层，仅供独立查看、交付和后续使用，不作为 App 页面、资源、回退页或启动就绪来源。内容和骨架对应本次实际 Dart Welcome 的已选独有方案，不恢复固定居中卡片模板；原 HTML 契约继续适用：全部 HTML/CSS/JavaScript 内联、系统字体、3–5 个介绍章节（不限定矩形卡片容器）、自动轮播/分页点、全英文、所有图片 Base64 data URI 内嵌、完整 UTF-8 文件严格小于 262,144 字节、无外部资源请求，`viewport-fit=cover` 与 `env(safe-area-inset-top)` / `env(safe-area-inset-bottom)`、圆角裁剪、`prefers-reduced-motion`。Logo 使用优化小副本的内嵌字节，不引用工程资产或站点相对图片。保留下面的原 Continue 函数，两份独立欢迎产物中只有 HTML 使用此函数、Dart 仍直接导航；生成器站点首页已有的同类函数照常保留，不因本说明删改。App 不为它注册消息桥、URL scheme、导航拦截或加载入口，也不把它打包；生成器站点首页同样不接入 App 或打包。
 
