@@ -56,6 +56,65 @@ class VisualImplementationContractTests(unittest.TestCase):
                 self.assertFalse((root / "assets").exists())
                 self.assertEqual(MODULE.validate_visual_ledger(root), [])
 
+    def test_color_choices_and_gradient_counts_are_unrestricted(self):
+        cases = (([], []), ([], ["#000000"]), ([], ["#0B234A", "#808080"]),
+                 (["customGradient"], ["#FFFFFF"]), (None, None))
+        for tokens, colors in cases:
+            with self.subTest(tokens=tokens, colors=colors), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                ledger = self.procedural_ledger(root)
+                background = ledger["surfaces"][0]["background"]
+                for key, value in (("gradient_tokens", tokens), ("palette_hex", colors)):
+                    if value is None:
+                        background.pop(key)
+                    else:
+                        background[key] = value
+                ledger["checks"] = [row for row in ledger["checks"] if row["id"] != "gradients"]
+                (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
+                self.assertEqual(MODULE.validate_visual_ledger(root), [])
+
+    def test_distinct_pages_may_share_the_same_palette(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ledger = self.procedural_ledger(root)
+            second = dict(ledger["surfaces"][0], id="task", source="lib/page_module/task_page.dart",
+                          layout=self.layout_record(1))
+            second["background"] = dict(second["background"], scene_id="task_scene")
+            (root / second["source"]).write_text("class TaskPage { final background = HomeBg(); }")
+            ledger["surfaces"].append(second)
+            for check in ledger["checks"]:
+                check["targets"].append("task")
+            (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
+            self.assertEqual(MODULE.validate_visual_ledger(root), [])
+
+    def test_optional_color_metadata_rejects_malformed_values(self):
+        for key, value in (("gradient_tokens", "token"), ("gradient_tokens", [None]),
+                           ("gradient_tokens", [["token"]]), ("palette_hex", "#FFFFFF"),
+                           ("palette_hex", [123]), ("palette_hex", ["not-a-color"]),
+                           ("palette_hex", ["#1234567"])):
+            with self.subTest(key=key, value=value), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                ledger = self.procedural_ledger(root)
+                ledger["surfaces"][0]["background"][key] = value
+                (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
+                self.assertTrue(any(key in item for item in MODULE.validate_visual_ledger(root)))
+
+    def test_solid_color_typography_does_not_require_gradient_code(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            theme = root / "lib/common_module/theme/app_theme.dart"
+            theme.parent.mkdir(parents=True)
+            theme.write_text("final display = TextStyle(fontStyle: FontStyle.italic); "
+                             "final heading = TextStyle(fontWeight: FontWeight.w700); "
+                             "final body = TextStyle(); final metadata = TextStyle(); final action = TextStyle();")
+            pages = root / "lib/page_module"
+            pages.mkdir()
+            for name in ("home", "task", "settings"):
+                (pages / f"{name}_page.dart").write_text("final title = AppTheme.heading; final copy = Text.rich(TextSpan());")
+            findings = MODULE.validate(root)
+            self.assertFalse(any("gradient" in item.lower() for item in findings), findings)
+            self.assertFalse(any("typography implementation" in item for item in findings), findings)
+
     def test_hybrid_background_retains_image_and_animation_validation(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -433,7 +492,7 @@ class VisualImplementationContractTests(unittest.TestCase):
             self.assertTrue(any("settings_page.dart" in item for item in findings))
             self.assertTrue(any("missing.png" in item for item in findings))
 
-    def test_visual_ledger_rejects_single_background_signature(self):
+    def test_visual_ledger_rejects_duplicate_background_bytes(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             for page_id in ("home", "task"):
@@ -460,7 +519,8 @@ class VisualImplementationContractTests(unittest.TestCase):
             ledger = {"build": {"id": "1", "device": "iPhone 17 Pro Max", "os": "iOS 26.5"},
                       "surfaces": surfaces, "checks": checks}
             (evidence / "ui-visual-gates.json").write_text(json.dumps(ledger), encoding="utf-8")
-            self.assertTrue(any("identical background" in item for item in MODULE.validate_visual_ledger(root)))
+            self.assertIn("task: background bytes duplicate surface home; each surface needs its own decoration",
+                          MODULE.validate_visual_ledger(root))
 
     def test_malformed_ledger_is_reported_without_crashing(self):
         with tempfile.TemporaryDirectory() as tmp:

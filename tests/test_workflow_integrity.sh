@@ -107,10 +107,10 @@ TASK_README="$TASK_ROOT/README.md"
 
 require_text "$TASK_CONVENTIONS" '0\.11 Apple 4\.3 与 5\.6 工程级发布门槛'
 require_text "$TASK_CONVENTIONS" '0\.2\.1 随机范围与全量硬门槛'
-require_text "$TASK_CONVENTIONS" '本流程只允许两类内容由智能体随机或自主变化'
-require_text "$TASK_CONVENTIONS" '所有规格都是硬门槛'
-require_text "$TASK_CONVENTIONS" '不能以随机性解释字体、渐变、点击特效、权限、资源、目录或验收缺失'
-require_text "$TASK_CONVENTIONS" '所有 UI 视觉表现均属于硬门槛'
+require_text "$TASK_CONVENTIONS" '本流程只允许两类产品内容由智能体随机或自主变化'
+require_text "$TASK_CONVENTIONS" '其余适用规格都是硬门槛'
+require_text "$TASK_CONVENTIONS" '字体、点击特效、权限、资源、目录及验收仍须完整落实'
+require_text "$TASK_CONVENTIONS" '所有适用 UI 视觉表现均属于硬门槛'
 require_text "$TASK_CONVENTIONS" 'app-review-risk\.md'
 require_text "$TASK_CONVENTIONS" '只更换名称、Logo、渐变、字体、图片、文案、卡片尺寸或导航外壳不构成差异化'
 require_text "$TASK_CONVENTIONS" 'Release readiness: Ready for submission'
@@ -272,8 +272,8 @@ require_text "$TASK_QA" 'validate_review_remarks\.py'
 require_text "$TASK_QA" 'validate_public_copy\.py'
 require_text "$TASK_QA" 'particle-evidence\.md'
 require_text "$TASK_QA" 'ui-visual-gates\.json'
-require_text "$TASK_QA" '至少两个不同的 `gradient_tokens`'
-require_text "$TASK_QA" '至少三个 Logo 派生 `palette_hex`'
+require_text "$TASK_QA" '任意配色均可通过色彩方向检查'
+require_text "$TASK_QA" '不设色相、色温、饱和度或渐变数量门槛'
 require_text "$TASK_QA" '背景文件只能位于对应的 `assets/backgrounds/<page_id>/`'
 
 require_text "$TASK_RELEASE" '12\.4 4\.3/5\.6 发布材料与身份复核'
@@ -301,13 +301,27 @@ require_file "$TASK_ROOT/flutter-engine-runner/scripts/validate_visual_implement
 require_file "$TASK_ROOT/flutter-engine-runner/scripts/validate_review_remarks.py"
 require_file "$TASK_ROOT/flutter-engine-runner/scripts/validate_public_copy.py"
 require_file "$TASK_ROOT/flutter-engine-runner/scripts/validate_path_names.py"
+require_file "$TASK_ROOT/flutter-engine-runner/scripts/prepare_ios_config.py"
+require_text "$TASK_ARCHITECTURE" '^### 9\.1\.2 打包前源配置补齐与复验'
+for task_ios_doc in "$TASK_CONVENTIONS" "$TASK_ARCHITECTURE" "$TASK_QA" "$TASK_ORDER" "$TASK_RUNNER" "$TASK_README"; do
+  require_text "$task_ios_doc" 'prepare_ios_config\.py'
+  require_text "$task_ios_doc" 'MinimumOSVersion'
+done
+require_text "$TASK_QA" 'AppFrameworkInfo\.plist.*缺少.*MinimumOSVersion'
+require_text "$TASK_CONVENTIONS" '最终报告单列这五项状态'
+forbid_text "$TASK_CONVENTIONS" '报告四项状态|单列这四项状态'
+require_text "$TASK_RUNNER" 'Report five separate results'
+require_text "$TASK_ARCHITECTURE" 'build_verified: false'
+require_text "$TASK_ARCHITECTURE" '去掉 `--apply`'
 require_text "$TASK_RUNNER" 'Release readiness: Blocked'
 require_text "$TASK_RUNNER" 'Delete every unknown, unconfirmed, pending, or not-provided field'
 require_text "$TASK_RUNNER" 'Background variety is an explicit hard gate'
 require_text "$TASK_RUNNER" 'background\.asset'
 require_text "$TASK_README" '4\.3/5\.6 工程审核风险门槛'
 require_text "$TASK_README" '背景点缀也是硬门槛'
-require_text "$TASK_README" '至少两个 Logo 派生渐变令牌'
+require_text "$TASK_README" '任意色彩均可使用，不设色相、冷暖、饱和度、数量或渐变配额'
+forbid_text "$TASK_ROOT/工作流文档/02-创意与思维导图.md" '建立配色矩阵|至少 4 个.*主色家族|最多 3 张|至少三种清晰可辨的鲜明色彩'
+forbid_text "$TASK_QA" '至少两个不同的 `gradient_tokens`|至少三个 Logo 派生 `palette_hex`|至少四种用途明确的 Logo 派生渐变'
 require_text "$TASK_README" 'validate_public_copy\.py'
 
 # One reusable App installation must not bypass updates or runtime evidence.
@@ -334,6 +348,7 @@ require_text "$TASK_START" 'TASK_RUNNER_SOURCE/scripts/validate_visual_implement
 require_text "$TASK_START" 'TASK_RUNNER_SOURCE/scripts/validate_review_remarks.py'
 require_text "$TASK_START" 'TASK_RUNNER_SOURCE/scripts/validate_public_copy.py'
 require_text "$TASK_START" 'TASK_RUNNER_SOURCE/scripts/validate_path_names.py'
+require_text "$TASK_START" 'TASK_RUNNER_SOURCE/scripts/prepare_ios_config.py'
 require_text "$TASK_START" 'TASK_DOCUMENTS'
 
 task_execution_step_count() {

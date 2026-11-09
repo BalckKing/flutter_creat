@@ -8,6 +8,7 @@ typeset -a TASK_CHECKS=(
   "$TASK_ROOT/tests/test_workflow_integrity.sh"
   "$TASK_ROOT/tests/test_onboarding_guide_workflow.sh"
   "$TASK_ROOT/tests/test_validate_visual_implementation.py"
+  "$TASK_ROOT/tests/test_prepare_ios_config.py"
   "$TASK_ROOT/tests/test_validate_review_remarks.py"
   "$TASK_ROOT/tests/test_validate_public_copy.py"
   "$TASK_ROOT/tests/test_validate_path_names.py"

@@ -77,6 +77,7 @@ VISUAL_GATES = {
     "backgrounds", "decoration", "icons", "emoji", "text_density", "media", "content", "layout", "controls", "states",
     "appearance", "accessibility", "launch_flow", "app_icon", "html", "refinement",
 }
+OPTIONAL_VISUAL_GATES = {"gradients"}
 PAGE_GATES = {
     "brand_palette", "gradients", "typography", "backgrounds", "decoration", "icons", "emoji", "text_density", "media", "content",
     "layout", "controls", "states", "appearance", "accessibility",
@@ -225,10 +226,8 @@ def validate_visual_ledger(root: Path):
     background_assets = set()
     background_hashes = {}
     background_scenes = set()
-    background_signatures = set()
     page_ids = set()
     flutter_ids = set()
-    runtime_page_ids = set()
     for surface in surfaces:
         if not isinstance(surface, dict) or not isinstance(surface.get("id"), str) or not surface["id"].strip():
             findings.append("each visual surface needs a nonempty id")
@@ -248,9 +247,6 @@ def validate_visual_ledger(root: Path):
             recorded_sources.add(path)
         standalone_welcome = bool(path and path == root / "aduit/welcome.html"
                                   and surface.get("kind") == "html")
-
-        if surface.get("kind") in {"flutter", "html"} and not standalone_welcome:
-            runtime_page_ids.add(surface_id)
 
         background = surface.get("background")
         if not isinstance(background, dict):
@@ -335,19 +331,21 @@ def validate_visual_ledger(root: Path):
                 recording = local_file(background.get("recording"), f"surface {surface_id} background motion recording")
                 if recording and recording.suffix.lower() not in {".mp4", ".mov"}:
                     findings.append(f"{surface_id}: background needs an iPhone motion recording file")
-        gradient_tokens = background.get("gradient_tokens")
-        if not isinstance(gradient_tokens, list) or len(set(gradient_tokens)) < 2:
-            findings.append(f"{surface_id}: background needs at least two distinct gradient tokens")
-        palette_hex = background.get("palette_hex")
-        valid_hex = (
-            isinstance(palette_hex, list)
-            and len(set(palette_hex)) >= 3
-            and all(isinstance(value, str) and re.fullmatch(r"#[0-9A-Fa-f]{6,8}", value) for value in palette_hex)
-        )
-        if not valid_hex:
-            findings.append(f"{surface_id}: background needs at least three valid Logo-derived HEX colors")
-        if not standalone_welcome and isinstance(gradient_tokens, list) and isinstance(palette_hex, list):
-            background_signatures.add((tuple(sorted(set(gradient_tokens))), tuple(sorted(set(palette_hex)))))
+        # Color metadata is optional. Validate its shape when supplied, without
+        # imposing palette sizes, hue choices or gradient usage on the design.
+        if "gradient_tokens" in background:
+            gradient_tokens = background["gradient_tokens"]
+            if not isinstance(gradient_tokens, list) or any(
+                not isinstance(value, str) or not value.strip() for value in gradient_tokens
+            ):
+                findings.append(f"{surface_id}: gradient_tokens must be a list of nonempty token names")
+        if "palette_hex" in background:
+            palette_hex = background["palette_hex"]
+            if not isinstance(palette_hex, list) or any(
+                not isinstance(value, str) or not re.fullmatch(r"#[0-9A-Fa-f]{6}(?:[0-9A-Fa-f]{2})?", value)
+                for value in palette_hex
+            ):
+                findings.append(f"{surface_id}: palette_hex must be a list of valid HEX colors")
         if path and background_asset:
             source = path.read_text(encoding="utf-8", errors="replace")
             background_name = Path(str(background_asset)).name
@@ -358,9 +356,6 @@ def validate_visual_ledger(root: Path):
             )
             if not source_has_reference:
                 findings.append(f"{surface_id}: source does not reference its background asset")
-
-    if len(runtime_page_ids) > 1 and len(background_signatures) == 1:
-        findings.append("all visual surfaces use one identical background palette/gradient signature")
 
     dart_files, _ = read_dart_files(root)
     # Widget components need not be independent surfaces, so use declarations
@@ -429,7 +424,7 @@ def validate_visual_ledger(root: Path):
                 findings.append(f"{gate}: needs an iPhone motion recording file")
             if field == "implementation" and not any(path and not is_within(path, root / ".codex-work") for path in paths):
                 findings.append(f"{gate}: evidence prose cannot replace an implementation file")
-    for missing in sorted(VISUAL_GATES - seen):
+    for missing in sorted(VISUAL_GATES - OPTIONAL_VISUAL_GATES - seen):
         findings.append(f"missing visual gate: {missing}")
     return findings
 
@@ -455,7 +450,7 @@ def validate(root: Path):
         findings,
     )
 
-    # Typography and gradients must be declared and consumed by page code.
+    # Typography must be declared and consumed; gradients are a design choice.
     brand_entry = root / "lib/common_module/theme/app_theme.dart"
     theme_files = [path for path in files if brand_entry.parent in path.parents]
     if not brand_entry.is_file() or brand_entry.is_symlink():
@@ -466,28 +461,21 @@ def validate(root: Path):
             require(rf"\b{role}\b", theme, f"missing typography role: {role}", findings)
         require(r"fontStyle\s*:\s*FontStyle\.italic", theme, "missing italic title treatment", findings)
         require(r"fontWeight\s*:\s*FontWeight\.", theme, "missing font-weight treatment", findings)
-        require(r"LinearGradient|RadialGradient", theme, "missing shared gradient token", findings)
-
-    require(r"ShaderMask|\.shader\b|foreground\s*:\s*Paint", all_dart, "missing gradient text implementation", findings)
     require(r"Text\.rich|RichText|InlineSpan", all_dart, "missing semantic emphasized text", findings)
 
     pages = page_files(files)
     visual_page_count = 0
     for path in pages:
         source = path.read_text(encoding="utf-8", errors="replace")
-        has_gradient = re.search(
-            r"LinearGradient|RadialGradient|ShaderMask|brandGradient|sunsetGradient|accentBorder",
-            source,
-        )
         has_typography = re.search(
             r"Theme\.of\(|textTheme|AppTheme|TextStyle|Text\.rich|RichText",
             source,
         )
-        if has_gradient and has_typography:
+        if has_typography:
             visual_page_count += 1
     if visual_page_count < 3:
         findings.append(
-            f"gradient and typography implementation is consumed together by only "
+            f"typography implementation is consumed by only "
             f"{visual_page_count} page files; need at least 3"
         )
 
