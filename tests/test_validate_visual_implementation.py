@@ -56,7 +56,7 @@ class VisualImplementationContractTests(unittest.TestCase):
                 self.assertFalse((root / "assets").exists())
                 self.assertEqual(MODULE.validate_visual_ledger(root), [])
 
-    def test_color_choices_and_gradient_counts_are_unrestricted(self):
+    def test_optional_color_metadata_does_not_certify_visual_quality(self):
         cases = (([], []), ([], ["#000000"]), ([], ["#0B234A", "#808080"]),
                  (["customGradient"], ["#FFFFFF"]), (None, None))
         for tokens, colors in cases:
