@@ -252,16 +252,23 @@ def validate_visual_ledger(root: Path):
         if not isinstance(background, dict):
             findings.append(f"{surface_id}: missing background record")
             continue
+        # The image accent is required in addition to any procedural/animated
+        # scene. Metadata cannot establish real visibility; inspect the build.
         background_asset = background.get("asset")
+        if not isinstance(background_asset, str) or not background_asset.strip():
+            findings.append(f"{surface_id}: missing required translucent background image asset")
+        opacity = background.get("opacity")
+        if isinstance(opacity, bool) or not isinstance(opacity, (int, float)) or not 0 < opacity < 1:
+            findings.append(f"{surface_id}: background opacity must be numeric and strictly between 0 and 1")
+        placement = background.get("placement")
+        if not isinstance(placement, str) or not placement.strip():
+            findings.append(f"{surface_id}: background placement must describe the visible image region")
         background_mode = background.get("mode", "image")
         if not isinstance(background_mode, str) or background_mode not in {"image", "procedural", "animation", "hybrid"}:
             findings.append(f"{surface_id}: unknown background mode: {background_mode}")
             continue
-        uses_image = background_mode in {"image", "hybrid"}
         uses_scene = background_mode in {"procedural", "animation", "hybrid"}
-        if background_mode in {"procedural", "animation"} and background_asset is not None:
-            findings.append(f"{surface_id}: use hybrid mode when declaring a background image asset")
-        background_path = local_file(background_asset, f"surface {surface_id} background") if uses_image else None
+        background_path = local_file(background_asset, f"surface {surface_id} background")
         if background_path:
             if background_path.suffix.lower() not in IMAGE_EXTENSIONS:
                 findings.append(f"{surface_id}: background asset is not an image: {background_asset}")

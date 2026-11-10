@@ -24,6 +24,10 @@ class VisualImplementationContractTests(unittest.TestCase):
             renderer.write_text("class HomeBg extends CustomPainter { void paint(Canvas canvas, Size size) {} }")
         else:
             page.write_text("<canvas id='bg'></canvas><script>function drawScene() {} drawScene();</script>")
+        image = root / "assets/backgrounds/home/home_background.png"
+        image.parent.mkdir(parents=True)
+        image.write_bytes(b"home-background-fixture")
+        page.write_text(page.read_text() + "\n'home_background.png'")
         evidence = root / ".codex-work"
         evidence.mkdir()
         (evidence / "screen.png").write_bytes(b"screen-fixture")
@@ -32,6 +36,8 @@ class VisualImplementationContractTests(unittest.TestCase):
             "mode": "procedural", "scene_id": "home_atmos",
             "entrypoint": "HomeBg" if kind == "flutter" else "drawScene",
             "implementation": [implementation], "recording": ".codex-work/motion.mov",
+            "asset": "assets/backgrounds/home/home_background.png",
+            "opacity": 0.12, "placement": "upper-right behind content",
             "gradient_tokens": ["brandGradient", "sunsetGradient"],
             "palette_hex": ["#F05A3C", "#FFB347", "#D84315"],
         }
@@ -47,14 +53,72 @@ class VisualImplementationContractTests(unittest.TestCase):
         }
         return ledger
 
-    def test_procedural_background_needs_no_generated_image(self):
+    def test_procedural_background_keeps_image_accent_alongside_scene(self):
         for kind in ("flutter", "html"):
             with self.subTest(kind=kind), tempfile.TemporaryDirectory() as tmp:
                 root = Path(tmp)
                 ledger = self.procedural_ledger(root, kind)
                 (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
-                self.assertFalse((root / "assets").exists())
+                self.assertTrue((root / ledger["surfaces"][0]["background"]["asset"]).is_file())
                 self.assertEqual(MODULE.validate_visual_ledger(root), [])
+
+    def test_every_background_mode_requires_a_translucent_image(self):
+        for mode in ("image", "procedural", "animation", "hybrid"):
+            with self.subTest(mode=mode), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                ledger = self.procedural_ledger(root)
+                background = ledger["surfaces"][0]["background"]
+                background.update(mode=mode, opacity=0.12, placement="upper-right behind content")
+                background.pop("asset", None)
+                (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
+                self.assertIn("home: missing required translucent background image asset",
+                              MODULE.validate_visual_ledger(root))
+
+    def test_translucent_image_rejects_invisible_opaque_or_unplaced_records(self):
+        for field, value in (("opacity", None), ("opacity", 0), ("opacity", 1),
+                             ("opacity", -0.1), ("opacity", 1.1), ("opacity", True),
+                             ("opacity", "0.12"), ("opacity", float("nan")),
+                             ("placement", None), ("placement", ""), ("placement", " ")):
+            with self.subTest(field=field, value=value), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                ledger = self.procedural_ledger(root)
+                background = ledger["surfaces"][0]["background"]
+                image = root / "assets/backgrounds/home/home_background.png"
+                image.parent.mkdir(parents=True, exist_ok=True)
+                image.write_bytes(b"background-fixture")
+                background.update(mode="image", asset=str(image.relative_to(root)),
+                                  opacity=0.12, placement="upper-right behind content")
+                source = root / ledger["surfaces"][0]["source"]
+                source.write_text(source.read_text() + " const bg = 'home_background.png';")
+                if value is None:
+                    background.pop(field)
+                else:
+                    background[field] = value
+                (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
+                self.assertTrue(any(f"background {field}" in finding
+                                    for finding in MODULE.validate_visual_ledger(root)))
+
+    def test_scene_cannot_replace_missing_or_unreferenced_image_accent(self):
+        for fault in ("missing_file", "unused", "wrong_page"):
+            with self.subTest(fault=fault), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                ledger = self.procedural_ledger(root)
+                surface = ledger["surfaces"][0]
+                if fault == "missing_file":
+                    (root / surface["background"]["asset"]).unlink()
+                    expected = "missing or empty file"
+                elif fault == "unused":
+                    (root / surface["source"]).write_text("class HomePage { final bg = HomeBg(); }")
+                    expected = "source does not reference its background asset"
+                else:
+                    original = root / surface["background"]["asset"]
+                    other = root / "assets/backgrounds/other/other_background.png"
+                    other.parent.mkdir(parents=True)
+                    original.rename(other)
+                    surface["background"]["asset"] = str(other.relative_to(root))
+                    expected = "background asset must be page-specific"
+                (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
+                self.assertTrue(any(expected in item for item in MODULE.validate_visual_ledger(root)))
 
     def test_optional_color_metadata_does_not_certify_visual_quality(self):
         cases = (([], []), ([], ["#000000"]), ([], ["#0B234A", "#808080"]),
@@ -80,7 +144,11 @@ class VisualImplementationContractTests(unittest.TestCase):
             second = dict(ledger["surfaces"][0], id="task", source="lib/page_module/task_page.dart",
                           layout=self.layout_record(1))
             second["background"] = dict(second["background"], scene_id="task_scene")
-            (root / second["source"]).write_text("class TaskPage { final background = HomeBg(); }")
+            second["background"]["asset"] = "assets/backgrounds/task/task_background.png"
+            image = root / second["background"]["asset"]
+            image.parent.mkdir(parents=True)
+            image.write_bytes(b"distinct-task-background-fixture")
+            (root / second["source"]).write_text("class TaskPage { final background = HomeBg(); } 'task_background.png'")
             ledger["surfaces"].append(second)
             for check in ledger["checks"]:
                 check["targets"].append("task")
@@ -122,7 +190,7 @@ class VisualImplementationContractTests(unittest.TestCase):
             background = ledger["surfaces"][0]["background"]
             background.update(mode="hybrid", asset="assets/backgrounds/home/home_background.png")
             image = root / background["asset"]
-            image.parent.mkdir(parents=True)
+            image.parent.mkdir(parents=True, exist_ok=True)
             image.write_bytes(b"image-fixture")
             page = root / ledger["surfaces"][0]["source"]
             page.write_text(page.read_text() + " const texture = 'home_background.png';")
@@ -168,7 +236,7 @@ class VisualImplementationContractTests(unittest.TestCase):
             ({"entrypoint": "UnusedBg"}, "entrypoint"),
             ({"recording": ".codex-work/screen.png"}, "motion recording"),
             ({"recording": ".codex-work/missing.mov"}, "missing or empty file"),
-            ({"asset": "unused.png"}, "hybrid"),
+            ({"asset": "unused.png"}, "missing or empty file"),
         )
         for changes, expected in cases:
             with self.subTest(changes=changes), tempfile.TemporaryDirectory() as tmp:
@@ -375,6 +443,7 @@ class VisualImplementationContractTests(unittest.TestCase):
                 "surfaces": [{"id": "home", "kind": "flutter", "source": "lib/page_module/home_page.dart",
                               "layout": self.layout_record(),
                               "background": {"asset": "assets/backgrounds/home/home_background.png",
+                                             "opacity": 0.12, "placement": "upper-right behind content",
                                              "gradient_tokens": ["brandGradient", "sunsetGradient"],
                                              "palette_hex": ["#F05A3C", "#FFB347", "#6F2DBD"]}}],
                 "checks": [{"id": gate, "status": "Verified", "targets": ["home"],
@@ -447,6 +516,7 @@ class VisualImplementationContractTests(unittest.TestCase):
                     **({"same_layout_as": "welcome"} if kind == "html" else {}),
                     "background": {
                         "asset": "assets/backgrounds/welcome/welcome_background.png",
+                        "opacity": 0.15, "placement": "right edge behind introduction",
                         "gradient_tokens": ["welcomeGradient", "accentGradient"],
                         "palette_hex": ["#F05A3C", "#FFB347", "#6F2DBD"],
                     },

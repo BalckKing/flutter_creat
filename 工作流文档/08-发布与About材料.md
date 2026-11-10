@@ -93,7 +93,7 @@ AppListing/About 生成、改名和最终精修时，按第 10.1.1 节移除生�
 
 本节在 App 实现、UI/资源精修及第 11.9 节质量复核后执行；执行适用检查、修复可修复项并记录外部失败，不将失败改写为通过。开发期四个站点页面仅在开发浏览器预览，不将其接入 App 依赖，也不提前执行最终 AppListing。最终改名为 `aduit/` 后更新并接入 `lib/welcome.dart`，保留自包含 `aduit/welcome.html` 但不加载/打包；继续 URL 回接与 Review Remarks，不等域名或部署。
 
-固定收尾路径：完整远程 `feature/1.2.1-A1` checkout（核对 origin/分支/revision）→ 失败切换 `/Users/admin/Desktop/config/ios-app-listing` → 仍失败使用随包生成契约 → 本地生成 AppListing、详尽 description 与 About（支持时使用 `--no-deploy-about --no-sync-project-listing-urls`）→ 核对 Logo 配色 → 改名/整理为 `aduit/` → 立即建立空 `aduit/imgs/` → 核验四页 `site/` → **实现并接入 `lib/welcome.dart`，保留独立 `aduit/welcome.html` 且不使用，分别验收** → 原样复制四个 `All URL` → 仅 Initialization 底部 Terms/Privacy，Settings 三个协议 WebView 入口并无网络回归 → `aduit/review/remarks.md` → 当前阶段目录白名单/运行边界验收（五张截图在第 21 步补齐并最终复核）→ 额外产物与证据归档 `.codex-work/` → 确认 `AppListing/` 不存在 → 最终图片/依赖检查 → 最终 iOS 权限校验及修复复验 → 按第 12.5 节交付五张 1206×2622 项目截图到 `aduit/imgs/` → 最终报告。不因外部失败等待用户或取消后续材料，不冒充技能验证；不查询/推测/替换域名，不部署、不探测公开地址。
+固定收尾路径：完整远程 `feature/1.2.1-A1` checkout（核对 origin/分支/revision）→ 失败切换 `/Users/admin/Desktop/config/ios-app-listing` → 仍失败使用随包生成契约 → 本地生成 AppListing、详尽 description 与 About（支持时使用 `--no-deploy-about --no-sync-project-listing-urls`）→ 核对 Logo 配色 → 改名/整理为 `aduit/` → 立即建立空 `aduit/imgs/` → 核验四页 `site/` → **实现并接入 `lib/welcome.dart`，保留独立 `aduit/welcome.html` 且不使用，分别验收** → 原样复制四个 `All URL` → 仅 Initialization 底部 Terms/Privacy，Settings 三个协议 WebView 入口并无网络回归 → `aduit/review/remarks.md` → 当前阶段目录白名单/运行边界验收（五张截图在第 21 步补齐并最终复核）→ 额外产物与证据归档 `.codex-work/` → 确认 `AppListing/` 不存在 → 最终图片/依赖检查 → 最终 iOS 权限校验及修复复验 → 按第 12.5 节交付五张 1206×2622 项目截图到 `aduit/imgs/` → 全部验收通过后第 22 步关联用户仓库并创建/切换 `feat/1.0.0`（不暂存、提交或推送）→ 最终报告。不因外部失败等待用户或取消后续材料，不冒充技能验证；不查询/推测/替换域名，不部署、不探测公开地址。
 
 引导页检查必须先执行并记录结果，再进入 URL 回接和 Review Remarks；可修复缺陷先修复复验，外部条件受阻则记录证据并继续生成后续材料，不将验收通过作为后续材料生成的无限等待条件。检查失败仍是硬门槛未通过，不得宣称发布就绪。
 
@@ -219,7 +219,7 @@ Terms of Use and Privacy Policy
 
 ### 12.5 最终五张项目截图（硬门槛）
 
-在工程实现、全部发布材料、最终图片/依赖检查和第 11.6 节权限校验及其修复复验完成后，执行第 13 节第 21 步，再提交最终报告。自主选择并实际截取五张有产品意义的当前 App 画面，存入项目根目录 `aduit/imgs/`；不再询问选页或保存位置。该目录创建时为空，最终交付时必须恰好包含本节五张 PNG，此为最终目录契约。
+在工程实现、全部发布材料、最终图片/依赖检查和第 11.6 节权限校验及其修复复验完成后，执行第 13 节第 21 步；全部项目验收与五张截图通过后，再按第 13.1 节执行第 22 步 Git 交接，不提交代码，之后提交最终报告。自主选择并实际截取五张有产品意义的当前 App 画面，存入项目根目录 `aduit/imgs/`；不再询问选页或保存位置。该目录创建时为空，最终交付时必须恰好包含本节五张 PNG，此为最终目录契约。
 
 - **选图**：围绕本项目真实核心任务选择五个内容与用途有实质区别的页面或操作结果，优先展示主要功能概览、不同核心模块、内容深度、主题专属交互及有价值的成果；具体组合随主题决定，不固定页面模板。不能用五张相似列表、同一页换配色/轻微滚动、启动/加载/空白页或连续动画帧凑数，也不为截图新增未选功能或虚构完成结果。使用实际随包内容或已有可用演示记录，避免私人敏感信息。
 - **真实采集**：复用第 0.9.1、0.10 节的测试安装与已有 iPhone，串行进入五个目标画面，从最终交付构建真实截屏；使用可用 iPhone 截图工具，模拟器可用 `xcrun simctl io <明确的 iPhone UDID> screenshot <输出 PNG 路径>`。不新建测试 App、Bundle ID 或模拟器，不拍 HTML、设计稿、测试拼图、外壳样机图或其他项目替代。保留正常视觉效果，在有代表性的清晰状态截图，不关闭动画来掩饰未实现效果。

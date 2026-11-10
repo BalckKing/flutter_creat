@@ -79,10 +79,10 @@ for task_doc in "${task_expected_docs[@]}"; do
 done
 [[ "${task_manifest_docs[1]}" == '00-总入口.md' ]] || fail 'manifest 第一项必须是 00-总入口.md'
 
-for task_step in {1..21}; do
+for task_step in {1..22}; do
   rg -q -- "^${task_step}\\. " "$TASK_ORDER" || fail "实施顺序缺少第 ${task_step} 步"
 done
-[[ "$(rg -c -- '^([0-9]|1[0-9]|2[01])\. ' "$TASK_ORDER")" -ge 21 ]] || fail '实施顺序步骤数量不足'
+[[ "$(rg -c -- '^([0-9]|1[0-9]|2[0-2])\. ' "$TASK_ORDER")" -ge 22 ]] || fail '实施顺序步骤数量不足'
 
 require_text "$TASK_ORDER" '第 13 节是唯一的执行顺序'
 require_text "$TASK_ORDER" '第 14 节是唯一的最终报告格式'
@@ -184,7 +184,7 @@ require_text "$TASK_README" '全项目每一个独立页面的骨架都不能重
 require_text "$TASK_PLANNING" '^### 1\.4 用户提供的性能与功能目标水平'
 require_text "$TASK_PLANNING" 'Target level status.*Awaiting user target.*Ready'
 require_text "$TASK_PLANNING" '用户原话.*规范化目标.*页面/功能.*验收方式.*实际结果.*证据.*缺口'
-require_text "$TASK_RUNNER" 'All three inputs present'
+require_text "$TASK_RUNNER" 'All four inputs present'
 require_text "$TASK_RUNNER" 'Explicit performance targets override the default only for this project'
 require_text "$TASK_PLANNING" 'Target iPhone tier: mid-range'
 require_text "$TASK_PLANNING" 'Target iPhone tier: extreme-high-end'
@@ -315,8 +315,17 @@ require_text "$TASK_ARCHITECTURE" 'build_verified: false'
 require_text "$TASK_ARCHITECTURE" '去掉 `--apply`'
 require_text "$TASK_RUNNER" 'Release readiness: Blocked'
 require_text "$TASK_RUNNER" 'Delete every unknown, unconfirmed, pending, or not-provided field'
-require_text "$TASK_RUNNER" 'Background variety is an explicit hard gate'
+require_text "$TASK_RUNNER" 'Background variety and translucent image accents are explicit hard gates'
 require_text "$TASK_RUNNER" 'background\.asset'
+require_text "$TASK_DOCS_DIR/04-视觉与页面功能.md" '所有模式都必须填写真实.*asset.*opacity.*placement'
+require_text "$TASK_QA" '所有模式缺图片均失败'
+require_text "$TASK_RUNNER" 'Every mode requires background.asset, background.opacity'
+require_text "$TASK_PLANNING" '生图网站、工具和模型不要求统一'
+require_text "$TASK_README" '生图网站、工具和模型不要求统一'
+require_text "$TASK_RUNNER" 'Image-generation websites, tools and models do not need to be uniform'
+for task_image_doc in "$TASK_PLANNING" "$TASK_RUNNER" "$TASK_CONVENTIONS" "$TASK_ORDER" "$TASK_DOCS_DIR/04-视觉与页面功能.md"; do
+  forbid_text "$task_image_doc" 'Logo 唯一生成入口|不得使用 `pen.dev` 或其他生成服务|Logo 仅通过|仅 Stargate：|仅用 Stargate 生成|Logo 仍按第 2\.5 节只在 Stargate|or switch services|background images are not mandatory|Procedural/animation require no image|没有背景图片不构成失败|不因缺背景图片判失败|不强制本地背景图片'
+done
 require_text "$TASK_README" '4\.3/5\.6 工程审核风险门槛'
 require_text "$TASK_README" '背景点缀也是硬门槛'
 require_text "$TASK_README" '统一采用明亮色调'
@@ -339,8 +348,38 @@ require_before '^18\. \*\*验收首页引导页' '^19\. \*\*最终图片加载�
 require_before '^19\. \*\*最终图片加载检查' '^20\. \*\*最终 iOS 权限校验'
 require_text "$TASK_ORDER" '首页引导页完成验收尝试并记录结果后.*生成不超过 4,000 字符的全英文'
 require_before '^20\. \*\*最终 iOS 权限校验' '^21\. \*\*最终五张项目截图'
+require_before '^21\. \*\*最终五张项目截图' '^22\. \*\*关联 Git 仓库与创建分支'
+require_before '^22\. \*\*关联 Git 仓库与创建分支' '^## 14\. '
 require_text "$TASK_ORDER" '第 19 步之后、第 21 步截图之前.*全部适用项完成后进入第 21 步'
 require_text "$TASK_ORDER" '每个 Flutter 页面.*lib/welcome.*独立.*aduit/welcome.*四个 About HTML 页面和原生 Launch Screen.*独立背景图案'
+
+# Git is a local handoff after acceptance, using the user's fourth input.
+for task_git_doc in "$TASK_CONVENTIONS" "$TASK_PLANNING" "$TASK_ORDER" "$TASK_README" "$TASK_START" "$TASK_ROOT/flutter-engine-runner/agents/openai.yaml"; do
+  require_text "$task_git_doc" 'Git 仓库地址'
+done
+require_text "$TASK_PLANNING" '^### 1\.5 Git 仓库地址与最终交接输入'
+require_text "$TASK_PLANNING" 'Git input status.*Awaiting user repository.*Ready'
+require_text "$TASK_RUNNER" 'Collect four required inputs together'
+require_text "$TASK_RUNNER" 'Git repository URL'
+require_text "$TASK_RUNNER" '^10\. After all acceptance gates'
+require_text "$TASK_ORDER" '^### 13\.1 验收后的 Git 交接'
+require_text "$TASK_ORDER" 'Git handoff: Deferred — acceptance incomplete'
+require_text "$TASK_ORDER" 'git symbolic-ref --short HEAD'
+require_text "$TASK_ORDER" 'unborn'
+require_text "$TASK_ORDER" '已有.*origin.*保留'
+require_text "$TASK_ORDER" '前后 HEAD 必须不变'
+require_text "$TASK_ORDER" '同名分支指向不同提交'
+require_text "$TASK_ORDER" '全部 fetch URL 与显式 push URL'
+require_text "$TASK_ORDER" '不能改动父仓库、资料包、技能或依赖仓库'
+require_text "$TASK_ORDER" '不执行 `git add`、`git commit`、`git push`'
+require_text "$TASK_ORDER" 'git-handoff\.md'
+require_text "$TASK_ORDER" '^19\. 第 22 步 Git 交接'
+require_text "$TASK_QA" '^### 11\.13 验收后的 Git 交接核对'
+for task_git_doc in "$TASK_ORDER" "$TASK_RUNNER" "$TASK_README" "$TASK_START" "$TASK_ROOT/flutter-engine-runner/agents/openai.yaml"; do
+  require_text "$task_git_doc" 'feat/1\.0\.0'
+done
+forbid_text "$TASK_RUNNER" 'Collect three required inputs|All three inputs present|Once all three required inputs|As the last project task, apply workflow section 12\.5'
+forbid_text "$TASK_PLANNING" '产品规划需要三项输入|是三项必需输入'
 
 require_text "$TASK_START" 'TASK_DOC_MANIFEST'
 require_text "$TASK_START" 'TASK_RUNNER_SOURCE/scripts/validate_about_copy.py'
@@ -360,8 +399,8 @@ task_execution_step_count() {
     END { print count + 0 }
   ' "$TASK_ORDER"
 }
-for task_step in {1..21}; do
+for task_step in {1..22}; do
   [[ "$(task_execution_step_count "$task_step")" -eq 1 ]] || fail "第 13 节的实施顺序缺少或重复第 ${task_step} 步"
 done
 
-print -r -- 'PASS: workflow manifest, 00-10 document set, steps 1-21, cross-document gates, and final-stage ordering are executable.'
+print -r -- 'PASS: workflow manifest, 00-10 document set, steps 1-22, cross-document gates, and final-stage ordering are executable.'
