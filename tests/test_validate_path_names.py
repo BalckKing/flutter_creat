@@ -18,7 +18,7 @@ class PathNameChecks(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         self.put("pubspec.yaml", "name: sample\nversion: 1.2.3+45\n")
-        self.put(".codex-work/path-terms.json", '{"terms": {}}')
+        self.put(".work/path-terms.json", '{"terms": {}}')
 
     def put(self, name, content=""):
         path = self.root / name
@@ -64,7 +64,7 @@ class PathNameChecks(unittest.TestCase):
                             for e in report["errors"]))
 
     def test_theme_proper_names_are_checked_using_project_glossary(self):
-        self.put(".codex-work/path-terms.json", json.dumps({"terms": {"central_business_district": "cbd"}}))
+        self.put(".work/path-terms.json", json.dumps({"terms": {"central_business_district": "cbd"}}))
         self.put("assets/media/central_business_district_cover.jpg")
         run, report = self.run_check()
         self.assertEqual(run.returncode, 1)
@@ -73,8 +73,65 @@ class PathNameChecks(unittest.TestCase):
         run, report = self.run_check()
         self.assertEqual(run.returncode, 0, report)
 
+    def test_rejects_tool_and_ai_terms_across_project_paths(self):
+        paths = (
+            "lib/codex_tools.dart", "lib/mycodex.dart", "lib/codexwork.dart",
+            "lib/ai_client.dart", "lib/AI2Client.dart", "lib/OpenAIClient.dart", "lib/gpt4_client.dart",
+            "assets/genai/hero.png", "assets/aigc_art.png", "assets/artificial_intelligence.png",
+            "lib/machine_learning.dart", "lib/ChatGPTClient.dart", "lib/CodexWorker.dart",
+            "aduit/site/ai_notes.html", ".work/codex_notes.md", ".codex-work/notes.md",
+            "ios/Runner/Assets.xcassets/ai_cover.imageset/Contents.json",
+            "assets/人工智能封面.png", "assets/智能体记录.md",
+        )
+        for path in paths:
+            with self.subTest(path=path), tempfile.TemporaryDirectory() as tmp:
+                self.root = Path(tmp)
+                self.put("pubspec.yaml", "name: sample\n")
+                self.put(".work/path-terms.json", '{"terms": {}}')
+                self.put(path)
+                run, report = self.run_check()
+                self.assertEqual(run.returncode, 1, report)
+                self.assertTrue(any("forbidden tool or AI-related term" in error
+                                    for error in report["errors"]), report)
+
+    def test_related_terms_cannot_be_exempted_by_keep(self):
+        self.put("lib/ai_client.dart")
+        self.put(".work/path-terms.json", json.dumps({"terms": {}, "keep": [{
+            "path": "lib/ai_client.dart", "reason": "existing project name",
+        }]}))
+        run, report = self.run_check()
+        self.assertEqual(run.returncode, 1, report)
+        self.assertTrue(any("lib/ai_client.dart: forbidden tool or AI-related term" in error
+                            for error in report["errors"]), report)
+
+    def test_project_root_name_is_checked_without_matching_ancestors(self):
+        original = self.root
+        self.root = original / "Codex" / "ai_sample"
+        self.put("pubspec.yaml", "name: sample\n")
+        self.put(".work/path-terms.json", '{"terms": {}}')
+        run, report = self.run_check()
+        self.assertEqual(run.returncode, 1, report)
+        self.assertTrue(any("project root ai_sample: forbidden tool or AI-related term" in error
+                            for error in report["errors"]), report)
+        renamed = self.root.with_name("sample")
+        self.root.rename(renamed)
+        self.root = renamed
+        run, report = self.run_check()
+        self.assertEqual(run.returncode, 0, report)
+
+    def test_related_term_rule_preserves_ordinary_words_and_tool_dependencies(self):
+        for path in ("lib/main.dart", "assets/media/terrain.jpg", "assets/media/rain.jpg",
+                     "lib/domain/detail.dart", ".work/quality.md", "aduit/site/PrivacyPolicy.html",
+                     "build/ai_cache/entry.bin", "ios/Pods/OpenAI/Client.h"):
+            self.put(path)
+        self.put(".work/path-terms.json", json.dumps({"terms": {}, "keep": [{
+            "path": "lib/domain/detail.dart", "reason": "domain vocabulary retained for this fixture",
+        }]}))
+        run, report = self.run_check()
+        self.assertEqual(run.returncode, 0, report)
+
     def test_missing_or_invalid_glossary_cannot_silently_pass(self):
-        path = self.root / ".codex-work/path-terms.json"
+        path = self.root / ".work/path-terms.json"
         for source in (None, "{}", '{"terms": {"configuration": "configuration"}}',
                        '{"terms": {"long_name": "service"}}'):
             with self.subTest(source=source):
@@ -88,7 +145,7 @@ class PathNameChecks(unittest.TestCase):
 
     def test_excluded_tool_and_delivery_roots_do_not_hide_custom_native_or_extra_code(self):
         for path in ("build/services/controller.dart", "ios/Pods/models/Widget.h",
-                     "aduit/site/PrivacyPolicy.html", ".codex-work/path-names.md"):
+                     "aduit/site/PrivacyPolicy.html", ".work/path-names.md"):
             self.put(path)
         run, report = self.run_check()
         self.assertEqual(run.returncode, 0, report)
@@ -111,7 +168,7 @@ class PathNameChecks(unittest.TestCase):
         self.put("assets/guide.jpg")
         self.put("lib/domain/model/schema.dart")
         self.put("lib/domain/model/detail_controller.dart")
-        self.put(".codex-work/path-terms.json", json.dumps({"terms": {}, "keep": [{
+        self.put(".work/path-terms.json", json.dumps({"terms": {}, "keep": [{
             "path": "lib/domain/model",
             "reason": "model is a domain term distinct from the abbreviated mdl data layer",
         }]}))
@@ -126,7 +183,7 @@ class PathNameChecks(unittest.TestCase):
         self.put("lib/services/app.dart")
         for entry in ({"path": "lib/services", "reason": ""},
                       {"path": "lib/*", "reason": "keep all"}):
-            self.put(".codex-work/path-terms.json", json.dumps({"terms": {}, "keep": [entry]}))
+            self.put(".work/path-terms.json", json.dumps({"terms": {}, "keep": [entry]}))
             run, report = self.run_check()
             self.assertEqual(run.returncode, 1)
             self.assertTrue(any("path-terms.json:" in e for e in report["errors"]))

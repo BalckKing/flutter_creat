@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Read-only check of actual project paths against the abbreviation glossary.
+"""Read-only check of actual Flutter project names and abbreviations.
 
-This checks spelling, known expansions and case collisions, not semantic naming
-quality, reference resolution, third-party ownership or runtime asset loading.
+Checks tool/AI terms, spelling, known expansions and case collisions. Semantic
+naming, reference resolution, dependency ownership and runtime loading need review.
 """
 
 import argparse
@@ -39,13 +39,27 @@ GROUPS = {
 }
 DEFAULT_TERMS = {word: short for short, words in GROUPS.items() for word in words}
 SHORT_NAME = re.compile(r"[a-z][a-z0-9]*(?:_[a-z0-9]+)*\Z")
+# Match words and common model/tool brands, not the letters "ai" inside main.
+FORBIDDEN_NAME_TOKENS = {
+    "codex", "ai", "openai", "genai", "aigc", "llm", "gpt", "chatgpt",
+    "claude", "gemini", "midjourney", "deepseek", "dall_e",
+    "artificial_intelligence", "generative_ai", "machine_learning", "deep_learning",
+    "人工智能", "智能体",
+}
 
-# These are tool/output contracts, not blanket exemptions for app-owned code.
-SKIP_ROOTS = (
-    ".git", ".codex-work", ".dart_tool", "build", ".idea", ".vscode",
-    "aduit", "AppListing", "ios/Pods", "ios/.symlinks", "ios/Flutter",
+# Distinctive tool names remain forbidden when joined to another word. Short
+# ambiguous abbreviations such as ai still use word matching to preserve main.
+FORBIDDEN_NAME_FRAGMENTS = {"codex", "openai", "genai", "aigc", "chatgpt", "midjourney", "deepseek"}
+
+# Dependencies and tool metadata are not authored project names. Internal work
+# and delivery folders still receive the forbidden-name scan, even though their
+# file-format contracts are exempt from ordinary abbreviation/style checks.
+TOOL_ROOTS = (
+    ".git", ".dart_tool", "build", ".idea", ".vscode",
+    "ios/Pods", "ios/.symlinks", "ios/Flutter",
     "ios/Runner.xcodeproj", "ios/Runner.xcworkspace",
 )
+NAME_ONLY_ROOTS = (".work", "aduit", "AppListing")
 FIXED_PATHS = {
     "lib/common_module", "lib/page_module", "lib/service_module",
     "lib/common_module/theme/app_theme.dart", "assets/logo.png",
@@ -98,7 +112,7 @@ def name_stem(path, is_dir):
 def load_terms(root, errors):
     terms = dict(DEFAULT_TERMS)
     keep = {}
-    glossary = root / ".codex-work/path-terms.json"
+    glossary = root / ".work/path-terms.json"
     try:
         if glossary.is_symlink():
             raise ValueError("glossary must be a regular project file")
@@ -135,15 +149,37 @@ def load_terms(root, errors):
                 raise ValueError(f"keep path must exist without being a symbolic link: {path}")
             keep[path] = reason.strip()
     except (OSError, ValueError) as error:
-        errors.append(f".codex-work/path-terms.json: {error}")
+        errors.append(f".work/path-terms.json: {error}")
     return terms, keep
 
 
+def forbidden_name_tokens(name):
+    """Find related words, separated phrases and CamelCase name variants."""
+    normalized = unicodedata.normalize("NFKC", name)
+    normalized = re.sub(r"([A-Z]+)([A-Z][a-z])", r"\1_\2", normalized)
+    normalized = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", normalized)
+    words = re.findall(r"[^\W_]+", normalized.casefold(), flags=re.UNICODE)
+    # Numeric versions remain part of the same related word (gpt4, ai2, etc.).
+    words = [word.rstrip("0123456789") for word in words]
+    joined = "_".join(words)
+    found = []
+    for term in FORBIDDEN_NAME_TOKENS:
+        if term in FORBIDDEN_NAME_FRAGMENTS or re.search(r"[\u4e00-\u9fff]", term):
+            if term in normalized.casefold():
+                found.append(term)
+        elif re.search(r"(?:^|_)" + re.escape(term) + r"(?:_|$)", joined):
+            found.append(term)
+    return sorted(found)
+
+
 def check(root):
-    errors, checked, preserved, excluded = [], [], [], []
+    errors, checked, preserved, excluded, name_only = [], [], [], [], []
     if not root.is_dir() or not (root / "pubspec.yaml").is_file():
-        return {"status": "Failed", "errors": ["--project-root must be the actual Flutter project root (pubspec.yaml required)"], "checked": [], "preserved": [], "excluded": []}
+        return {"status": "Failed", "errors": ["--project-root must be the actual Flutter project root (pubspec.yaml required)"], "checked": [], "preserved": [], "excluded": [], "name_only": []}
     terms, keep = load_terms(root, errors)
+    root_tokens = forbidden_name_tokens(root.name)
+    if root_tokens:
+        errors.append(f"project root {root.name}: forbidden tool or AI-related term(s): {', '.join(root_tokens)}")
     seen = {}
 
     def walk_error(error):
@@ -156,12 +192,15 @@ def check(root):
             item = Path(parent) / name
             relative = item.relative_to(root).as_posix()
             is_dir = name in dirs
-            skip = next((p for p in SKIP_ROOTS if beneath(relative, p)), None)
-            if skip:
+            tool_root = next((p for p in TOOL_ROOTS if beneath(relative, p)), None)
+            if tool_root:
                 excluded.append(relative)
                 if is_dir:
                     dirs.remove(name)
                 continue
+            forbidden = forbidden_name_tokens(name)
+            if forbidden:
+                errors.append(f"{relative}: forbidden tool or AI-related term(s): {', '.join(forbidden)}")
             key = unicodedata.normalize("NFC", relative).casefold()
             if key in seen and seen[key] != relative:
                 errors.append(f"case-insensitive path collision: {seen[key]} / {relative}")
@@ -170,6 +209,9 @@ def check(root):
                 errors.append(f"{relative}: uninspected symbolic link; resolve ownership and inspect its target")
                 if is_dir:
                     dirs.remove(name)
+                continue
+            if any(beneath(relative, prefix) for prefix in NAME_ONLY_ROOTS):
+                name_only.append(relative)
                 continue
             if fixed_name(relative, is_dir) or relative in keep:
                 preserved.append(relative)
@@ -182,7 +224,8 @@ def check(root):
                 if re.search(r"(?:^|_)" + re.escape(full) + r"(?:_|$)", stem.lower()):
                     errors.append(f"{relative}: abbreviate {full} -> {short}")
     return {"status": "Failed" if errors else "Passed", "errors": errors, "checked": checked,
-            "preserved": preserved, "kept_with_reasons": keep, "excluded": excluded}
+            "preserved": preserved, "kept_with_reasons": keep, "excluded": excluded,
+            "name_only": name_only}
 
 
 def main():
@@ -198,7 +241,8 @@ def main():
             print("FAIL: " + error)
         print(f'{result["status"]}: {len(result["checked"])} custom paths inspected; '
               f'{len(result["preserved"])} contract entries preserved; '
-              f'{len(result["excluded"])} tool/delivery roots excluded.')
+              f'{len(result["excluded"])} tool roots excluded; '
+              f'{len(result["name_only"])} work/delivery paths checked for forbidden terms.')
         print("Semantic naming, reference/build correctness and runtime loading require separate verification.")
     return 1 if result["errors"] else 0
 

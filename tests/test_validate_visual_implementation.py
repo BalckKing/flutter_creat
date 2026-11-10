@@ -28,14 +28,14 @@ class VisualImplementationContractTests(unittest.TestCase):
         image.parent.mkdir(parents=True)
         image.write_bytes(b"home-background-fixture")
         page.write_text(page.read_text() + "\n'home_background.png'")
-        evidence = root / ".codex-work"
+        evidence = root / ".work"
         evidence.mkdir()
         (evidence / "screen.png").write_bytes(b"screen-fixture")
         (evidence / "motion.mov").write_bytes(b"recording-fixture")
         background = {
             "mode": "procedural", "scene_id": "home_atmos",
             "entrypoint": "HomeBg" if kind == "flutter" else "drawScene",
-            "implementation": [implementation], "recording": ".codex-work/motion.mov",
+            "implementation": [implementation], "recording": ".work/motion.mov",
             "asset": "assets/backgrounds/home/home_background.png",
             "opacity": 0.12, "placement": "upper-right behind content",
             "gradient_tokens": ["brandGradient", "sunsetGradient"],
@@ -47,7 +47,7 @@ class VisualImplementationContractTests(unittest.TestCase):
             "surfaces": [{"id": "home", "kind": kind, "source": source,
                           "layout": self.layout_record(), "background": background}],
             "checks": [{"id": gate, "status": "Verified", "targets": ["home"],
-                        "implementation": [source], "evidence": [".codex-work/motion.mov"],
+                        "implementation": [source], "evidence": [".work/motion.mov"],
                         "result": "Observed on current build; fixture does not certify visual quality."}
                        for gate in MODULE.VISUAL_GATES],
         }
@@ -58,7 +58,7 @@ class VisualImplementationContractTests(unittest.TestCase):
             with self.subTest(kind=kind), tempfile.TemporaryDirectory() as tmp:
                 root = Path(tmp)
                 ledger = self.procedural_ledger(root, kind)
-                (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
+                (root / ".work/ui-visual-gates.json").write_text(json.dumps(ledger))
                 self.assertTrue((root / ledger["surfaces"][0]["background"]["asset"]).is_file())
                 self.assertEqual(MODULE.validate_visual_ledger(root), [])
 
@@ -70,7 +70,7 @@ class VisualImplementationContractTests(unittest.TestCase):
                 background = ledger["surfaces"][0]["background"]
                 background.update(mode=mode, opacity=0.12, placement="upper-right behind content")
                 background.pop("asset", None)
-                (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
+                (root / ".work/ui-visual-gates.json").write_text(json.dumps(ledger))
                 self.assertIn("home: missing required translucent background image asset",
                               MODULE.validate_visual_ledger(root))
 
@@ -94,7 +94,7 @@ class VisualImplementationContractTests(unittest.TestCase):
                     background.pop(field)
                 else:
                     background[field] = value
-                (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
+                (root / ".work/ui-visual-gates.json").write_text(json.dumps(ledger))
                 self.assertTrue(any(f"background {field}" in finding
                                     for finding in MODULE.validate_visual_ledger(root)))
 
@@ -117,7 +117,7 @@ class VisualImplementationContractTests(unittest.TestCase):
                     original.rename(other)
                     surface["background"]["asset"] = str(other.relative_to(root))
                     expected = "background asset must be page-specific"
-                (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
+                (root / ".work/ui-visual-gates.json").write_text(json.dumps(ledger))
                 self.assertTrue(any(expected in item for item in MODULE.validate_visual_ledger(root)))
 
     def test_optional_color_metadata_does_not_certify_visual_quality(self):
@@ -134,7 +134,7 @@ class VisualImplementationContractTests(unittest.TestCase):
                     else:
                         background[key] = value
                 ledger["checks"] = [row for row in ledger["checks"] if row["id"] != "gradients"]
-                (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
+                (root / ".work/ui-visual-gates.json").write_text(json.dumps(ledger))
                 self.assertEqual(MODULE.validate_visual_ledger(root), [])
 
     def test_distinct_pages_may_share_the_same_palette(self):
@@ -152,7 +152,7 @@ class VisualImplementationContractTests(unittest.TestCase):
             ledger["surfaces"].append(second)
             for check in ledger["checks"]:
                 check["targets"].append("task")
-            (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
+            (root / ".work/ui-visual-gates.json").write_text(json.dumps(ledger))
             self.assertEqual(MODULE.validate_visual_ledger(root), [])
 
     def test_optional_color_metadata_rejects_malformed_values(self):
@@ -164,7 +164,7 @@ class VisualImplementationContractTests(unittest.TestCase):
                 root = Path(tmp)
                 ledger = self.procedural_ledger(root)
                 ledger["surfaces"][0]["background"][key] = value
-                (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
+                (root / ".work/ui-visual-gates.json").write_text(json.dumps(ledger))
                 self.assertTrue(any(key in item for item in MODULE.validate_visual_ledger(root)))
 
     def test_solid_color_typography_does_not_require_gradient_code(self):
@@ -194,7 +194,7 @@ class VisualImplementationContractTests(unittest.TestCase):
             image.write_bytes(b"image-fixture")
             page = root / ledger["surfaces"][0]["source"]
             page.write_text(page.read_text() + " const texture = 'home_background.png';")
-            ledger_path = root / ".codex-work/ui-visual-gates.json"
+            ledger_path = root / ".work/ui-visual-gates.json"
             ledger_path.write_text(json.dumps(ledger))
             self.assertEqual(MODULE.validate_visual_ledger(root), [])
             image.unlink()
@@ -209,13 +209,13 @@ class VisualImplementationContractTests(unittest.TestCase):
             resource.write_bytes(b"local-animation-fixture")
             background = ledger["surfaces"][0]["background"]
             background.update(mode="animation", resources=["assets/media/anim/home/scene.riv"])
-            ledger_path = root / ".codex-work/ui-visual-gates.json"
+            ledger_path = root / ".work/ui-visual-gates.json"
             ledger_path.write_text(json.dumps(ledger))
             self.assertEqual(MODULE.validate_visual_ledger(root), [])
             for resources, expected in (
                 (["https://example.com/bg.riv"], "missing or empty file"),
                 (["assets/missing.riv"], "missing or empty file"),
-                ([".codex-work/screen.png"], "bundled project assets"),
+                ([".work/screen.png"], "bundled project assets"),
                 ("assets/media/anim/home/scene.riv", "must be a list"),
             ):
                 with self.subTest(resources=resources):
@@ -231,11 +231,11 @@ class VisualImplementationContractTests(unittest.TestCase):
             ({"scene_id": ""}, "scene_id"),
             ({"implementation": []}, "implementation"),
             ({"implementation": ["../outside.dart"]}, "inside project"),
-            ({"implementation": [".codex-work/screen.png"]}, "executable background implementation"),
+            ({"implementation": [".work/screen.png"]}, "executable background implementation"),
             ({"implementation": ["lib/missing.dart"]}, "missing or empty file"),
             ({"entrypoint": "UnusedBg"}, "entrypoint"),
-            ({"recording": ".codex-work/screen.png"}, "motion recording"),
-            ({"recording": ".codex-work/missing.mov"}, "missing or empty file"),
+            ({"recording": ".work/screen.png"}, "motion recording"),
+            ({"recording": ".work/missing.mov"}, "missing or empty file"),
             ({"asset": "unused.png"}, "missing or empty file"),
         )
         for changes, expected in cases:
@@ -243,13 +243,13 @@ class VisualImplementationContractTests(unittest.TestCase):
                 root = Path(tmp)
                 ledger = self.procedural_ledger(root)
                 ledger["surfaces"][0]["background"].update(changes)
-                (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
+                (root / ".work/ui-visual-gates.json").write_text(json.dumps(ledger))
                 self.assertTrue(any(expected in item for item in MODULE.validate_visual_ledger(root)))
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             ledger = self.procedural_ledger(root)
             (root / "lib/common_module/motion/home_bg.dart").write_text("class OtherBg {}")
-            (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
+            (root / ".work/ui-visual-gates.json").write_text(json.dumps(ledger))
             self.assertTrue(any("entrypoint" in item for item in MODULE.validate_visual_ledger(root)))
 
     def test_procedural_background_rejects_scene_reuse_and_native_animation(self):
@@ -259,7 +259,7 @@ class VisualImplementationContractTests(unittest.TestCase):
             second = dict(ledger["surfaces"][0], id="task", layout=self.layout_record(1))
             second["background"] = dict(second["background"], gradient_tokens=["taskGrad", "taskAccent"])
             ledger["surfaces"].append(second)
-            ledger_path = root / ".codex-work/ui-visual-gates.json"
+            ledger_path = root / ".work/ui-visual-gates.json"
             ledger_path.write_text(json.dumps(ledger))
             self.assertTrue(any("scene_id is reused" in item for item in MODULE.validate_visual_ledger(root)))
             ledger["surfaces"] = [dict(ledger["surfaces"][0], kind="native")]
@@ -362,8 +362,8 @@ class VisualImplementationContractTests(unittest.TestCase):
             root = Path(tmp)
             (root / "lib").mkdir()
             (root / "lib/welcome.dart").write_text("class WelcomePage {}", encoding="utf-8")
-            (root / ".codex-work").mkdir()
-            (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps({"build": {"id": "1", "device": "iPhone 17 Pro Max", "os": "iOS 26.5"}, "surfaces": [], "checks": []}), encoding="utf-8")
+            (root / ".work").mkdir()
+            (root / ".work/ui-visual-gates.json").write_text(json.dumps({"build": {"id": "1", "device": "iPhone 17 Pro Max", "os": "iOS 26.5"}, "surfaces": [], "checks": []}), encoding="utf-8")
             self.assertIn("visual surface is not inventoried: lib/welcome.dart", MODULE.validate_visual_ledger(root))
 
     def test_alternative_theme_directory_cannot_replace_fixed_brand_entry(self):
@@ -409,7 +409,7 @@ class VisualImplementationContractTests(unittest.TestCase):
             """
             for name in ("home_page.dart", "task_page.dart", "settings_page.dart"):
                 (pages / name).write_text(shared, encoding="utf-8")
-            evidence = root / ".codex-work"
+            evidence = root / ".work"
             evidence.mkdir()
             (evidence / "ui-refinement.md").write_text(
                 "Round 1 iPhone: a.png\nRound 2 iPhone: b.png\nRound 3 iPhone: c.png",
@@ -430,7 +430,7 @@ class VisualImplementationContractTests(unittest.TestCase):
             (root / "lib/page_module/home_page.dart").write_text(
                 "class HomePage {}\nconst backgroundAsset = 'home_background.png';", encoding="utf-8"
             )
-            evidence = root / ".codex-work"
+            evidence = root / ".work"
             evidence.mkdir()
             (evidence / "home.png").write_bytes(b"runtime-evidence-fixture")
             (evidence / "motion.mov").write_bytes(b"runtime-recording-fixture")
@@ -448,8 +448,8 @@ class VisualImplementationContractTests(unittest.TestCase):
                                              "palette_hex": ["#F05A3C", "#FFB347", "#6F2DBD"]}}],
                 "checks": [{"id": gate, "status": "Verified", "targets": ["home"],
                             "implementation": ["lib/page_module/home_page.dart"],
-                            "evidence": [".codex-work/motion.mov" if gate in {"page_transitions", "background_motion"}
-                                         else ".codex-work/home.png"],
+                            "evidence": [".work/motion.mov" if gate in {"page_transitions", "background_motion"}
+                                         else ".work/home.png"],
                             "result": "Observed on the recorded build."}
                            for gate in ("brand_palette", "gradients", "typography", "particles", "motion",
                                         "page_transitions", "background_motion",
@@ -490,7 +490,7 @@ class VisualImplementationContractTests(unittest.TestCase):
                     self.assertIn(f"{gate}: Flutter surface has no motion acceptance result: home",
                                   MODULE.validate_visual_ledger(root))
                 with self.subTest(still_image_cannot_prove_motion=gate):
-                    incomplete = dict(ledger, checks=[dict(row, evidence=[".codex-work/home.png"])
+                    incomplete = dict(ledger, checks=[dict(row, evidence=[".work/home.png"])
                                                      if row["id"] == gate else row for row in ledger["checks"]])
                     ledger_path.write_text(json.dumps(incomplete))
                     self.assertIn(f"{gate}: needs an iPhone motion recording file",
@@ -550,13 +550,13 @@ class VisualImplementationContractTests(unittest.TestCase):
             root = Path(tmp)
             (root / "lib/page_module").mkdir(parents=True)
             (root / "lib/page_module/settings_page.dart").write_text("class SettingsPage {}", encoding="utf-8")
-            (root / ".codex-work").mkdir()
-            (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps({
+            (root / ".work").mkdir()
+            (root / ".work/ui-visual-gates.json").write_text(json.dumps({
                 "build": {"id": "1", "device": "iPhone 17 Pro Max", "os": "iOS 26.5"},
                 "surfaces": [],
                 "checks": [{"id": "media", "status": "Verified", "targets": ["settings"],
                             "implementation": ["lib/page_module/settings_page.dart"],
-                            "evidence": [".codex-work/missing.png"], "result": "Checked."}]
+                            "evidence": [".work/missing.png"], "result": "Checked."}]
             }), encoding="utf-8")
             findings = MODULE.validate_visual_ledger(root)
             self.assertTrue(any("settings_page.dart" in item for item in findings))
@@ -572,7 +572,7 @@ class VisualImplementationContractTests(unittest.TestCase):
                 background.parent.mkdir(parents=True, exist_ok=True)
                 background.write_bytes(b"background")
                 page.write_text(background.name, encoding="utf-8")
-            evidence = root / ".codex-work"
+            evidence = root / ".work"
             evidence.mkdir()
             (evidence / "screen.png").write_bytes(b"evidence")
             surfaces = [{"id": page_id, "kind": "flutter", "source": f"lib/page_module/{page_id}_page.dart",
@@ -582,7 +582,7 @@ class VisualImplementationContractTests(unittest.TestCase):
                         for page_id in ("home", "task")]
             checks = [{"id": gate, "status": "Verified", "targets": ["home", "task"],
                        "implementation": ["lib/page_module/home_page.dart"],
-                       "evidence": [".codex-work/screen.png"], "result": "Observed."}
+                       "evidence": [".work/screen.png"], "result": "Observed."}
                       for gate in ("brand_palette", "gradients", "typography", "particles", "motion",
                                    "backgrounds", "decoration", "icons", "emoji", "text_density", "media", "content", "layout", "controls", "states",
                                    "appearance", "accessibility", "launch_flow", "app_icon", "html", "refinement")]
@@ -595,8 +595,8 @@ class VisualImplementationContractTests(unittest.TestCase):
     def test_malformed_ledger_is_reported_without_crashing(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            (root / ".codex-work").mkdir()
-            ledger = root / ".codex-work/ui-visual-gates.json"
+            (root / ".work").mkdir()
+            ledger = root / ".work/ui-visual-gates.json"
             for contents in ("{broken", "[]", '{"build":[],"surfaces":false,"checks":null}'):
                 ledger.write_text(contents, encoding="utf-8")
                 self.assertTrue(MODULE.validate_visual_ledger(root))
