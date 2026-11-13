@@ -21,7 +21,7 @@
 使用 $flutter-engine-runner，请开始执行。
 ```
 
-5. 缺少输入时提供项目名称、创意主题、Git 仓库地址，并从极低/低/中/高/极高五档直接选择性能与功能目标水平（功能标准自动制定），仓库地址与主题一并给出，查看完整导图及目标验收标准并回复“确认，按此执行”，随后自主开发。质量复核后按远程 AppListing → `/Users/admin/Desktop/config/ios-app-listing` → 随包契约生成完整材料，不因来源/资源失败取消后续步骤。详尽英文 Description 覆盖真实用途、主模块、任务、实际媒体、成果回访和数据边界，最多 4,000 字符；Intro 仅保留 `All URL` 四个完整原始地址，原文/大小写不变；教育展示标签改 `Popular Science`。改名 `aduit/` 后保留四站点页，更新并接入 `lib/welcome.dart`，按第 7.1 节依主题自由设计精致的欢迎构图，不套固定布局；保留轮播/分页点、品牌配色和 Continue 行为；原自包含 `welcome.html` 保留在 `aduit/`，不被 App 加载或打包。欢迎页禁止纵向滚动，只允许卡片横向切换，完整显示内容和 Continue；Dart 页用本地 assets、SafeArea 与直接 Dart callback；HTML 保留 Base64 data URI 图片、内联内容、严格小于 262,144 字节等原契约，独立验收。两份无协议页脚。完成检查后、Remarks 前，四原始 URL 写入固定配置；协议文本仅加入结束操作成功后的 Initialization 底部：
+5. 缺少输入时提供项目名称、创意主题、Git 仓库地址，并从极低/低/中/高/极高五档直接选择性能与功能目标水平（功能标准自动制定），仓库地址与主题一并给出，查看完整导图及目标验收标准并回复“确认，按此执行”，随后自主开发。质量复核后按远程 AppListing → `/Users/admin/Desktop/config/ios-app-listing` → 随包契约生成完整材料，不因来源/资源失败取消后续步骤。详尽英文 Description 覆盖真实用途、主模块、任务、实际媒体、成果回访和数据边界，最多 4,000 字符；Intro 仅保留 `All URL` 四个固定 HTTP 模板地址，原文/大小写不变；教育展示标签改 `Popular Science`。改名 `aduit/` 后保留四站点页，更新并接入 `lib/welcome.dart`，按第 7.1 节依主题自由设计精致的欢迎构图，不套固定布局；保留轮播/分页点、品牌配色和 Continue 行为；原自包含 `welcome.html` 保留在 `aduit/`，不被 App 加载或打包。欢迎页禁止纵向滚动，只允许卡片横向切换，完整显示内容和 Continue；Dart 页用本地 assets、SafeArea 与直接 Dart callback；HTML 保留 Base64 data URI 图片、内联内容、严格小于 262,144 字节等原契约，独立验收。两份无协议页脚。完成检查后、Remarks 前，四个固定 HTTP 模板 URL 写入固定配置；协议文本仅加入结束操作成功后的 Initialization 底部：
 
 ```text
 By continuing, you agree to our
@@ -166,7 +166,7 @@ Logo 实际生成失败时，会切换其他实际可用且支持相同质量/�
 
 Logo 下载后还必须实际替换 iPhone 桌面 App 图标、iOS 原生启动品牌图、Welcome/Initialization 页面及现有 App/About 品牌位置，重新构建并检查最终显示，不能仅保存图片。详见 `工作流文档/06-素材与真实照片.md` 第 10.4 节；内容照片封面仍使用贴题的第三方素材，`aduit/site/img/` 仍只保留 `logo.png`。
 
-最后检查还会扫描项目解析出的本地依赖、构建目录和 App bundle，清除其中的 `aduit/` 副本并确认依赖中不得残留；项目根目录的 `aduit/` 交付物必须保留。App 品牌引用 `assets/logo.png`；Entry/Settings 协议链接直接使用 `aduit/intro.md` 中 `All URL` 的原始网址，通过无网络 stub 核对映射，不访问或探测真实 URL，也不把本地协议 HTML 打包进依赖。详细边界见第 10.7 节。
+最后检查还会扫描项目解析出的本地依赖、构建目录和 App bundle，清除其中的 `aduit/` 副本并确认依赖中不得残留；项目根目录的 `aduit/` 交付物必须保留。App 品牌引用 `assets/logo.png`；`aduit` 生成完成后，Entry/Settings 协议链接在 App 内用 WebView 显示，统一写成可直接搜索替换的完整 HTTP 模板：`http://【项目名称】/index.html`、`http://【项目名称】/PrivacyPolicy.html`、`http://【项目名称】/Terms&Conditions.html`、`http://【项目名称】/Support.html`。不跳转外部 App；四个文件名保持原样和大小写，未替换域名或不可达时显示可读失败、返回和有限重试。通过无网络 stub 核对映射，不访问或探测真实 URL，也不把本地协议 HTML 打包进依赖。详细边界见第 10.7 节。
 
 运行时边界：App 只运行 `lib/welcome.dart` 的 WelcomePage，不使用欢迎 HTML 或桥接。`aduit/welcome.html` 只作独立交付；不写入 lib、pubspec 资源声明、iOS copy/build phase、依赖或 bundle，不另复制/改名打包。`aduit/` 不被运行代码引用；仍保留 Settings/Initialization 的原协议 WebView。最终依赖与 bundle 中 `aduit/` 不得残留，根目录交付目录保留。
 
@@ -186,7 +186,7 @@ Listing 生成器优先使用有效的 `assets/logo.png`，不再优先选旧 Ap
 
 所有自有界面的图片统一使用圆角，覆盖 Logo、列表/详情图片、缩略图、视频封面、媒体预览及 HTML 内嵌图；图片本身须实际裁剪，加载、错误、放大与转场中也不能露出尖角。按主题适当增加 Logo 配色的细边框，同类图片圆角与边框保持一致。原始 Logo 仍为无 Alpha 图片，AppIcon 使用系统蒙版。最终逐页检查实际显示，详见第 6.3、11.3、10.7 节。
 
-协议网址会按生成器的四个 `All URL` 原封不动接入，即使暂不可访问也不修改。完整地址、路径和文件名严格保留大小写，例如 `PrivacyPolicy.html` 不得变为 `privacypolicy.html`。本地 `Intro.md` 改名不影响 URL；生成原文、最终介绍、App 配置及点击传入 WebView 的值须精确一致。你日后要求换正式域名时，仅改域名，其余部分保持原样。详见第 12.1、11.3 节。
+协议链接统一使用完整 HTTP 模板 `http://【项目名称】/xxx.html`，其中 `xxx.html` 仅对应 `index.html`、`PrivacyPolicy.html`、`Terms&Conditions.html`、`Support.html` 四个固定文件；协议链接统一使用四个完整 HTTP 模板：`http://【项目名称】/index.html`、`http://【项目名称】/PrivacyPolicy.html`、`http://【项目名称】/Terms&Conditions.html`、`http://【项目名称】/Support.html`。四个文件名 `index.html`、`PrivacyPolicy.html`、`Terms&Conditions.html`、`Support.html` 千万不要改动或改大小写。App 内使用 WebView 显示，不跳转外部 App；后续统一替换时只替换 `【项目名称】`，不改文件名。
 
 `.work/` 只保存开发计划、记录、证据和备份。确认可提交后可以整目录删除，主项目的源码、资源、依赖、测试、构建配置和最终 `aduit/` 材料都不得依赖它；实际图片、主题令牌、协议 URL 和必需工具保存在各自项目目录，不通过软链接指回工作记录。最终第 19 步会可逆地把该目录移出工程，实际验证缺席时的依赖解析、测试、构建和 iPhone 运行，再恢复记录供你保留或删除。规则和验收见第 9.2.1、11.12 节。
 
@@ -220,7 +220,7 @@ Logo 生成保留 12 张候选跨画风比较（四种画风各 3 张）；可�
 
 About 使用由正式 Logo 派生的小尺寸 PNG（通常 128–256 像素，目标 8–20 KiB，尽量不超过 24 KiB），按清晰度与实际体积选择最小可用版本，保留主 `assets/logo.png` 原规格。引导页内嵌压缩字节并计入整个 HTML 预算；正文和按钮不等待图片下载/解码，必须检查 Logo 延迟、损坏或失败时仍可操作，详见第 12.1 节。
 
-站点四个 About/协议/Support HTML 与独立 `aduit/welcome.html` 不得含草稿/开发分发/待配置/发布前待补提示。生成与最终精修后对四站点页运行 `validate_about_copy.py`，并单独检查 HTML 交付页与实际 Dart 页文案/渲染；事实缺口仅记内部，不编造联系方式或改四原始 URL。
+站点四个 About/协议/Support HTML 与独立 `aduit/welcome.html` 不得含草稿/开发分发/待配置/发布前待补提示。生成与最终精修后对四站点页运行 `validate_about_copy.py`，并单独检查 HTML 交付页与实际 Dart 页文案/渲染；事实缺口仅记内部，不编造联系方式或改四个协议文件名。
 
 用户可见的 Dart 文案、Welcome/About 文案、按钮、错误/空态和 VoiceOver 文本必须是自然英语，不出现中文或 `H5`、`SDK`、`广告`、`第三方框架`、`技术实现`、`内部模块`、`lib`、`package`、`packages`、`local`、`device`、`测试`、`模板`、`马甲`、`过审` 及其变体。运行 `scripts/validate_public_copy.py` 扫描可见字符串；源码标识、注释和 `.work/` 内部记录不属于公开文案。
 
@@ -264,7 +264,7 @@ Settings 页最底部的版本文案也是硬门槛：只显示 `项目名称 ·
 
 项目自有文件夹和文件名禁止出现 Codex 或 AI 相关词：包括工程根目录名、源码、资源、测试、工具、原生自定义文件、`aduit/` 材料及开发记录，按词及常见变体检查 `codex`、`ai`、`openai`、`genai`、`aigc`、`llm`、`gpt` 等；普通 `main.dart`、`rain.jpg` 不因字母组合误判。内部记录统一改为 `.work/`，旧 `.codex-work/` 须实际迁移并同步引用、核对冲突，不覆盖记录或保留旧名软链接。`validate_path_names.py` 扫描真实目录，`keep` 不得豁免；外部技能路径、工程外父路径和真实构建/依赖强制路径保留工具边界。用户指定磁盘名冲突如实说明，不擅自移动工程或改展示品牌。具体见第 9.3.1 节。
 
-所有项目自有资源、文件夹与文件能简写就统一简写，但只修改有准确、清楚缩写的名称；已简短、无合适缩写或缩写会歧义的保留，不机械截断。生成前建立主题词表，架构建立后、资源整理后和交付前运行 `validate_path_names.py` 扫描实际工程；可缩写项未改不能通过命名验收。具体词表/保留项格式与命令见第 9.3.1 节；改名必须同步代码/配置/数据/原生工程及测试中的全部引用，并检查受影响构建和断网加载。符合禁用词规则的固定路径与用户项目磁盘名、用户显示名和四个原始 URL 保持原样，详见第 9.3.1 节。`assets/` 内项目自有资源使用简短的英文主题/用途名称，例如 `assets/media/city/cbd_cover.jpg`；去掉下载附带的网站名、日期/时间戳、供应商编号和随机串，专有名词统一使用可辨认的缩写。完整名称、缩写及旧新路径映射保留在 `.work/asset-names.md`，来源与许可记录继续保留；固定 `assets/logo.png` 和逐页背景路径不变。既有资源改名后同步声明、代码与数据引用，并重建确认实际加载，详见第 10.1.2、11.1 节。
+所有项目自有资源、文件夹与文件能简写就统一简写，但只修改有准确、清楚缩写的名称；已简短、无合适缩写或缩写会歧义的保留，不机械截断。生成前建立主题词表，架构建立后、资源整理后和交付前运行 `validate_path_names.py` 扫描实际工程；可缩写项未改不能通过命名验收。具体词表/保留项格式与命令见第 9.3.1 节；改名必须同步代码/配置/数据/原生工程及测试中的全部引用，并检查受影响构建和断网加载。符合禁用词规则的固定路径与用户项目磁盘名、用户显示名和四个协议文件名保持原样，详见第 9.3.1 节。`assets/` 内项目自有资源使用简短的英文主题/用途名称，例如 `assets/media/city/cbd_cover.jpg`；去掉下载附带的网站名、日期/时间戳、供应商编号和随机串，专有名词统一使用可辨认的缩写。完整名称、缩写及旧新路径映射保留在 `.work/asset-names.md`，来源与许可记录继续保留；固定 `assets/logo.png` 和逐页背景路径不变。既有资源改名后同步声明、代码与数据引用，并重建确认实际加载，详见第 10.1.2、11.1 节。
 
 如果返回 403、429、超时、登录墙、验证码或许可证无法核验，将对应照片项记为 `Blocked`/`Not verified`；继续生成本地 AppListing、About、`aduit/` 和 `aduit/review/remarks.md`，不能再以素材失败停止整个交付流程。
 
@@ -282,7 +282,7 @@ Emoji、渐变、矢量插画、AI 拟真图或仅写素材清单不能代替真
 
 为避免只写规范却漏配，已提供可执行的 `flutter-engine-runner/scripts/prepare_ios_config.py`，并随启动器安装到技能目录。按第 9.1.2 节在实际 App 上运行：`--project-root "<App根目录>" --photo-access read-write --permission-handler --minimum-ios 15.6 --apply` 适用于通过 CocoaPods 接入 `permission_handler_apple` 且需要 PhotoKit 读写的工程。它保留既有 plist 字段及更高版本，补标准 `MinimumOSVersion`，在唯一现有 Hook 末尾配置插件全部配置的 `PERMISSION_PHOTOS=1` 并禁用其 ATT 宏，保留其他宏；先验证、备份再写入，可重复执行。只添加照片改用 `add-only`，纯系统选择器用 `picker`、无照片能力用 `none`，非该宏体系不传 `--permission-handler`。去掉 `--apply` 是只读复查；缺文件/无效语法会报错，不能伪造空文件。部分 Flutter 模板省略源版本键，迁移也可能移除它，须在迁移后重新检查源文件；源补齐成功与真实 Pods/构建/运行结果分开，仍核验有效宏和 App/App.framework 产物，不宣称所有旧工程已自动修复。
 
-最终 `aduit/intro.md` 的 `## Description` 会依据项目实际功能充分展开，覆盖定位与受众、各主模块、典型使用过程、实际媒体能力（如有）、可回访成果、进入与清除流程和数据边界；遵守生成器选定的文案结构及最多 4,000 字符限制。生成后重新读取并核对覆盖，避免只留下几句短文或功能清单；仅在 `All URL` 保留首页、隐私政策、用户协议、Support 四个完整 URL；移除重复的独立 URL 栏目及其他多余网址，这四个地址（含大小写、路径、参数）保持原样，其他事实字段仅允许按第 12.1 节统一科普展示标签，不因暂不可访问而删改。详细写作与验收见第 12.1、11.1 节，审核备注仍单独按其格式生成。
+最终 `aduit/intro.md` 的 `## Description` 会依据项目实际功能充分展开，覆盖定位与受众、各主模块、典型使用过程、实际媒体能力（如有）、可回访成果、进入与清除流程和数据边界；遵守生成器选定的文案结构及最多 4,000 字符限制。生成后重新读取并核对覆盖，避免只留下几句短文或功能清单；仅在 `All URL` 保留首页、隐私政策、用户协议、Support 四个固定 HTTP 模板 URL；移除重复的独立 URL 栏目及其他多余网址，这四个模板只替换项目名称，文件名和大小写保持不变，其他事实字段仅允许按第 12.1 节统一科普展示标签，未替换域名或不可访问时保留模板并显示错误，不删改文件名。详细写作与验收见第 12.1、11.1 节，审核备注仍单独按其格式生成。
 
 ## 最终交付目录
 

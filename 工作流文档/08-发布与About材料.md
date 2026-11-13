@@ -10,7 +10,9 @@
 - `Content & Copyright Notice` 章节：在现有法律页中用简洁、真实的内容使用与权利说明及更正/删除联系渠道表达，不默认逐项列举图片/视频供应商、作者、来源链接或素材许可。按第 10.1.1 节仅加入实际许可要求的最小必要声明；没有公开署名义务的素材只留内部核验记录。若存在用户本地拍摄/导入/录音，则与随包内容区分；不声称拥有用户媒体，不把私有媒体列入公开清单，也不作虚假的全部原创或自有版权声明。
 - 生成器站点首页与 Support：保留当前 `ios-app-listing` 输出的首页形态和内容职责，不强制改写成 About Home 或 App 主首页；首页仅交付、不接入 App，Support 仍通过既有协议 WebView 入口展示。
 
-开发期根据实际实现维护应用介绍、About、支持页和协议正文，四个站点 HTML 保持完整英文成品文案，不含草稿/待补说明。保留四页职责与路径，必要配色、Logo 优化及法律事实修正照常执行，四个原始 URL 不变。质量复核后依远程指定分支 → `/Users/admin/Desktop/config/ios-app-listing` → 随包生成契约的顺序完成 AppListing/About，改名整理为 `aduit/`，立即建立空 `imgs/`，再按本节最终实现并接入 `lib/welcome.dart`，保留仅供独立交付的 `aduit/welcome.html`；随后回接 Initialization/Settings 协议 URL，生成 Review Remarks。正式 Logo、照片许可、外部来源或运行验证失败只记录对应 `Blocked`/`Not verified`，不得伪报通过，也不阻断独立本地材料；不询问域名、不公开部署、不探测真实 URL。缺失的身份/联系/法律事实只记 `.work/`，不猜测或写成公开待补文案；本地生成完成不等于法律审阅或发布就绪。
+aduit 生成完成后，App 内 WebView 显示四个协议页面，不跳转到外部 App。
+
+开发期根据实际实现维护应用介绍、About、支持页和协议正文，四个站点 HTML 保持完整英文成品文案，不含草稿/待补说明。 `aduit` 生成完成后，App 内 WebView 显示四个协议页面，不跳转到外部 App。保留四页职责与路径，四个固定文件名 `index.html`、`PrivacyPolicy.html`、`Terms&Conditions.html`、`Support.html`，四个文件名不得改动、不改大小写；协议链接统一使用可直接搜索替换的完整 HTTP 模板 `http://【项目名称】/index.html`、`http://【项目名称】/PrivacyPolicy.html`、`http://【项目名称】/Terms&Conditions.html`、`http://【项目名称】/Support.html`。质量复核后依远程指定分支 → `/Users/admin/Desktop/config/ios-app-listing` → 随包生成契约的顺序完成 AppListing/About，改名整理为 `aduit/`，立即建立空 `imgs/`，再按本节最终实现并接入 `lib/welcome.dart`，保留仅供独立交付的 `aduit/welcome.html`；随后在 App 内用 WebView 回接四个协议页面，禁止跳转外部 App，再生成 Review Remarks。正式 Logo、照片许可、外部来源或运行验证失败只记录对应 `Blocked`/`Not verified`，不得伪报通过，也不阻断独立本地材料；不询问域名、不公开部署、不探测真实 URL。缺失的身份/联系/法律事实只记 `.work/`，不猜测或写成公开待补文案；本地生成完成不等于法律审阅或发布就绪。
 
 ### 12.1 AppListing 与本地 About 页面生成、改名为 aduit 并清理
 
@@ -26,13 +28,13 @@
 
 每次生成或重新生成后、改名为 `aduit/` 后、独立欢迎页制作后以及最终交付前，检查四个 HTML 页面。正文、标题、页眉/页脚、横幅、描述元数据、图片替代文本、无障碍标签和脚本实际渲染的内容都不得出现草稿、开发版本、待配置资料或发布前待完善提示。特别禁止 `Publication details — draft`、`This edition is a development distribution`、`A verified operator identity, contact channel, and public policy address have not been configured`、`These details must be completed before public release`、`No contact address or public availability is implied by this page` 及大小写、标点、措辞不同的同义说明；也不将这些内容改成 `Preview`、`Unfinished` 等标签继续显示。
 
-发现时按完整语义区块移除相应标题、段落、提示框和关联状态标记，不能只删 `draft` 一词后留下“资料未配置”的说明，不能用 CSS 隐藏、折叠、降低透明度或转移到另一公开页面/无障碍文案。若区块还包含必要的真实法律事实，仅保留经核实的成品表述；修复相邻排版、目录锚点和空白区域，维持页面完整可读。真实身份、支持渠道或其他法定资料缺失只记录到项目 `.work/`，不得编造姓名、邮箱、正式域名、上线状态或把缺失事实写成已核实。原四个 `All URL` 值、固定注册表与链接的大小写和原文不因清理而更改。
+发现时按完整语义区块移除相应标题、段落、提示框和关联状态标记，不能只删 `draft` 一词后留下“资料未配置”的说明，不能用 CSS 隐藏、折叠、降低透明度或转移到另一公开页面/无障碍文案。若区块还包含必要的真实法律事实，仅保留经核实的成品表述；修复相邻排版、目录锚点和空白区域，维持页面完整可读。真实身份、支持渠道或其他法定资料缺失只记录到项目 `.work/`，不得编造姓名、邮箱、正式域名、上线状态或把缺失事实写成已核实。原四个固定 HTTP 模板地址、固定注册表与链接的大小写和原文不因清理而更改。
 
 使用运行器自带检查器执行 `python3 <runner-skill-root>/scripts/validate_about_copy.py --site-dir <project-root>/aduit/site`。`runner-skill-root` 指当前执行的 `flutter-engine-runner` 的 `SKILL.md` 所在目录，不是 `ios-app-listing` 的目录；资料包直接使用时为包内 `flutter-engine-runner/`，安装后为已安装运行器根目录。该检查器只读四页，不会访问 URL 或修改文件；修正文案后重跑直至无命中。它不依赖远程包是否提供 `validate_site_publication_ready.py`。静态检查后仍须本地渲染四页并查看脚本生成内容及适用外观/视口，确认未通过样式、动态插入或实体编码漏出同义提示；不得只检查首页或把静态通过当作法律资料已核实。检查结果和必要缺口放内部记录，不能生成公开校验报告或状态提示。
 
 AppListing/About 生成、改名和最终精修时，按第 10.1.1 节移除生成器自动加入的不必要图片/视频来源列表、供应商标识、下载链接及 Credits 入口；不将内部素材清单批量转成公开页面或 Review Remarks。Terms 中的内容来源与许可说明保持概括、真实，不能据此生成逐项图库清单。保留实际许可强制要求的声明、软件必要许可通知及真实隐私/外部服务披露，四页白名单与协议 URL 原文不变。
 
-四个自有 HTML 页面统一采用明亮色调，使用通透背景、可读正文和清晰强调色，Logo 取色仅作可选参考，渐变按主题选用。移除颜色/明暗切换控件及其偏好脚本，设置 `color-scheme: light`，清理自动变暗的媒体查询与 CSS 覆盖。系统外观变化后仍保持明亮，不改动四个原始 URL。独立 `aduit/welcome.html` 同样执行明亮规则，继续遵守自包含、图片内嵌及体积限制。
+四个自有 HTML 页面统一采用明亮色调，使用通透背景、可读正文和清晰强调色，Logo 取色仅作可选参考，渐变按主题选用。移除颜色/明暗切换控件及其偏好脚本，设置 `color-scheme: light`，清理自动变暗的媒体查询与 CSS 覆盖。系统外观变化后仍保持明亮，不改动四个固定 HTTP 模板。独立 `aduit/welcome.html` 同样执行明亮规则，继续遵守自包含、图片内嵌及体积限制。
 
 #### About 最终配色与小体积 Logo
 
@@ -50,9 +52,9 @@ AppListing/About 生成、改名和最终精修时，按第 10.1.1 节移除生�
 
 最终 `aduit/intro.md` 和 `aduit/review/remarks.md` 中，类别、分类、标签或产品定位标签若为“教育”“教育类”“Education”“Educational”或“教育 (Education)”等同义形式，统一改为“科普”；两份交付文档保持英语，因此实际写入 `Popular Science`。例如 Intro 的 `## Category` 正文写 `Popular Science`，Remarks 的基本信息写 `Category: Popular Science`，正文中重复出现的同一定位标签也须一致，不保留中英混合旧标签。其他已确认的类别原样保留，不把所有项目强制归为科普，也不因此虚构科学主题、课程、资质或功能。
 
-生成器原始输出先按其现有契约校验；改名整理为 `aduit/` 后、生成引导页或 Remarks 前，执行本标签规范化，最终交付时重新核对两份实际文件。已有文档同样处理，先将原文件备份到 `.work/`，仅修改作为分类/定位标签使用的相应值，不对全文做无差别替换。应用名称、真实服务名称、普通功能叙述、四个原始 URL（包括包含 Education 的域名、路径或参数）及其他事实保持不变。本规则只调整两份文档的展示用标签，不修改远程技能源码、生成器分类枚举或 App Store Connect 实际提交类别；不把 `Popular Science` 当作官方分类枚举传入接口。生成阶段与定制整理后的校验分别记录，后续重新生成仍须应用该规则，不因原始契约要求教育标签而恢复旧文案。
+生成器原始输出先按其现有契约校验；改名整理为 `aduit/` 后、生成引导页或 Remarks 前，执行本标签规范化，最终交付时重新核对两份实际文件。已有文档同样处理，先将原文件备份到 `.work/`，仅修改作为分类/定位标签使用的相应值，不对全文做无差别替换。应用名称、真实服务名称、普通功能叙述、四个固定 HTTP 模板（包括包含 Education 的域名、路径或参数）及其他事实保持不变。本规则只调整两份文档的展示用标签，不修改远程技能源码、生成器分类枚举或 App Store Connect 实际提交类别；不把 `Popular Science` 当作官方分类枚举传入接口。生成阶段与定制整理后的校验分别记录，后续重新生成仍须应用该规则，不因原始契约要求教育标签而恢复旧文案。
 
-#### intro.md 的详尽项目描述（仅保留四个完整 URL，地址原文不变）
+#### intro.md 的详尽项目描述（仅保留四个固定 HTTP 模板 URL，地址原文不变）
 
 最终 `aduit/intro.md` 的 `## Description` 必须是针对当前实际 App 撰写的完整英文产品介绍，使未参与开发的人仅阅读该段就能理解应用面向谁、解决什么问题、各项主要功能怎样使用、操作会得到什么结果，以及内容如何保存和再次使用。不能只交付一句概述、三五条功能名称、生成器默认短文或“界面精美、简单易用”等泛泛营销话术。除本节科普标签规范化及下述四个 URL 整理步骤明确移除的重复 URL 栏目外，保留其他标题、顺序和事实字段；产品介绍扩写集中在现有 `## Description` 区域内，使用自然英文纯文本，按选定文案结构组织段落或项目符号，不加入 HTML、额外 Markdown 标题、内部技术说明或另一份介绍文件。
 
@@ -72,28 +74,25 @@ AppListing/About 生成、改名和最终精修时，按第 10.1.1 节移除生�
 
 **篇幅与生成方式**：Description 沿用 AppListing/商店字段的最多 4,000 字符限制，空格和换行计入；该上限不代表整份 `intro.md` 或 Review Remarks 的共同预算。已确认事实充足且选定文案结构允许时，以约 3,500–3,900 个英文字符作为充分展开的参考目标；优先保证功能覆盖、自然可读与事实准确，不靠重复或空话凑字数。生成前按当前生成器规定的选择流程确定文案样式，`description_style_label` 必须与其实际选定结果一致，正文遵守该样式的句数、段落或项目符号结构；不得擅自覆盖选择结果或强制使用 `longform`。`description` 由当前智能体依据已核实功能自行撰写后传给生成器，不能把自动短文当作已完成详细写作。不为篇幅编造能力、机械截断正文或改变其他字段。若可用样式或事实范围限制展开，只在内部记录实际覆盖与缺口，不新增询问、不停止后续材料生成。
 
-**生成后强制复核，URL 完整保护**：在 AppListing 改名为 `aduit/` 后、使用该介绍生成引导卡片或 Review Remarks 之前，重新打开实际 `aduit/intro.md`，逐项核对上述内容是否真实落盘。先在 `.work/` 保存修改前副本，并单独记录生成器 `All URL` 中四个完整原始地址。介绍有遗漏或过于简略时，仅精修 `## Description` 标题之后、下一个既有 `##` 标题之前的正文；然后执行下述 URL 整理及本节科普标签规范化。描述、URL 整理与标签规范化分别核验，不重新运行生成器覆盖已精修内容，不修改远程技能源码，不因文案编辑重写 App URL 注册表。证据与备份只放 `.work/`，不向 `aduit/` 增加文件，不新增用户确认关卡。
+**生成后强制复核，URL 完整保护**：在 AppListing 改名为 `aduit/` 后、使用该介绍生成引导卡片或 Review Remarks 之前，重新打开实际 `aduit/intro.md`，逐项核对上述内容是否真实落盘。先在 `.work/` 保存修改前副本，并单独记录生成器 `All URL` 中四个固定 HTTP 模板地址。介绍有遗漏或过于简略时，仅精修 `## Description` 标题之后、下一个既有 `##` 标题之前的正文；然后执行下述 URL 整理及本节科普标签规范化。描述、URL 整理与标签规范化分别核验，不重新运行生成器覆盖已精修内容，不修改远程技能源码，不因文案编辑重写 App URL 注册表。证据与备份只放 `.work/`，不向 `aduit/` 增加文件，不新增用户确认关卡。
 
-**最终 Intro 仅保留四个完整 URL**：网址统一集中到既有 `## All URL` 块，按生成器原标签和原顺序仅保留首页、隐私政策、用户协议、Support 四项，每项一个完整原始地址。移除单独的 `## Support URL` 与 `## Terms of Service URL` 重复栏目及其内容，去除介绍其他位置的重复链接、多余网址、示例网址和无关外部链接，不留下空 URL 标题或另一个网址清单。只清理多余出现位置，不因暂不可访问、占位域名、格式看起来异常或请求失败而删除这四项中的任何一项；不以“无效 URL”为由重写地址、不访问真实目标。四个保留值的协议、域名、大小写、路径、文件名、参数及顺序、百分号编码、片段和斜杠全部原样保留，不补全、不替换、不截短。
+**最终 Intro 仅保留四个固定 HTTP 模板 URL**：网址统一集中到既有 `## All URL` 块，按生成器原标签和原顺序仅保留首页、隐私政策、用户协议、Support 四项，每项一个完整模板地址。移除单独的 `## Support URL` 与 `## Terms of Service URL` 重复栏目及其内容，去除介绍其他位置的重复链接、多余网址、示例网址和无关外部链接，不留下空 URL 标题或另一个网址清单。只清理多余出现位置，不因暂不可访问、占位域名、格式看起来异常或请求失败而删除这四项中的任何一项；不以“无效 URL”为由重写地址、不访问真实目标。四个保留值的协议、域名、大小写、路径、文件名、参数及顺序、百分号编码、片段和斜杠全部原样保留，不补全、不替换、不截短。
 
-**分别核验生成阶段与最终交付**：生成器原始输出先按其可用契约校验；最终 `aduit/intro.md` 在详细描述、四 URL 整理与科普标签规范化后，检查全文完整 URL 的出现次数恰好为 4、都位于 `All URL` 且各出现一次，标签齐全、顺序未变，四值逐字符等于修改前保存的原始值。除 `Description` 正文、两个重复 URL 栏目和其他多余网址的删除、本节科普标签规范化外，其余事实字段与原文保持不变；已满足四 URL 与科普标签规则的文件再次只精修描述时，Description 外应为零差异。远程生成器若要求六处 URL 或两个独立 URL 栏目，那是其原始输出契约；最终交付以本节四 URL 要求为准，记录定制整理和分阶段校验结果，不回填重复栏目，也不将修改后的文件谎报为通过旧格式校验。缺少原始地址时保留实际缺口与已有文件、继续独立任务，不猜测或拼接新地址。Description 仍单独验收英文、纯文本、字符数、功能覆盖与事实一致性，不能把详细介绍压缩成审核备注。
+**分别核验生成阶段与最终交付**：生成器输出先按其可用契约校验；最终 `aduit/intro.md` 在详细描述、固定 HTTP 模板整理与科普标签规范化后，检查完整模板 URL 的出现次数恰好为 4、都位于 `All URL` 且各出现一次，标签齐全、顺序未变。四个模板只替换 `【项目名称】`，四个 HTML 文件名、大小写和路径结构保持不变。除 `Description` 正文、重复 URL 栏目和多余网址的删除、本节科普标签规范化外，其余事实字段与原文保持不变；模板回接后再次只精修描述时，Description 外应为零差异。远程生成器若要求额外 URL 栏目，那是其原始输出契约；最终交付以本节四个固定模板要求为准，记录定制整理和分阶段校验结果，不回填重复栏目。缺少模板地址时保留实际缺口与已有文件、继续独立任务，不猜测或拼接新地址。Description 仍单独验收英文、纯文本、字符数、功能覆盖与事实一致性，不能把详细介绍压缩成审核备注。
 
-#### 生成 URL 的原文保留与大小写保护
+#### 固定 HTTP 模板与大小写保护
 
-- 生成完成后，先在 `.work/` 保存生成器介绍文件中四个 `All URL` 原始值，作为改名、复制和接入的比对基准；然后将它们原封不动保留在 `aduit/intro.md` 并复制到 App 固定 URL 注册表。暂不可访问、占位域名、格式异常或加载失败都不是改写理由，不探测真实地址，不等待正式域名，继续完成后续任务。
-- 完整 URL 严格区分大小写并逐字符保留：协议、域名、路径、目录名、文件名、扩展名、查询参数的名称/值/顺序、片段、斜杠及百分号编码的原始写法均不得改变。不得使用 `toLowerCase()`、`toUpperCase()`、slug 化、自动格式化或 URI 解析后重新序列化来重写值；不得根据页面显示标题、Dart 标识或本地目录重新拼接地址。源码、JSON 或 HTML 必需的转义可以使用，但解码后交给 WebView 的字符串必须与原始值完全相同。
-- 本地将 `AppListing/` 改为 `aduit/`、将 `Intro.md` 改为 `intro.md`，只涉及本地文件整理，绝不能对 `All URL` 做全局替换或大小写转换。协议 HTML 保持 `PrivacyPolicy.html`、`Terms&Conditions.html`、`Support.html` 的原始大小写与标点，不改成全小写文件名；页面内链接也按实际文件名保持大小写。
-- 验收链为“生成器原始值 → `aduit/intro.md` → App 固定注册表 → Initialization/Settings 点击时交给 WebView 的实际字符串”。使用区分大小写的精确相等比较，不允许先转小写再比对；发现任一处变化，修复该复制/传递环节并复验，不反过来修改原始值以使错误通过。按第 11.3 节用无网络 stub/fake 核验，证据仅放 `.work/`，不增加 `aduit/` 交付文件。
-- 当前生成流程不替换域名。用户之后明确提供正式域名并要求替换时，只替换授权的域名部分；协议及其余路径、文件名、查询参数、片段和编码原样保留，不随新域名重新生成 URL。仅修复大小写不能证明服务器配置或可达性已经通过。
+- 生成完成后，在 `.work/` 保存四个固定 HTTP 模板地址作为核对记录；将 `http://【项目名称】/index.html`、`http://【项目名称】/PrivacyPolicy.html`、`http://【项目名称】/Terms&Conditions.html`、`http://【项目名称】/Support.html` 写入 `aduit/intro.md` 的 `All URL` 与 App 固定 URL 注册表。
+- 后续统一替换时只替换 `【项目名称】`。四个文件名、大小写、扩展名和路径结构保持不变；未替换域名、格式异常或加载失败时保留模板并显示 App 内错误、返回和有限重试，不打开外部 App 或系统浏览器，也不探测真实地址。
+- 使用无网络 WebView stub/fake 核对 `aduit/intro.md`、固定注册表、Initialization 两个链接和 Settings 三个入口的映射；源码、JSON 或 HTML 的转义在交给 WebView 前必须还原为同一固定模板地址。
 
-例如，原始路径为 `/BrandA/PrivacyPolicy.html` 时，不得改为 `/branda/privacypolicy.html`；`Terms&Conditions.html` 不得改为 `terms&conditions.html`。此例只说明大小写规则，不是当前项目的网址。
-
+示例中的路径大小写仅用于说明文件名契约：`PrivacyPolicy.html`、`Terms&Conditions.html` 和 `Support.html` 必须保持原样；示例域名不代表当前项目地址。
 
 **错误隔离与继续执行**：不要用一条 `&&` 命令链把素材检查、Listing 生成、目录整理与 Remarks 串成全有或全无。分别运行并读取生成器 JSON、退出码与实际文件；`local_generation_complete` 仅表示介绍和页面已经生成，`media_review_errors`、`failures` 与正式发布就绪状态分别记录。退出码非零时先有限修复可修复的本地问题，保留已有产物；仅 Logo 缺失、照片许可、图片运行验证或外部网络失败不能跳过后续改名与 Remarks。正常交付仍必须满足原白名单；完全没有可解码品牌图时，允许先保留空的 `site/img/` 并移除缺图引用，记录 `logo.png` 缺失和目录契约未通过，继续生成 `aduit/intro.md`、四页正文与 `aduit/review/remarks.md`，不创建假图片或宣称白名单通过。开发期图片可以使用已有有效 AppIcon，或放入实际项目资源目录的 `assets/dev_brand.png`；来源和 `unverified` 状态记录在 `.work/`，实际 App/生成器输入与站点派生图不得引用工作目录，执行第 9.2.1 节。不能仅凭它被命名为 `assets/logo.png` 就认定正式 Logo 通过。
 
 本节在 App 实现、UI/资源精修及第 11.9 节质量复核后执行；执行适用检查、修复可修复项并记录外部失败，不将失败改写为通过。开发期四个站点页面仅在开发浏览器预览，不将其接入 App 依赖，也不提前执行最终 AppListing。最终改名为 `aduit/` 后更新并接入 `lib/welcome.dart`，保留自包含 `aduit/welcome.html` 但不加载/打包；继续 URL 回接与 Review Remarks，不等域名或部署。
 
-固定收尾路径：完整远程 `feature/1.2.1-A1` checkout（核对 origin/分支/revision）→ 失败切换 `/Users/admin/Desktop/config/ios-app-listing` → 仍失败使用随包生成契约 → 本地生成 AppListing、详尽 description 与 About（支持时使用 `--no-deploy-about --no-sync-project-listing-urls`）→ 核对 Logo 配色 → 改名/整理为 `aduit/` → 立即建立空 `aduit/imgs/` → 核验四页 `site/` → **实现并接入 `lib/welcome.dart`，保留独立 `aduit/welcome.html` 且不使用，分别验收** → 原样复制四个 `All URL` → 仅 Initialization 底部 Terms/Privacy，Settings 三个协议 WebView 入口并无网络回归 → `aduit/review/remarks.md` → 当前阶段目录白名单/运行边界验收（五张截图在第 21 步补齐并最终复核）→ 额外产物与证据归档 `.work/` → 确认 `AppListing/` 不存在 → 最终图片/依赖检查 → 最终 iOS 权限校验及修复复验 → 按第 12.5 节交付五张 1206×2622 项目截图到 `aduit/imgs/` → 全部验收通过后第 22 步关联用户仓库并创建/切换 `feat/1.0.0`（不暂存、提交或推送）→ 最终报告。不因外部失败等待用户或取消后续材料，不冒充技能验证；不查询/推测/替换域名，不部署、不探测公开地址。
+固定收尾路径：完整远程 `feature/1.2.1-A1` checkout（核对 origin/分支/revision）→ 失败切换 `/Users/admin/Desktop/config/ios-app-listing` → 仍失败使用随包生成契约 → 本地生成 AppListing、详尽 description 与 About（支持时使用 `--no-deploy-about --no-sync-project-listing-urls`）→ 核对 Logo 配色 → 改名/整理为 `aduit/` → 立即建立空 `aduit/imgs/` → 核验四页 `site/` → **实现并接入 `lib/welcome.dart`，保留独立 `aduit/welcome.html` 且不使用，分别验收** → 写入四个固定 HTTP 模板 → 仅 Initialization 底部 Terms/Privacy，Settings 三个协议 WebView 入口并无网络回归 → `aduit/review/remarks.md` → 当前阶段目录白名单/运行边界验收（五张截图在第 21 步补齐并最终复核）→ 额外产物与证据归档 `.work/` → 确认 `AppListing/` 不存在 → 最终图片/依赖检查 → 最终 iOS 权限校验及修复复验 → 按第 12.5 节交付五张 1206×2622 项目截图到 `aduit/imgs/` → 全部验收通过后第 22 步关联用户仓库并创建/切换 `feat/1.0.0`（不暂存、提交或推送）→ 最终报告。不因外部失败等待用户或取消后续材料，不冒充技能验证；不查询/推测/替换域名，不部署、不探测公开地址。
 
 引导页检查必须先执行并记录结果，再进入 URL 回接和 Review Remarks；可修复缺陷先修复复验，外部条件受阻则记录证据并继续生成后续材料，不将验收通过作为后续材料生成的无限等待条件。检查失败仍是硬门槛未通过，不得宣称发布就绪。
 
@@ -116,10 +115,10 @@ CSS/JavaScript 内联到四个站点 HTML 与独立 `aduit/welcome.html`，字�
 
 **页面成品文案检查**：最终生成或修改四个 HTML 页面后，必须按本节运行随运行器提供的 `validate_about_copy.py` 并查看四页实际渲染。所选 `ios-app-listing` 来源另有 `scripts/validate_site_publication_ready.py` 时，再运行其支持的 `--site-dir <project-root>/aduit/site` 检查；缺失时记录该工具不可用，不等待、不伪称执行成功，继续随包检查与页面复核。修复正文、标题、描述元数据或无障碍标签中的草稿/占位内容，并确认页面不是空壳。若缺少真实联系或其他法定事实，只在内部摘要标记公开法律审阅未完成；继续本地生成和接入，不在页面中显示待补字段，也不谎称法律材料已完成。
 
-**AppListing 改名后：Dart 欢迎页与独立 HTML 交付**：在最终 `AppListing/` 已改名/整理为 `aduit/` 后、URL 回接和 Review Remarks 之前，依据最终源码、配置、实际页面与 `aduit/intro.md` 同步完成以下两份产物。原位保留 `aduit/site/index.html` 的生成器内容与结构及其余三个站点 HTML 的职责与路径；本操作不替换、覆盖或移动四页，必要的品牌配色、Logo 优化及成品文案修正仍按本节执行，四个原始 URL 不变。
+**AppListing 改名后：Dart 欢迎页与独立 HTML 交付**：在最终 `AppListing/` 已改名/整理为 `aduit/` 后、URL 回接和 Review Remarks 之前，依据最终源码、配置、实际页面与 `aduit/intro.md` 同步完成以下两份产物。原位保留 `aduit/site/index.html` 的生成器内容与结构及其余三个站点 HTML 的职责与路径；本操作不替换、覆盖或移动四页，必要的品牌配色、Logo 优化及成品文案修正仍按本节执行，四个固定 HTTP 协议模板和四个文件名保持不变。
 
 1. **App 实际使用 `lib/welcome.dart`**：定义并导出 Flutter `WelcomePage`，将 `/welcome` 路由实际指向它。按第 6.13、7.1 节自由设计本项目独有、复杂且贴题的精致欢迎构图，不固定卡片形状、区域顺序或按钮位置，保持必要内容与行为：3–5 个真实介绍章节/卡片、自动轮播、可点击且有可访问名称的分页圆点、英文文案、按创意选定的明亮色彩与可选渐变、主题背景、圆角图片、图标、Emoji 和适用图片/GIF，以及 `Continue`、真实准备步骤/百分比/进度、错误态 `Try again` 与所选 `Clear Data` / `Exit App`。不能只放一个按钮、删除视觉效果或把 HTML 字符串包进 Dart。使用 Flutter Widget，可选择 `PageView` / `PageController` 或等价章节呈现与可释放的控制器/计时器；不能把组件选择当作固定整页骨架；复杂子组件按原页面分类拆分，欢迎入口固定在 `lib/welcome.dart`，其余页面不集中到该文件。图片/背景/GIF 使用已登记并随包的项目 `assets/`，通过 `Image.asset` 等加载，不从 `aduit/`、HTML、网络或超大 Base64 字符串读取。此 Dart 文件不适用 HTML 的 256 KiB、内联 CSS/JS 或 Base64 限制；正常资源解码、命名、圆角、许可和最终图片验收继续执行。
-2. **原行为改为 Dart 调用**：`Continue` 直接调用现有 Welcome-to-main 的 Dart callback/路由逻辑，防重复点击/重复导航，不通过 WebView、JavaScript、AppBridge 或 URL scheme。保留原准备条件与进入目标，准备就绪且原生承接层淡出后才允许继续；不增加 `Enter` 或协议页脚。每次启动仍进入 Welcome；只有所选 `Clear Data` / `Exit App` 二次确认且真实成功后才进入独立 Initialization（`/entry`、`Entry`），协议通用文案仅初始化页显示。协议 WebView 与四个原始 URL 的原有逻辑不变。
+2. **原行为改为 Dart 调用**：`Continue` 直接调用现有 Welcome-to-main 的 Dart callback/路由逻辑，防重复点击/重复导航，不通过 WebView、JavaScript、AppBridge 或 URL scheme。保留原准备条件与进入目标，准备就绪且原生承接层淡出后才允许继续；不增加 `Enter` 或协议页脚。每次启动仍进入 Welcome；只有所选 `Clear Data` / `Exit App` 二次确认且真实成功后才进入独立 Initialization（`/entry`、`Entry`），协议通用文案仅初始化页显示。协议页继续由 App 内 WebView 显示；改名为 `aduit/` 后才接入这四个 HTTP 模板，不跳转到外部 App。
 3. **保留 `aduit/welcome.html`，但不使用**：将原自包含 HTML 欢迎引导页保留/生成在 `aduit/` 顶层，仅供独立查看、交付和后续使用，不作为 App 页面、资源、回退页或启动就绪来源。内容和骨架对应本次实际 Dart Welcome 的已选独有方案，不恢复固定居中卡片模板；原 HTML 契约继续适用：全部 HTML/CSS/JavaScript 内联、系统字体、3–5 个介绍章节（不限定矩形卡片容器）、自动轮播/分页点、全英文、所有图片 Base64 data URI 内嵌、完整 UTF-8 文件严格小于 262,144 字节、无外部资源请求，`viewport-fit=cover` 与 `env(safe-area-inset-top)` / `env(safe-area-inset-bottom)`、圆角裁剪、`prefers-reduced-motion`。Logo 使用优化小副本的内嵌字节，不引用工程资产或站点相对图片。保留下面的原 Continue 函数，两个交付表示中只有 HTML 使用此函数，App 的 Dart Welcome 仍直接导航；生成器站点首页已有的同类函数照常保留，不因本说明删改。App 不为它注册消息桥、URL scheme、导航拦截或加载入口，也不把它打包；生成器站点首页同样不接入 App 或打包。
 
 ```javascript
@@ -141,16 +140,16 @@ Welcome Dart 与独立 HTML 不提供暂停按钮、暂停/恢复控件或 pause
 5. **旧工程迁移与边界**：先将原欢迎 HTML、配置和专用桥代码可恢复地备份到 `.work/`；需要保留的 HTML 最终只放 `aduit/welcome.html`。删除根目录旧 `welcome.html` / `enter.html`、`aduit/enter.html` 等过时副本，清除欢迎页专用 WebView/HTML 包装、桥接监听、scheme/导航拦截与旧路由，移除 pubspec 资源项及 native copy/build phase 对旧 HTML 的引用。保留协议页面仍实际需要的 WebView 依赖与安全配置。`lib/`、`pubspec.yaml`、依赖树、iOS 工程、构建产物和 App bundle 不得引用或包含 `aduit/`、`welcome.html` 或 `enter.html`；不得通过别名、通配目录、符号链接或复制到其他路径绕过。源文件 `lib/welcome.dart` 通过 Dart import/路由编译，不登记为 Flutter asset。
 6. **分别验收运行页面和独立文件**：App 运行时只验收 Dart 页；独立 HTML 仅在 `390×667`、`390×844`、`1024×768`、`1440×900` 检查安全区、可读性、无重叠/裁切/遮挡，大尺寸只是布局约束测试，不扩大 iPhone-only 产品范围。Dart 页用 widget/导航测试和当前 iPhone 构建验证轮播、每个圆点、滑动、减少动态、离线资源、准备/失败/重试/所选结束操作，以及 Continue 直接进入原有主流程且重复点击只导航一次；用连续运行画面与单调时钟证据验证就绪后 250 毫秒保持再淡出。独立 HTML 核验字节数、每张 Base64 图片解码/可读性、断网显示、轮播和分页点；在独立浏览器用隔离 stub 验证原 Continue 函数两分支，不连接 App，不访问真实协议地址。确认 HTML 不进 App bundle，App 运行时唯一 Welcome 是 Dart 页。截图和日志只放 `.work/`；引导页检查必须先执行并记录结果，再进入 URL 回接和 Review Remarks。可修复缺陷先修复复验，外部验证受阻据实记录 `Blocked`/`Not verified` 并继续后续材料，不宣称发布就绪。
 
-**About 完成后、Review Remarks 前的 Initialization 文案与协议入口回接**：在 About/AppListing 本地生成、配色核对并整理为 `aduit/` 后、生成 `remarks.md` 前执行。先读取 `aduit/intro.md` 的 `All URL` 区域，逐字复制其中四个 URL 到 App 的固定 URL 注册表，按文档名称对应绑定。将值作为原始字符串保存和传递，不以 URI 预解析/有效性检查作为复制、保存或导航前置条件。此时将以下两行协议文案接入 所选 Clear Data / Exit App 确认并实际成功后出现的 Initialization 页底部，显式在 `our` 后换行，无句末句号；每次启动进入的 Welcome、Welcome HTML 引导页和原生启动页均不得显示这段文案：
+**About 完成后、Review Remarks 前的 Initialization 文案与协议入口回接**：在 About/AppListing 本地生成、配色核对并整理为 `aduit/` 后、生成 `remarks.md` 前执行。将四个固定协议链接写入 App 的固定 URL 注册表，统一使用 `http://【项目名称】/index.html`、`http://【项目名称】/PrivacyPolicy.html`、`http://【项目名称】/Terms&Conditions.html`、`http://【项目名称】/Support.html`，保留完整 HTTP 写法，方便后续按项目名称统一搜索替换。四个文件名保持原样和大小写，不改名。此时将以下两行协议文案接入 所选 Clear Data / Exit App 确认并实际成功后出现的 Initialization 页底部，显式在 `our` 后换行，无句末句号；每次启动进入的 Welcome、Welcome HTML 引导页和原生启动页均不得显示这段文案：
 
 ```text
 By continuing, you agree to our
 Terms of Use and Privacy Policy
 ```
 
-两行居中放在 Initialization 页底部安全区内，不截断文本；第二行的 `Terms of Use` 与 `Privacy Policy` 分别可点击，使用 All URL 中对应的原始值，`and` 为普通文本。不能只改 About HTML、字符串文件或规划说明而不更新 App 实际显示。不增加勾选或额外确认，不保存个人协议同意记录，也不将按钮等同于媒体授权；Terms 正文应与这项实际提示一致。Settings 同一页面只提供三个链接：Privacy Policy、Terms of Use、Support；`lib/welcome.dart` 作为唯一运行 Welcome 页，`aduit/welcome.html` 不接入 App；站点 `index.html` 按本节硬门槛保留生成器原有内容与结构，仅交付、不写入 Settings；不能为改成 About Home 或套用独立 welcome.html 的要求而重写首页。三个 Settings 入口使用 All URL 中对应的原始值，第四个生成器首页 URL 仍保存在固定注册表但不提供 Settings 入口。无论 URL 格式是否正常、目标是否可达，均直接复制，不校验、规范化、补全、替换或删去；WebView 加载失败时显示可读错误、返回与有限重试，不能阻断 Welcome、Settings、清除数据或其他 App 功能，也不回退到开发期本地预览页面。回归时按第 7.2 节核验 Initialization 的完整原文、显式换行、底部安全区和两个独立链接，并确认 Welcome、HTML 引导页和原生启动页均无该文案；用不发起网络请求的 WebView stub/fake 核验注册值、实际入口 URL、Settings 不含引导页、失败/返回状态和主流程，不访问或探测真实目标；完成后继续 Review Remarks，不重开总体 UI 审批。
+两行居中放在 Initialization 页底部安全区内，不截断文本；第二行的 `Terms of Use` 与 `Privacy Policy` 分别可点击，使用对应的固定 HTTP 模板，`and` 为普通文本。不能只改 About HTML、字符串文件或规划说明而不更新 App 实际显示。不增加勾选或额外确认，不保存个人协议同意记录，也不将按钮等同于媒体授权；Terms 正文应与这项实际提示一致。Settings 同一页面只提供三个链接：Privacy Policy、Terms of Use、Support；`lib/welcome.dart` 作为唯一运行 Welcome 页，`aduit/welcome.html` 不接入 App；站点 `index.html` 按本节硬门槛保留生成器原有内容与结构，仅交付、不写入 Settings；不能为改成 About Home 或套用独立 welcome.html 的要求而重写首页。Settings 仍只提供 Privacy Policy、Terms of Use、Support 三个入口，首页 `index.html` 的链接保存在固定注册表但不提供 Settings 入口。四个协议页面均在 App 内 WebView 打开，禁止调用外部 App；未替换域名或目标不可达时保留原模板，显示可读错误、返回与有限重试，不回退到开发期本地预览页面。回归时按第 7.2 节核验 Initialization 的完整原文、显式换行、底部安全区和两个独立链接，并确认 Welcome、HTML 引导页和原生启动页均无该文案；用不发起网络请求的 WebView stub/fake 核验注册值、实际入口 URL、Settings 不含引导页、失败/返回状态和主流程，不访问或探测真实目标；完成后继续 Review Remarks，不重开总体 UI 审批。
 
-7. **完成 AppListing 与协议入口阶段**：报告实际使用的 `ios-app-listing` 来源（远程分支、本机后备或契约来源）、可取得的分支与 revision、当前智能体撰写的 description、About 配色核验和修正结果、`AppListing/` 生成与改名/整理为 `aduit/` 的结果、站点白名单核验及额外文件移出位置，以及四个 URL 的原样接入和定向回归结果。远程、本机或生成器失败时报告对应 `Blocked`/`Not verified` 证据，但继续完成独立的本地材料、引导页、目录清理和第 12.2 节 Review Remarks；不得使用资料包内旧副本或手写页面冒充技能产物。备份放在 `.work/` 并说明可恢复位置。完成所有可执行步骤后再做完整白名单核验，不在此阶段提前宣布最终交付。不询问用户意见、继续许可或交付确认。
+7. **完成 AppListing 与协议入口阶段**：报告实际使用的 `ios-app-listing` 来源（远程分支、本机后备或契约来源）、可取得的分支与 revision、当前智能体撰写的 description、About 配色核验和修正结果、`AppListing/` 生成与改名/整理为 `aduit/` 的结果、站点白名单核验及额外文件移出位置，以及四个固定 HTTP 模板的接入和定向回归结果。远程、本机或生成器失败时报告对应 `Blocked`/`Not verified` 证据，但继续完成独立的本地材料、引导页、目录清理和第 12.2 节 Review Remarks；不得使用资料包内旧副本或手写页面冒充技能产物。备份放在 `.work/` 并说明可恢复位置。完成所有可执行步骤后再做完整白名单核验，不在此阶段提前宣布最终交付。不询问用户意见、继续许可或交付确认。
 
 ### 12.2 App Review Remarks
 
