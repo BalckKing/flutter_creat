@@ -63,7 +63,7 @@ def validate_welcome_source(root: Path):
         if not path.is_file():
             continue
         source = path.read_text(encoding="utf-8", errors="replace")
-        # Preserve the four raw policy URLs even if their server paths contain
+        # Preserve the three raw policy URLs even if their server paths contain
         # a delivery directory name. A web URL is not an asset filesystem path.
         source = re.sub(r"https?://[^\s\x22\x27<>]+", "", source)
         if re.search(r"(?:welcome|enter)\.html|aduit[/\\]", source, re.IGNORECASE):

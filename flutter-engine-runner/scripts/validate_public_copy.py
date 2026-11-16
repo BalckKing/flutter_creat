@@ -51,6 +51,30 @@ class VisibleHTML(HTMLParser):
             self.parts.append(data)
 
 
+WELCOME_MAX_BYTES = 262_144
+WELCOME_NEAR_CAP_MIN_BYTES = 250_000
+
+
+def validate_welcome_budget(path: Path, require_near_cap: bool = False) -> list[str]:
+    if not path.exists():
+        return [f"{path}: standalone Welcome HTML is missing"]
+    try:
+        size = path.stat().st_size
+    except OSError as error:
+        return [f"{path}: cannot stat Welcome HTML: {error}"]
+    findings: list[str] = []
+    if size >= WELCOME_MAX_BYTES:
+        findings.append(
+            f"{path}: UTF-8 byte size {size} must be strictly below {WELCOME_MAX_BYTES} bytes"
+        )
+    if require_near_cap and size < WELCOME_NEAR_CAP_MIN_BYTES:
+        findings.append(
+            f"{path}: UTF-8 byte size {size} is below the near-cap target "
+            f"{WELCOME_NEAR_CAP_MIN_BYTES} bytes; add meaningful compressed visual/detail content, not filler"
+        )
+    return findings
+
+
 def scan_text(path: Path, text: str) -> list[str]:
     findings: list[str] = []
     if CJK_RE.search(text):
@@ -126,8 +150,14 @@ def validate(root: Path) -> list[str]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--project-root", required=True, type=Path)
+    parser.add_argument("--check-welcome-budget", action="store_true", help="check standalone Welcome HTML byte ceiling")
+    parser.add_argument("--require-near-cap", action="store_true", help="also require the best-effort near-cap target")
     args = parser.parse_args()
     findings = validate(args.project_root)
+    if args.require_near_cap and not args.check_welcome_budget:
+        args.check_welcome_budget = True
+    if args.check_welcome_budget:
+        findings.extend(validate_welcome_budget(args.project_root / "aduit/welcome.html", args.require_near_cap))
     if findings:
         for finding in findings:
             print(f"FAIL {finding}")

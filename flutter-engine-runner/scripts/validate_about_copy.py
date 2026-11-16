@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check the four final site pages for unfinished publication copy, read-only."""
+"""Check the three final protocol pages for unfinished publication copy, read-only."""
 
 import argparse
 import re
@@ -8,7 +8,8 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 
-PAGES = ("index.html", "PrivacyPolicy.html", "Terms&Conditions.html", "Support.html")
+PAGES = ("PrivacyPolicy.html", "Terms&Conditions.html", "Support.html")
+REMOVED_HOME_PAGE = re.compile(r"(?:index" + r"\.html|href\s*=\s*[\"\']?/?(?:home|about)(?:[\"\']|/|\b))", re.IGNORECASE)
 BLOCKS = frozenset((
     "address", "article", "aside", "blockquote", "br", "button", "div", "dl", "dt", "dd",
     "fieldset", "figcaption", "figure", "footer", "form", "h1", "h2", "h3", "h4", "h5",
@@ -92,6 +93,8 @@ def inspect_page(path):
     if not copy:
         return ["page has no readable copy"]
     findings = []
+    if REMOVED_HOME_PAGE.search(source):
+        findings.append("removed home page reference")
     for label, pattern in RULES:
         match = pattern.search(copy)
         if match:
@@ -112,7 +115,7 @@ def main():
             print(f"FAIL {page}: {finding}")
     if failed:
         return 1
-    print("PASS: all four pages contain no detected draft/publication-placeholder copy.")
+    print("PASS: all three protocol pages contain no detected draft/publication-placeholder copy.")
     print("This static check does not replace rendered-page review or factual/legal verification.")
     return 0
 
