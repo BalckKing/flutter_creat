@@ -55,7 +55,7 @@ while (( $# > 0 )); do
   esac
 done
 
-for TASK_REQUIRED in "$TASK_DOC" "$TASK_DOC_MANIFEST" "$TASK_RUNNER_SOURCE/SKILL.md" "$TASK_RUNNER_SOURCE/agents/openai.yaml" "$TASK_RUNNER_SOURCE/scripts/validate_about_copy.py" "$TASK_RUNNER_SOURCE/scripts/validate_visual_implementation.py" "$TASK_RUNNER_SOURCE/scripts/validate_review_remarks.py" "$TASK_RUNNER_SOURCE/scripts/validate_public_copy.py" "$TASK_RUNNER_SOURCE/scripts/validate_path_names.py" "$TASK_RUNNER_SOURCE/scripts/prepare_ios_config.py"; do
+for TASK_REQUIRED in "$TASK_DOC" "$TASK_DOC_MANIFEST" "$TASK_RUNNER_SOURCE/SKILL.md" "$TASK_RUNNER_SOURCE/agents/openai.yaml" "$TASK_RUNNER_SOURCE/scripts/validate_about_copy.py" "$TASK_RUNNER_SOURCE/scripts/validate_visual_implementation.py" "$TASK_RUNNER_SOURCE/scripts/validate_review_remarks.py" "$TASK_RUNNER_SOURCE/scripts/validate_public_copy.py" "$TASK_RUNNER_SOURCE/scripts/validate_path_names.py" "$TASK_RUNNER_SOURCE/scripts/prepare_ios_config.py" "$TASK_RUNNER_SOURCE/scripts/validate_flutter_navigation.py"; do
   if [[ ! -f "$TASK_REQUIRED" ]]; then
     print -u2 -- "资料包不完整，缺少：$TASK_REQUIRED"
     print -u2 -- "请复制整个 Flutter工程 文件夹，不要只复制启动器或 Markdown。"
@@ -261,6 +261,7 @@ print -r -- "在技能列表搜索 Flutter 工程执行；也可粘贴并发送�
 print -r -- "$TASK_PROMPT"
 print -r -- "若列表尚未出现，可明确发送：读取并使用 $TASK_INSTALLED_DIR/SKILL.md，开始执行工作流。"
 print -r -- "工程目录以你在 Codex 中指定的位置为准；安装器不会创建 Flutter 项目。"
+print -r -- "导航硬门槛：全项目禁止 GetX，必须使用 Flutter 原生 Navigator；可运行 validate_flutter_navigation.py 验收。"
 
 if (( ! TASK_INSTALL_ONLY && TASK_CLIPBOARD )) && command -v pbcopy >/dev/null 2>&1; then
   if print -rn -- "$TASK_PROMPT" | pbcopy; then

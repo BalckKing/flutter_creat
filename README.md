@@ -1,3 +1,7 @@
+
+### 导航实现硬门槛
+
+工程全程禁用 GetX 和外部路由框架。使用 Flutter 原生 `MaterialApp`/`CupertinoApp`/`WidgetsApp`、`Navigator.of(context)`/`NavigatorState`、`MaterialPageRoute`/`CupertinoPageRoute`/`PageRouteBuilder` 与 `RouteSettings`；Welcome、Initialization、Settings、三个协议入口和主任务必须在原生 Navigator 图中可达。安装后可对真实工程运行 `python3 <Skill 根目录>/scripts/validate_flutter_navigation.py --project-root <实际 App 根目录>`，该检查同时拒绝 GetX 依赖/API 与缺少原生 Navigator 的工程。
 # Flutter 工程：复制、安装、执行
 
 这是可移植的 Codex 执行技能资料包。整个文件夹可以放在另一台 Mac 的任意位置，不要求用户名是 `admin`，也不要求放在桌面。
