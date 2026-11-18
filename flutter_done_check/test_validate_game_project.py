@@ -69,7 +69,7 @@ class GameProjectFixtures(unittest.TestCase):
                 "runtime_owner": "engine owns input update rules and result state",
                 "native_bridge": "not applicable" if engine == "Flame" else "ios/Runner/GodotHost.swift",
                 "build_commands": ["flutter build ios --no-codesign"],
-                "evidence": [".work/game-runtime.json"],
+                "evidence": [".codex-work/game-runtime.json"],
             },
         }
         for key, value in changes.items():
@@ -77,7 +77,7 @@ class GameProjectFixtures(unittest.TestCase):
                 manifest["engine"].update(value)
             else:
                 manifest[key] = value
-        self.write(".work/game-engine.json", json.dumps(manifest, indent=2))
+        self.write(".codex-work/game-engine.json", json.dumps(manifest, indent=2))
         return manifest
 
     def write_native_manifest(self, **changes):
@@ -93,8 +93,8 @@ class GameProjectFixtures(unittest.TestCase):
                 "runtime_owner": "Flutter owns scene, state, input, update, rules, results and restart.",
                 "native_bridge": None,
                 "animation_effects": ["CustomPainter (Flutter SDK)", "AnimationController (Flutter SDK)"],
-                "formula_record": ".work/native-motion.md",
-                "evidence": [".work/game-runtime.json"],
+                "formula_record": ".codex-work/native-motion.md",
+                "evidence": [".codex-work/game-runtime.json"],
             },
         }
         for key, value in changes.items():
@@ -102,13 +102,13 @@ class GameProjectFixtures(unittest.TestCase):
                 manifest["native_runtime"].update(value)
             else:
                 manifest[key] = value
-        self.write(".work/game-engine.json", json.dumps(manifest, indent=2))
+        self.write(".codex-work/game-engine.json", json.dumps(manifest, indent=2))
         return manifest
 
     def write_native_fixture(self, *, full=True):
         self.write("assets/game/cards.png", b"cards image")
         self.write("assets/game/table.png", b"table image")
-        self.write(".work/native-motion.md", """主题锚点：明亮纸牌桌与材质纹理。\n主体：卡牌、纸张、金属筹码。\n前中后景：桌面、卡列、背景光。\n运动：点击后卡牌翻转并推进回合。\n技术：CustomPainter + AnimationController，0.45s，12px，opacity 0.9。\n循环/完成/中断：完成停留；后台取消；Reduce Motion 淡化。\n负面限制：禁止色块拼贴和静态截图冒充。""")
+        self.write(".codex-work/native-motion.md", """主题锚点：明亮纸牌桌与材质纹理。\n主体：卡牌、纸张、金属筹码。\n前中后景：桌面、卡列、背景光。\n运动：点击后卡牌翻转并推进回合。\n技术：CustomPainter + AnimationController，0.45s，12px，opacity 0.9。\n循环/完成/中断：完成停留；后台取消；Reduce Motion 淡化。\n负面限制：禁止色块拼贴和静态截图冒充。""")
         source = """
 import 'package:flutter/material.dart';
 class NativeGame extends StatefulWidget { const NativeGame({super.key}); @override State<NativeGame> createState() => _NativeGameState(); }
@@ -138,17 +138,17 @@ class MockNativeGame extends StatelessWidget { const MockNativeGame({super.key})
             "bundle_id": "com.example.auroraGame",
             "device": device,
             "os": "iOS 26.1",
-            "recording": ".work/gameplay.mp4" if recording else "",
-            "screenshots": [".work/gameplay.png"] if screenshots else [],
-            "logs": [".work/gameplay.log"] if logs else [],
+            "recording": ".codex-work/gameplay.mp4" if recording else "",
+            "screenshots": [".codex-work/gameplay.png"] if screenshots else [],
+            "logs": [".codex-work/gameplay.log"] if logs else [],
         }
-        self.write(".work/game-runtime.json", json.dumps(record, indent=2))
+        self.write(".codex-work/game-runtime.json", json.dumps(record, indent=2))
         if recording:
-            self.write(".work/gameplay.mp4", b"recording")
+            self.write(".codex-work/gameplay.mp4", b"recording")
         if screenshots:
-            self.write(".work/gameplay.png", b"screenshot")
+            self.write(".codex-work/gameplay.png", b"screenshot")
         if logs:
-            self.write(".work/gameplay.log", "iPhone gameplay log\n")
+            self.write(".codex-work/gameplay.log", "iPhone gameplay log\n")
 
     def write_flame_fixture(self, *, full=True):
         self.write("assets/game/hero.png", b"hero image")
@@ -304,7 +304,7 @@ class GodotPage extends StatelessWidget {
         self.write_manifest()
         self.write_flame_fixture()
         self.write_runtime_evidence()
-        manifest_path = self.root / ".work/game-engine.json"
+        manifest_path = self.root / ".codex-work/game-engine.json"
         manifest = json.loads(manifest_path.read_text())
         manifest.pop("implementation_mode")
         manifest["engine_required"] = False
@@ -318,7 +318,7 @@ class GodotPage extends StatelessWidget {
         self.write_native_manifest()
         self.write_native_fixture()
         self.write_runtime_evidence()
-        manifest_path = self.root / ".work/game-engine.json"
+        manifest_path = self.root / ".codex-work/game-engine.json"
         manifest = json.loads(manifest_path.read_text())
         manifest.pop("implementation_mode")
         manifest.pop("engine_required")
@@ -336,7 +336,7 @@ class GodotPage extends StatelessWidget {
         self.write_native_manifest()
         self.write_native_fixture()
         self.write_runtime_evidence()
-        manifest_path = self.root / ".work/game-engine.json"
+        manifest_path = self.root / ".codex-work/game-engine.json"
         manifest = json.loads(manifest_path.read_text())
         manifest.pop("implementation_mode")
         manifest.pop("engine_required")
@@ -357,13 +357,13 @@ class GodotPage extends StatelessWidget {
 
     def test_paths_must_stay_inside_project_and_scene_assets_cannot_be_work_records(self):
         self.write_manifest(engine={
-            "scene_assets": [".work/gameplay.png", "../outside.png"],
+            "scene_assets": [".codex-work/gameplay.png", "../outside.png"],
             "evidence": ["../outside.mp4"],
         })
         self.write_flame_fixture()
         self.write_runtime_evidence()
         findings = self.load_module().validate_project(self.root)
-        self.assertTrue(any("scene asset" in item and ".work" in item for item in findings), findings)
+        self.assertTrue(any("scene asset" in item and ".codex-work" in item for item in findings), findings)
         self.assertTrue(any("inside project" in item or "project-relative" in item for item in findings), findings)
 
     def test_vertical_slice_and_runtime_record_are_required(self):

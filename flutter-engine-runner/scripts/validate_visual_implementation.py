@@ -170,9 +170,9 @@ def is_within(path: Path, root: Path) -> bool:
 def validate_visual_ledger(root: Path):
     """Check recorded coverage and local artifacts, never certify visual quality."""
     root = root.resolve()
-    ledger_path = root / ".work/ui-visual-gates.json"
+    ledger_path = root / ".codex-work/ui-visual-gates.json"
     if not ledger_path.is_file():
-        return ["missing .work/ui-visual-gates.json (full visual acceptance ledger)"]
+        return ["missing .codex-work/ui-visual-gates.json (full visual acceptance ledger)"]
     try:
         ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
     except (ValueError, OSError) as error:
@@ -313,7 +313,7 @@ def validate_visual_ledger(root: Path):
                     if not scene_path:
                         continue
                     allowed_extensions = {".dart", ".frag", ".glsl"} if surface.get("kind") == "flutter" else {".html", ".css", ".js"}
-                    if (is_within(scene_path, root / ".work")
+                    if (is_within(scene_path, root / ".codex-work")
                             or scene_path.suffix.lower() not in allowed_extensions):
                         findings.append(f"{surface_id}: expected executable background implementation: {value}")
                     else:
@@ -332,7 +332,7 @@ def validate_visual_ledger(root: Path):
             else:
                 for value in resources:
                     resource = local_file(value, f"surface {surface_id} background resource")
-                    if resource and (is_within(resource, root / ".work") or is_within(resource, root / "aduit")):
+                    if resource and (is_within(resource, root / ".codex-work") or is_within(resource, root / "aduit")):
                         findings.append(f"{surface_id}: background resources must be bundled project assets: {value}")
             if surface.get("kind") == "flutter":
                 recording = local_file(background.get("recording"), f"surface {surface_id} background motion recording")
@@ -429,7 +429,7 @@ def validate_visual_ledger(root: Path):
             if (field == "evidence" and gate in FLUTTER_MOTION_GATES
                     and not any(path and path.suffix.lower() in {".mp4", ".mov"} for path in paths)):
                 findings.append(f"{gate}: needs an iPhone motion recording file")
-            if field == "implementation" and not any(path and not is_within(path, root / ".work") for path in paths):
+            if field == "implementation" and not any(path and not is_within(path, root / ".codex-work") for path in paths):
                 findings.append(f"{gate}: evidence prose cannot replace an implementation file")
     for missing in sorted(VISUAL_GATES - OPTIONAL_VISUAL_GATES - seen):
         findings.append(f"missing visual gate: {missing}")
@@ -486,9 +486,9 @@ def validate(root: Path):
             f"{visual_page_count} page files; need at least 3"
         )
 
-    refinement = root / ".work" / "ui-refinement.md"
+    refinement = root / ".codex-work" / "ui-refinement.md"
     if not refinement.is_file():
-        findings.append("missing .work/ui-refinement.md")
+        findings.append("missing .codex-work/ui-refinement.md")
     else:
         evidence = refinement.read_text(encoding="utf-8", errors="replace")
         for round_name in ("Round 1", "Round 2", "Round 3"):
@@ -499,9 +499,9 @@ def validate(root: Path):
         if not re.search(r"\.(?:png|jpg|jpeg|heic|mp4|mov)\b", evidence, re.IGNORECASE):
             findings.append("UI refinement record has no screenshot or recording path")
 
-    interaction = root / ".work" / "particle-evidence.md"
+    interaction = root / ".codex-work" / "particle-evidence.md"
     if not interaction.is_file():
-        findings.append("missing .work/particle-evidence.md")
+        findings.append("missing .codex-work/particle-evidence.md")
     else:
         evidence = interaction.read_text(encoding="utf-8", errors="replace")
         for label in ("before", "active", "result"):

@@ -37,7 +37,7 @@
 
 - [ ] **Step 1: Add an engine manifest schema to section 9.6**
 
-  Define required `.work/game-engine.json` fields: `project_type`, `engine.name`, `engine.version`, `engine.role`, `engine.integration`, `engine.entrypoint`, `engine.scene_assets`, `engine.runtime_owner`, `engine.native_bridge` (when applicable), `engine.build_commands`, and `engine.evidence`. Require exact engine versions and a reason for declining alternatives.
+  Define required `.codex-work/game-engine.json` fields: `project_type`, `engine.name`, `engine.version`, `engine.role`, `engine.integration`, `engine.entrypoint`, `engine.scene_assets`, `engine.runtime_owner`, `engine.native_bridge` (when applicable), `engine.build_commands`, and `engine.evidence`. Require exact engine versions and a reason for declining alternatives.
 
 - [ ] **Step 2: Replace “minimum game loop” language with a vertical-slice gate**
 
@@ -65,20 +65,20 @@
 - Modify: `flutter_done_check/run_all.sh`
 
 **Interfaces:**
-- Consumes: `--project-root <Flutter root>`, optional `--json`, `.work/game-engine.json`, `pubspec.yaml`, `lib/`, `ios/`, engine project files, and local evidence paths.
+- Consumes: `--project-root <Flutter root>`, optional `--json`, `.codex-work/game-engine.json`, `pubspec.yaml`, `lib/`, `ios/`, engine project files, and local evidence paths.
 - Produces: exit 0 only when the game contract is structurally satisfied; stdout findings identify exact missing/invalid fields and paths.
 
 - [ ] **Step 1: Write failing validator tests**
 
   Cover:
   - missing `pubspec.yaml`/`lib`/`ios`;
-  - missing `.work/game-engine.json`;
+  - missing `.codex-work/game-engine.json`;
   - engine dependency declared without a version or without an actual runtime import;
   - missing scene entrypoint/assets/evidence;
   - Flutter-only colored-block mock with no engine-owned update/input/result/restart markers;
   - valid Flame fixture;
   - valid Godot fixture with `project.godot`, pack/resource, Swift bridge and Flutter channel/view;
-  - invalid evidence paths outside the project or inside `.work` when bundled runtime assets are expected;
+  - invalid evidence paths outside the project or inside `.codex-work` when bundled runtime assets are expected;
   - missing vertical-slice state markers and missing runtime recording.
 
 - [ ] **Step 2: Implement project parsing**
@@ -94,7 +94,7 @@
 
 - [ ] **Step 4: Implement visual/runtime evidence checks**
 
-  Require authored subject/scene assets, at least one nontrivial visual implementation path, HUD/feedback references, lifecycle handling, and `.work` evidence records containing a current iPhone build identity and recording/screenshot paths.
+  Require authored subject/scene assets, at least one nontrivial visual implementation path, HUD/feedback references, lifecycle handling, and `.codex-work` evidence records containing a current iPhone build identity and recording/screenshot paths.
 
 - [ ] **Step 5: Run the focused validator tests**
 
@@ -124,7 +124,7 @@
   ```sh
   python3 <skill-root>/scripts/validate_game_project.py --project-root <target-project-root> --json
   ```
-  before full gameplay expansion and again after native/build changes. Require `.work/game-engine.json`, `.work/game-vertical-slice.md`, `.work/game-runtime.json`, and current iPhone `.mp4`/screenshots/logs.
+  before full gameplay expansion and again after native/build changes. Require `.codex-work/game-engine.json`, `.codex-work/game-vertical-slice.md`, `.codex-work/game-runtime.json`, and current iPhone `.mp4`/screenshots/logs.
 
 - [ ] **Step 3: Add anti-crude-art direction**
 

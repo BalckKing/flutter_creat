@@ -58,7 +58,7 @@ class GitHandoffTests(unittest.TestCase):
         self.assertEqual(result["head"]["state"], "unborn")
         self.assertTrue(result["initialized"])
         self.assertTrue(result["ready_to_commit"])
-        report = (self.root / ".work/git-handoff.md").read_text()
+        report = (self.root / ".codex-work/git-handoff.md").read_text()
         self.assertIn("git add", report)
         self.assertIn("未执行", report)
         self.assertIn("已初始化、已关联、等待用户自行提交", report)

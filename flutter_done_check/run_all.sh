@@ -21,6 +21,14 @@ typeset -a TASK_CHECKS=(
   "$TASK_ROOT/flutter_done_check/test_validate_path_names.py"
   "$TASK_ROOT/flutter_done_check/test_start_remote_listing.sh"
   "$TASK_ROOT/flutter_done_check/test_validate_about_copy.py"
+  "$TASK_ROOT/flutter_done_check/test_validate_work_records.py"
+  "$TASK_ROOT/flutter_done_check/test_validate_ios_artifacts.py"
+  "$TASK_ROOT/flutter_done_check/test_validate_aduit_allowlist.py"
+  "$TASK_ROOT/flutter_done_check/test_validate_welcome_flow.py"
+  "$TASK_ROOT/flutter_done_check/test_validate_execution_state.py"
+  "$TASK_ROOT/flutter_done_check/test_validate_capability_matrix.py"
+  "$TASK_ROOT/flutter_done_check/test_validate_quality_records.py"
+  "$TASK_ROOT/flutter_done_check/test_validate_release_readiness.py"
 )
 
 for TASK_CHECK in "${TASK_CHECKS[@]}"; do

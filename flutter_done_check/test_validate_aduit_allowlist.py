@@ -1,0 +1,20 @@
+#!/usr/bin/env python3
+import importlib.util, struct, tempfile, unittest
+from pathlib import Path
+SCRIPT=Path(__file__).resolve().parents[1] / "flutter-engine-runner/scripts/validate_aduit_allowlist.py"
+spec=importlib.util.spec_from_file_location("validate_aduit_allowlist", SCRIPT); module=importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+PNG=b"\x89PNG\r\n\x1a\n" + b"\0"*8 + struct.pack(">II",1206,2622) + b"\0"*8
+class AduitTests(unittest.TestCase):
+    def setUp(self):
+        self.temp=tempfile.TemporaryDirectory(); self.addCleanup(self.temp.cleanup); self.root=Path(self.temp.name)
+        (self.root/"aduit/site/img").mkdir(parents=True); (self.root/"aduit/imgs").mkdir()
+        for name in ("intro.md","welcome.html"): (self.root/"aduit"/name).write_text("ok", encoding="utf-8")
+        for name in ("PrivacyPolicy.html","Terms&Conditions.html","Support.html"): (self.root/"aduit/site"/name).write_text("ok", encoding="utf-8")
+        (self.root/"aduit/site/img/logo.png").write_bytes(PNG)
+        for i in range(5): (self.root/"aduit/imgs"/f"shot{i}.png").write_bytes(PNG)
+    def test_final_allowlist_passes(self): self.assertEqual(module.validate(self.root, final=True)["status"], "Passed")
+    def test_index_and_extra_files_fail(self):
+        (self.root/"aduit/index.html").write_text("bad", encoding="utf-8"); (self.root/"aduit/extra.txt").write_text("bad", encoding="utf-8")
+        report=module.validate(self.root, final=True); self.assertEqual(report["status"], "Failed"); self.assertTrue(any("index.html" in e for e in report["errors"]))
+
+if __name__ == "__main__": unittest.main()

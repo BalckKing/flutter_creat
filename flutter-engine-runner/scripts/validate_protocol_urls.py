@@ -3,6 +3,7 @@
 from __future__ import annotations
 import argparse
 from pathlib import Path
+import re
 
 PAGES = ("PrivacyPolicy.html", "Terms&Conditions.html", "Support.html")
 PLACEHOLDER = "【项目名称】"
@@ -40,6 +41,22 @@ def validate(root: Path, project_name: str) -> list[str]:
     for url in expected:
         if url not in combined:
             findings.append(f"missing concrete protocol URL: {url}")
+    # Settings must expose exactly the three policy destinations. A source
+    # registry may use a single list/map, but no extra policy URL is allowed.
+    settings_files = [path for path, _ in text_files if path.name.lower() in {"settings.dart", "settings_page.dart", "settings_view.dart"}]
+    settings_text = "\n".join(text for path, text in text_files if path in settings_files)
+    if settings_files:
+        settings_urls = re.findall(r"https?://[^\s\"']+/(?:PrivacyPolicy\.html|Terms&Conditions\.html|Support\.html)", settings_text)
+        if sorted(set(settings_urls)) != sorted(expected):
+            findings.append("Settings must expose exactly the three concrete policy URLs")
+    if "index.html" in combined:
+        findings.append("index.html must not remain in policy URL/runtime configuration")
+    runtime_policy_refs = []
+    for path, text in text_files:
+        if "PrivacyPolicy.html" in text or "Terms&Conditions.html" in text or "Support.html" in text:
+            runtime_policy_refs.append(path)
+    if any(path.suffix == ".html" for path in runtime_policy_refs if path.parent != site):
+        findings.append("policy HTML must remain delivery-only; runtime may reference URLs but must not bundle local policy HTML")
     wrong_hosts = []
     for token in ("http://", "https://"):
         for fragment in combined.split(token)[1:]:

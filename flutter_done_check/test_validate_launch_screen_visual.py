@@ -27,7 +27,7 @@ class NativeLaunchScreenVisualContractTests(unittest.TestCase):
         assets = root / "ios/Runner/Assets.xcassets/LaunchTheme.imageset"
         assets.mkdir(parents=True)
         (assets / "launch_theme_image.png").write_bytes(b"theme-image")
-        evidence = root / ".work"
+        evidence = root / ".codex-work"
         evidence.mkdir()
         (evidence / "launch-screen-current-build.png").write_bytes(b"current-build")
         ledger = self.rich_ledger() if rich else self.minimal_ledger()
@@ -58,7 +58,7 @@ class NativeLaunchScreenVisualContractTests(unittest.TestCase):
                 "single_centered_image": False,
                 "empty_area_ratio": 0.34,
             },
-            "evidence": [".work/launch-screen-current-build.png"],
+            "evidence": [".codex-work/launch-screen-current-build.png"],
         }
 
     @staticmethod
@@ -72,7 +72,7 @@ class NativeLaunchScreenVisualContractTests(unittest.TestCase):
                 {"role": "theme_image", "asset": "ios/Runner/Assets.xcassets/LaunchTheme.imageset/launch_theme_image.png", "opacity": 1.0, "placement": "center_small"},
             ],
             "layout": {"type": "single_centered_image", "single_centered_image": True, "empty_area_ratio": 0.82},
-            "evidence": [".work/launch-screen-current-build.png"],
+            "evidence": [".codex-work/launch-screen-current-build.png"],
         }
 
     def test_rich_layered_launch_screen_passes(self):
@@ -88,7 +88,7 @@ class NativeLaunchScreenVisualContractTests(unittest.TestCase):
 
     def test_requires_native_storyboard_and_current_build_evidence(self):
         root = self.make_project(rich=True, storyboard=False)
-        (root / ".work/launch-screen-current-build.png").unlink()
+        (root / ".codex-work/launch-screen-current-build.png").unlink()
         findings = MODULE.validate(root)
         self.assertTrue(any("Launch Screen storyboard" in item for item in findings))
         self.assertTrue(any("current-build" in item for item in findings))

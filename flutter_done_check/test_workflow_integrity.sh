@@ -65,6 +65,7 @@ typeset -a task_expected_docs=(
   '08-发布与About材料.md'
   '09-实施顺序与交付报告.md'
   '10-第三方资源来源.md'
+  '11-记录与证据契约.md'
 )
 typeset -a task_manifest_docs=()
 while IFS= read -r task_doc || [[ -n "$task_doc" ]]; do
@@ -98,6 +99,19 @@ require_text "$TASK_ORDER" '项目根目录.*aduit.*必须保留'
 require_text "$TASK_ORDER" '依赖树和 App bundle 中的 `aduit/` 副本必须移除'
 require_text "$TASK_ORDER" '三个具体项目名 HTTP 协议链接.*文件名保持不变'
 require_text "$TASK_ORDER" '缺少证据不能标为 `Verified`'
+require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'schema_version'
+require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'freshness_window_hours'
+require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'release-readiness'
+require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'PERMISSION_PHOTOS=1'
+require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'aduit/imgs/'
+require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'quality-matrix\.json'
+require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'offline_cold_start'
+require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'Dynamic Type'
+require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" '密钥'
+require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'generated_at'
+for task_new_script in validate_work_records.py validate_ios_artifacts.py validate_aduit_allowlist.py validate_welcome_flow.py validate_execution_state.py validate_capability_matrix.py validate_quality_records.py validate_release_readiness.py; do
+  require_file "$TASK_ROOT/flutter-engine-runner/scripts/$task_new_script"
+done
 
 # Apple 4.3/5.6 gates must remain executable contracts, not prose that can
 # silently disappear while the runner still reports a green workflow.
@@ -179,6 +193,8 @@ require_text "$TASK_CONVENTIONS" '能力矩阵'
 require_text "$TASK_ARCHITECTURE" '照片/相机、麦克风/语音、通知、定位/地图、日历/提醒事项、联系人/分享、文件、蓝牙/NFC、运动/HealthKit'
 require_text "$TASK_QA" 'Selected / Implemented / Runtime verified / Declined fallback / Not appropriate'
 require_text "$TASK_RUNNER" 'capability matrix'
+require_text "$TASK_RUNNER" 'quality-matrix\.json'
+require_text "$TASK_RUNNER" 'validate_quality_records\.py'
 require_text "$TASK_RUNNER" 'ATT, IDFA, tracking, and advertising remain removed'
 for task_legacy_permissions in "$TASK_CONVENTIONS" "$TASK_PLANNING" "$TASK_ARCHITECTURE" "$TASK_QA" "$TASK_RELEASE" "$TASK_ORDER" "$TASK_RUNNER" "$TASK_README"; do
   forbid_text "$task_legacy_permissions" '三项全无|全部不选|全部不包含|任意组合.*全部|可任意组合|可自由或随机组合|including none|remain optional'
@@ -282,7 +298,7 @@ done
 # consumer and runtime evidence must be traceable for every selected capability;
 # package installation or a static visual must never satisfy this gate.
 require_text "$TASK_DOCS_DIR/02-创意与思维导图.md" '^### 3\.2\.2 非游戏能力决策与真实工具记录（硬门槛）'
-require_text "$TASK_DOCS_DIR/04-视觉与页面功能.md" '^### 6\.14\.5 非游戏高级实现与真实能力门槛（硬门槛）'
+require_text "$TASK_DOCS_DIR/04-视觉与页面功能.md" '^#### 6\.14\.5 非游戏高级实现与真实能力门槛（硬门槛）'
 require_text "$TASK_ARCHITECTURE" '^#### 9\.3\.3 非游戏真实能力实现边界（硬门槛）'
 require_text "$TASK_QA" '^#### 11\.6\.0\.1 非游戏高级能力与真实工具验收（硬门槛）'
 for task_non_game_field in real_tool_or_sdk 'license/source' actual_consumer runtime_evidence formula_record; do
@@ -322,8 +338,8 @@ require_text "$TASK_PLANNING" '页面数 = 独立思维导图文件数 = 独立�
 require_text "$TASK_PLANNING" 'plan_version.*doc_rev'
 require_text "$TASK_PLANNING" '同首页|同其他页面'
 for task_page_doc in "$TASK_PLANNING" "$TASK_RUNNER" "$TASK_ARCHITECTURE" "$TASK_QA" "$TASK_ORDER" "$TASK_README"; do
-  require_text "$task_page_doc" '\.work/map/page/<page_id>\.md'
-  require_text "$task_page_doc" '\.work/exec/page/<page_id>\.md'
+  require_text "$task_page_doc" '\.codex-work/map/page/<page_id>\.md'
+  require_text "$task_page_doc" '\.codex-work/exec/page/<page_id>\.md'
 done
 require_text "$TASK_RUNNER" 'Before implementing each page, read both'
 require_text "$TASK_QA" '逐页文档配对与执行一致性验收'
@@ -361,13 +377,20 @@ require_text "$TASK_ARCHITECTURE" '项目根目录及项目自有文件夹、文
 require_text "$TASK_ARCHITECTURE" '旧记录目录迁移'
 require_text "$TASK_QA" '项目命名禁用词专项'
 require_text "$TASK_RUNNER" 'Project-owned folder and file names must not contain Codex or AI-related terms'
-require_text "$TASK_RUNNER" 'Use `\.work/` for all project development records'
+require_text "$TASK_RUNNER" 'Use `\.codex-work/` for all project development records'
 require_text "$TASK_README" '项目自有文件夹和文件名禁止出现 Codex 或 AI 相关词'
 require_text "$TASK_START" '项目自有文件夹和文件名禁止Codex/AI相关词'
 require_text "$TASK_ROOT/flutter-engine-runner/agents/openai.yaml" '项目自有文件夹和文件名禁止Codex/AI相关词'
 for task_record_script in validate_path_names.py validate_visual_implementation.py prepare_ios_config.py prepare_git_handoff.py; do
-  require_text "$TASK_ROOT/flutter-engine-runner/scripts/$task_record_script" '\.work/'
-  forbid_text "$TASK_ROOT/flutter-engine-runner/scripts/$task_record_script" '\.codex-work'
+  require_text "$TASK_ROOT/flutter-engine-runner/scripts/$task_record_script" '\.codex-work/'
+done
+for task_file in "$TASK_ROOT"/README.md "$TASK_ROOT"/start.sh "$TASK_ROOT"/flutter-engine-runner/SKILL.md \
+  "$TASK_ROOT"/flutter-engine-runner/scripts/*.py "$TASK_ROOT"/flutter_done_check/*.sh "$TASK_ROOT"/flutter_done_check/*.py \
+  "$TASK_ROOT"/工作流文档/*.md; do
+  [[ "$task_file" == "$TASK_CHECK_DIR/test_workflow_integrity.sh" ]] && continue
+  if rg -q -- '[.]work(?:/|\b)' "$task_file"; then
+    fail "残留旧工作记录路径：$task_file"
+  fi
 done
 forbid_text "$TASK_ORDER" '直接维护到 `aduit/site/` 与 `aduit/intro.md` 并接入统一 WebView'
 forbid_text "$TASK_QA" 'WebView 预览随包本地正文'
@@ -417,7 +440,7 @@ require_file "$TASK_ROOT/flutter-engine-runner/scripts/prepare_git_handoff.py"
 require_file "$TASK_ROOT/flutter-engine-runner/scripts/validate_flutter_navigation.py"
 require_file "$TASK_ROOT/flutter-engine-runner/scripts/validate_game_project.py"
 require_text "$TASK_RUNNER" 'Game engine quality contract \(game and mixed projects only\)'
-require_text "$TASK_RUNNER" '\.work/game-engine\.json'
+require_text "$TASK_RUNNER" '\.codex-work/game-engine\.json'
 require_text "$TASK_RUNNER" 'engine\.name.*engine\.version.*engine\.entrypoint'
 require_text "$TASK_RUNNER" 'engine environment.*scene boot.*authored asset load.*input.*update/physics.*success or failure result.*feedback.*restart'
 require_text "$TASK_RUNNER" 'validate_game_project\.py'
@@ -434,7 +457,7 @@ require_text "$TASK_ROOT/工作流文档/02-创意与思维导图.md" 'Flutter �
 require_text "$TASK_ROOT/工作流文档/04-视觉与页面功能.md" '6\.14\.4 游戏实现决策门'
 require_text "$TASK_ROOT/工作流文档/04-视觉与页面功能.md" 'validate_game_project\.py'
 require_text "$TASK_ROOT/工作流文档/04-视觉与页面功能.md" '前中后景空间.*材质与光影.*相机/遮挡'
-require_text "$TASK_ARCHITECTURE" '\.work/game-engine\.json'
+require_text "$TASK_ARCHITECTURE" '\.codex-work/game-engine\.json'
 require_text "$TASK_ARCHITECTURE" '引擎环境.*垂直切片'
 require_text "$TASK_QA" 'setState\(\) called during build'
 require_text "$TASK_QA" 'RenderFlex overflow'
@@ -576,4 +599,4 @@ for task_step in {1..22}; do
   [[ "$(task_execution_step_count "$task_step")" -eq 1 ]] || fail "第 13 节的实施顺序缺少或重复第 ${task_step} 步"
 done
 
-print -r -- 'PASS: workflow manifest, 00-10 document set, steps 1-22, cross-document gates, and final-stage ordering are executable.'
+print -r -- 'PASS: workflow manifest, 00-11 document set, steps 1-22, cross-document gates, and final-stage ordering are executable.'

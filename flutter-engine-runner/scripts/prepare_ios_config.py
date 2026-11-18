@@ -184,7 +184,7 @@ def atomic_write(path, content, mode):
 
 
 def apply_changes(root, changes):
-    backup_dir = project_path(root, ".work/ios-config-backup", must_exist=False)
+    backup_dir = project_path(root, ".codex-work/ios-config-backup", must_exist=False)
     if backup_dir.exists() and not backup_dir.is_dir():
         raise ConfigError("iOS configuration backup path must be a directory")
     backup_dir.mkdir(parents=True, exist_ok=True)

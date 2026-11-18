@@ -32,6 +32,14 @@ typeset -a task_expected=(
   test_validate_public_copy.py
   test_validate_path_names.py
   test_validate_about_copy.py
+  test_validate_work_records.py
+  test_validate_ios_artifacts.py
+  test_validate_aduit_allowlist.py
+  test_validate_welcome_flow.py
+  test_validate_execution_state.py
+  test_validate_capability_matrix.py
+  test_validate_quality_records.py
+  test_validate_release_readiness.py
 )
 
 for task_file in "${task_expected[@]}"; do

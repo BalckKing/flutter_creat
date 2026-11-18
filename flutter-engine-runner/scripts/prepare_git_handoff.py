@@ -21,7 +21,7 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 
 TARGET_BRANCH = "feat/1.0.0"
-REPORT_PATH = Path(".work/git-handoff.md")
+REPORT_PATH = Path(".codex-work/git-handoff.md")
 
 
 class HandoffError(RuntimeError):

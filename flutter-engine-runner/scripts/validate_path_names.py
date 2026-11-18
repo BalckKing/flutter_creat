@@ -51,15 +51,16 @@ FORBIDDEN_NAME_TOKENS = {
 # ambiguous abbreviations such as ai still use word matching to preserve main.
 FORBIDDEN_NAME_FRAGMENTS = {"codex", "openai", "genai", "aigc", "chatgpt", "midjourney", "deepseek"}
 
-# Dependencies and tool metadata are not authored project names. Internal work
-# and delivery folders still receive the forbidden-name scan, even though their
-# file-format contracts are exempt from ordinary abbreviation/style checks.
+# Dependencies and tool metadata are not authored project names. The internal
+# work directory is an explicit user-requested exception: `.codex-work/` keeps
+# its name and its records are exempt from the project-owned Codex/AI token
+# scan, while every other project-owned path remains checked.
 TOOL_ROOTS = (
     ".git", ".dart_tool", "build", ".idea", ".vscode",
     "ios/Pods", "ios/.symlinks", "ios/Flutter",
     "ios/Runner.xcodeproj", "ios/Runner.xcworkspace",
 )
-NAME_ONLY_ROOTS = (".work", "aduit", "AppListing")
+NAME_ONLY_ROOTS = (".codex-work", "aduit", "AppListing")
 FIXED_PATHS = {
     "lib/common_module", "lib/page_module", "lib/service_module",
     "lib/common_module/theme/app_theme.dart", "assets/logo.png",
@@ -112,7 +113,7 @@ def name_stem(path, is_dir):
 def load_terms(root, errors):
     terms = dict(DEFAULT_TERMS)
     keep = {}
-    glossary = root / ".work/path-terms.json"
+    glossary = root / ".codex-work/path-terms.json"
     try:
         if glossary.is_symlink():
             raise ValueError("glossary must be a regular project file")
@@ -149,7 +150,7 @@ def load_terms(root, errors):
                 raise ValueError(f"keep path must exist without being a symbolic link: {path}")
             keep[path] = reason.strip()
     except (OSError, ValueError) as error:
-        errors.append(f".work/path-terms.json: {error}")
+        errors.append(f".codex-work/path-terms.json: {error}")
     return terms, keep
 
 
@@ -198,7 +199,10 @@ def check(root):
                 if is_dir:
                     dirs.remove(name)
                 continue
-            forbidden = forbidden_name_tokens(name)
+            # `.codex-work/` is the user-requested internal record directory;
+            # its name and record filenames are exempt from the project-owned
+            # Codex/AI naming scan. Every other project-owned path is checked.
+            forbidden = [] if beneath(relative, ".codex-work") else forbidden_name_tokens(name)
             if forbidden:
                 errors.append(f"{relative}: forbidden tool or AI-related term(s): {', '.join(forbidden)}")
             key = unicodedata.normalize("NFC", relative).casefold()

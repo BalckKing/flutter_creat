@@ -21,9 +21,9 @@ def _regular_file(root: Path, relative: str) -> bool:
 
 
 def _load_ledger(root: Path, findings: list[str]):
-    path = root / ".work/launch-screen-visual.json"
+    path = root / ".codex-work/launch-screen-visual.json"
     if not path.is_file() or path.is_symlink():
-        findings.append("missing .work/launch-screen-visual.json launch composition ledger")
+        findings.append("missing .codex-work/launch-screen-visual.json launch composition ledger")
         return None
     try:
         data = json.loads(path.read_text(encoding="utf-8"))

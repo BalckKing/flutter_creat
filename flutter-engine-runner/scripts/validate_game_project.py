@@ -18,14 +18,14 @@ from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
 
-MANIFEST_PATH = Path(".work/game-engine.json")
-RUNTIME_EVIDENCE_PATH = Path(".work/game-runtime.json")
+MANIFEST_PATH = Path(".codex-work/game-engine.json")
+RUNTIME_EVIDENCE_PATH = Path(".codex-work/game-runtime.json")
 TEXT_EXTENSIONS = {
     ".dart", ".yaml", ".yml", ".json", ".swift", ".m", ".mm", ".h", ".gd",
     ".tscn", ".godot", ".unity", ".cs", ".shader", ".asmdef", ".pbxproj", ".xcconfig", ".xml", ".plist", ".md",
     ".txt", ".html",
 }
-EXCLUDED_DIRS = {".git", ".dart_tool", "build", "Pods", ".symlinks", ".work"}
+EXCLUDED_DIRS = {".git", ".dart_tool", "build", "Pods", ".symlinks", ".codex-work"}
 SEMVER = re.compile(r"(?<!\d)(\d+\.\d+(?:\.\d+)?)(?!\d)")
 
 
@@ -49,8 +49,8 @@ def _safe_relative(root: Path, value: Any, label: str, findings: list[str], *, a
     if not _is_within(resolved, root):
         findings.append(f"{label}: path must stay inside project: {value}")
         return None
-    if not allow_work and (candidate.parts and candidate.parts[0] == ".work"):
-        findings.append(f"{label}: scene asset cannot live in .work bundled evidence directory: {value}")
+    if not allow_work and (candidate.parts and candidate.parts[0] == ".codex-work"):
+        findings.append(f"{label}: scene asset cannot live in .codex-work bundled evidence directory: {value}")
         return None
     # A symlink can escape after the resolve check; reject it even if it currently
     # resolves below the root so a later replacement cannot change the contract.
@@ -382,10 +382,10 @@ def _require_asset_paths(root: Path, values: Any, findings: list[str], label: st
 
 def _require_evidence_paths(root: Path, values: Any, findings: list[str], *, label: str = "engine.evidence") -> None:
     if not isinstance(values, list) or not values:
-        findings.append(f"{label} must list .work/game-runtime.json and related evidence")
+        findings.append(f"{label} must list .codex-work/game-runtime.json and related evidence")
         return
-    if ".work/game-runtime.json" not in values:
-        findings.append(f"{label} must include .work/game-runtime.json")
+    if ".codex-work/game-runtime.json" not in values:
+        findings.append(f"{label} must include .codex-work/game-runtime.json")
     for index, value in enumerate(values):
         path = _safe_relative(root, value, f"{label}[{index}]", findings, allow_work=True)
         if path is None:
@@ -397,15 +397,15 @@ def _require_evidence_paths(root: Path, values: Any, findings: list[str], *, lab
 def _runtime_evidence(root: Path, findings: list[str]) -> dict[str, Any] | None:
     path = root / RUNTIME_EVIDENCE_PATH
     if not path.is_file():
-        findings.append("missing .work/game-runtime.json runtime evidence")
+        findings.append("missing .codex-work/game-runtime.json runtime evidence")
         return None
     try:
         record = json.loads(_read(path))
     except (OSError, ValueError) as error:
-        findings.append(f"invalid .work/game-runtime.json: {error}")
+        findings.append(f"invalid .codex-work/game-runtime.json: {error}")
         return None
     if not isinstance(record, dict):
-        findings.append(".work/game-runtime.json must contain an object")
+        findings.append(".codex-work/game-runtime.json must contain an object")
         return None
     for field in ("build_id", "bundle_id", "device", "os"):
         if not isinstance(record.get(field), str) or not record[field].strip():
@@ -472,7 +472,7 @@ def _runtime_code_text(root: Path, files: Mapping[Path, str]) -> str:
             relative = path.relative_to(root)
         except ValueError:
             continue
-        if path.suffix.lower() in code_suffixes and ".work" not in relative.parts:
+        if path.suffix.lower() in code_suffixes and ".codex-work" not in relative.parts:
             chunks.append(source)
     return "\n".join(chunks)
 

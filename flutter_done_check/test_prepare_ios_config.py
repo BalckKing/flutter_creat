@@ -52,7 +52,7 @@ class IOSConfigTests(unittest.TestCase):
         result = self.run_tool(expected=1)
         self.assertIn("MinimumOSVersion", str(result))
         self.assertEqual(self.framework.read_bytes(), before)
-        self.assertFalse((self.root / ".work").exists())
+        self.assertFalse((self.root / ".codex-work").exists())
 
     def test_apply_preserves_keys_backs_up_and_is_idempotent(self):
         before = self.framework.read_bytes()
@@ -61,7 +61,7 @@ class IOSConfigTests(unittest.TestCase):
         self.assertEqual(data["MinimumOSVersion"], "15.6")
         self.assertEqual(data["CFBundleExecutable"], "App")
         self.assertFalse(result["build_verified"])
-        backups = list((self.root / ".work/ios-config-backup").glob("*"))
+        backups = list((self.root / ".codex-work/ios-config-backup").glob("*"))
         self.assertEqual(len(backups), 1)
         self.assertEqual(backups[0].read_bytes(), before)
         current = self.framework.read_bytes()
@@ -170,7 +170,7 @@ puts JSON.generate({'plugin' => $installer.pods_project.targets[1].build_configu
         self.podfile.write_text("post_install do |installer|\n")
         self.run_tool("--permission-handler", "--apply", expected=1)
         self.assertEqual(self.framework.read_bytes(), before)
-        self.assertFalse((self.root / ".work").exists())
+        self.assertFalse((self.root / ".codex-work").exists())
 
     def test_minimum_below_workflow_floor_is_rejected(self):
         before = self.framework.read_bytes()
@@ -189,7 +189,7 @@ puts JSON.generate({'plugin' => $installer.pods_project.targets[1].build_configu
         before = self.framework.read_bytes()
         external = Path(self.temp.name) / "outside-backups"
         external.mkdir()
-        (self.root / ".work").symlink_to(external, target_is_directory=True)
+        (self.root / ".codex-work").symlink_to(external, target_is_directory=True)
         self.run_tool("--apply", expected=1)
         self.assertEqual(self.framework.read_bytes(), before)
         self.assertEqual(list(external.iterdir()), [])
