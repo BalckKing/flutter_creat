@@ -9,7 +9,7 @@
 
 非游戏项目同样必须使用真实能力完成精致成品：地图用真实地图 SDK、真实地图瓦片或许可地理数据，图表绑定真实数据，3D/媒体/时间线/扫描/定位/语音使用与主题匹配的真实工具。每项记录 `capability`、`real_tool_or_sdk`、`version`、`license/source`、`actual_consumer`、`fallback`、`runtime_evidence` 和 `formula_record`；包名、安装结果、设计稿或静态截图都不算实现。禁止线条地图、色块地图、静态地图截图、假坐标网格和手绘道路冒充地图。每个动态任务按六部分效果提示词公式记录风格锚定、动画清单、技术手段、数字参数、包授权、约束/Reduce Motion/回退，并在当前 iPhone 上操作和录制。组件目录是选型参考，不要求安装全部组件；非游戏没有游戏引擎，但视觉质量、真实消费者和运行证据门槛不降低。
 
-最终资源、依赖、无障碍、恢复与安全证据统一写入 `.codex-work/quality-matrix.json`：资源必须有来源/许可、真实消费者、展示位、哈希、字节数和图片体积上限（默认不超过 262,144 字节，Welcome/Logo 可填写更窄限制）；依赖必须有精确版本、许可证和真实消费者；每个页面记录 VoiceOver、Dynamic Type、Reduce Motion 与对比度；离线冷启动、权限拒绝、前后台恢复和清除中断恢复都要有当前构建证据；源码和配置必须完成密钥扫描。运行 `python3 <Skill 根目录>/scripts/validate_quality_records.py --project-root <实际 App 根目录>`，缺少真实工程或证据时输出 `Not verified`，不得把资料包脚本回归当作 App 运行通过。
+最终资源、依赖、无障碍、恢复与安全证据统一写入 `.codex-work/quality-matrix.json`：资源必须有来源/许可、真实消费者、展示位、哈希、字节数和图片体积上限（默认不超过 262,144 字节，Welcome/Logo 可填写更窄限制）；依赖必须有精确版本、许可证和真实消费者；每个页面记录 VoiceOver、Dynamic Type、Reduce Motion 与对比度；离线冷启动、权限拒绝、前后台恢复和清除中断恢复都要有当前构建证据；源码和配置必须完成密钥扫描。运行 `python3 <Skill 根目录>/scripts/validate_quality_records.py --project-root <实际 App 根目录>`，缺少真实工程或证据时输出 `Not verified`，不得把资料包脚本回归当作 App 运行通过。最终 readiness 还必须包含 `asset_staging` 与 `generation_cleanup` 两个门，分别引用 `asset-staging.json`/`validate_asset_staging.py` 和下载完成后精确删除的 `generation-cleanup.json`/`cleanup_generation_history.py`。
 
 工程全程禁用 GetX 和外部路由框架。使用 Flutter 原生 `MaterialApp`/`CupertinoApp`/`WidgetsApp`、`Navigator.of(context)`/`NavigatorState`、`MaterialPageRoute`/`CupertinoPageRoute`/`PageRouteBuilder` 与 `RouteSettings`；Welcome、Initialization、Settings、三个协议入口和主任务必须在原生 Navigator 图中可达。安装后可对真实工程运行 `python3 <Skill 根目录>/scripts/validate_flutter_navigation.py --project-root <实际 App 根目录>`，该检查同时拒绝 GetX 依赖/API 与缺少原生 Navigator 的工程。
 # Flutter 工程：复制、安装、执行
@@ -181,6 +181,9 @@ Flutter工程/
 │   ├── test_validate_execution_state.py
 │   ├── test_validate_capability_matrix.py
 │   ├── test_validate_quality_records.py
+│   ├── test_asset_staging.py
+│   ├── test_cleanup_generation_history.py
+│   ├── test_validate_logo_quality.py
 │   └── test_validate_release_readiness.py
 └── README.md
 ```
@@ -191,13 +194,15 @@ Flutter工程/
 
 Mac 若不允许双击启动器，可在终端输入 `/bin/zsh `，拖入 `start.sh` 并回车。终端入口也支持 `--project-dir` 指定完整工程目录；该路径会加入待发送的启动语句，不会直接创建工程。`--install-only` 只安装，`--help` 查看选项。
 
-生图网站、工具和模型不要求统一，Logo 与背景可按题材选择不同来源，以精致美观、细节/材质/光影、主题准确及页面适配验收，不以同一供应商代替质量。Stargate（`http://stargate.local:3100/image`）为可选入口；该地址是生成界面，不是图片下载接口；不能直接 `curl` 后把网页、JSON 或错误响应保存为 `assets/logo.png`。必须从真实任务结果取得二进制图片，并再次检查 MIME、文件签名、尺寸、可解码性和 Alpha。另一台机器需要能使用所选生图工具/服务；路径可移植不代表服务或 Flutter/Xcode 会自动安装。服务失败时记录正式 Logo 为 `Blocked`，优先复用有效 AppIcon 或明确标记的 `unverified` 开发资源继续本地页面和材料生成，不把回退资源宣称为正式品牌。
+生图网站、工具和模型不要求统一，Logo 与背景可按题材选择不同来源，以精致美观、细节/材质/光影、主题准确及页面适配验收，不以同一供应商代替质量。Stargate（`http://stargate.local:3100/`）为可选入口；该地址是生成界面，不是图片下载接口；不能直接 `curl` 后把网页、JSON 或错误响应保存为 `assets/logo.png`。必须从真实任务结果取得二进制图片，并再次检查 MIME、文件签名、尺寸、可解码性和 Alpha。另一台机器需要能使用所选生图工具/服务；路径可移植不代表服务或 Flutter/Xcode 会自动安装。服务失败时记录正式 Logo 为 `Blocked`，优先复用有效 AppIcon 或明确标记的 `unverified` 开发资源继续本地页面和材料生成，不把回退资源宣称为正式品牌。
 
 全局配色契约：Logo、App、Welcome、Initialization、原生启动和 About 统一采用明亮色调。使用清晰、通透、有活力的背景与主题强调色，可选择明亮的冷色或暖色并搭配渐变，避免整体灰暗、压黑或默认套用橙黄夕阳。不再生成调色盘、主题色选择、色相/饱和度/亮度滑杆或 System/Light/Dark 外观切换功能，也不保存这些偏好；系统外观变化时仍保持明亮。项目主题令牌集中写入 `common_module/theme/app_theme.dart`，由 AppPalette/AppTheme 统一管理，Logo 取色仅作可选品牌参考，选用色彩须符合明亮方向。多用渐变是创作建议，不设颜色统计或渐变配额；用当前 iPhone 页面检查真实效果与阅读对比度。
 
 Logo 下载或导出后先命名为 `用户提供的项目名称.png`，验收后以该名称放入目标工程 `assets/`，再改为 `logo.png`：`项目名称.png → assets/项目名称.png → assets/logo.png`。取色、App 引用和 Listing 统一使用最终文件，下载路径与改名链路写入品牌记录；项目名称只用于文件名，Logo 画面仍不含文字。
 
 Logo 按主题元素生成 12 张独立候选：模拟现实、手绘、油画、艺术表现四种画风各 3 张。每张用独立提示词和独立任务，实际查看全部候选的主题表达、生成瑕疵、材质/笔触与图标辨识，优先选择可见生成痕迹最少且合格的一张；不按候选色系覆盖、配色差异或比例补图。候选先放在本项目专属暂存目录 `~/Downloads/<sanitized-project-name>/logo-candidates/c01/` 至 `c12/`（本机默认为 `/Users/admin/Downloads/<sanitized-project-name>/`），仅选中图按原命名链路进入 `assets/logo.png` 并继续称为 Logo；其余图按第 6.12 节逐张评估，合适者尽量改为主题/用途短名接入 Flutter 界面，未用项记录原因；比较记录和哈希放在 `.codex-work/`。四种画风都需精致好看、小尺寸可辨。候选统一使用明亮色调，背景与渐变按主题设计；保持主题造型、材质/笔触与完整构图，避免几何色块堆叠、简陋图案，禁止 3D 与明显 AI 生成感。其余生成规格和文件命名条件不变，详细话术见 `工作流文档/02-创意与思维导图.md` 第 2.5 节。
+
+Logo 采用主题级概括：只保留大致行业/对象、一个清楚的主轮廓或关系、画风、克制的材质/光线提示和明亮方向，不把创意中的每个细节复制进提示词。大楼建造主题只需一个可辨识的建筑主体和一个施工提示；楼层、设备、人物、流程、数据和业务模块由 App 页面表达。每个 Logo prompt 最多一个主主体和两个辅助线索，优先保证 60–120 像素辨识度；过度堆叠、拼贴拥挤、缩小后无法识别的结果直接淘汰。
 
 Logo 的光照、主体和题材按主题自主设计，不将每个题材默认套成橙黄色夕阳。太阳、日落和其他环境可按主题使用，但整体保持明亮；不固定色相，也不为某类光照追加审批。
 
@@ -303,13 +308,15 @@ Settings 页最底部的版本文案也是硬门槛：只显示 `项目名称 ·
 
 图片生成或下载开始前，先依据用户提供的项目名称生成一个仅用于素材暂存的安全目录：`/Users/admin/Downloads/<project-name>/`（在其他机器上等价为 `~/Downloads/<sanitized-project-name>/`）。项目名称只做文件系统安全化，不改变 App 显示名称；目录至少分为 `logo-candidates/`、`backgrounds/`、`content/` 和 `exports/`，所有本项目生成图、下载图和导出中间文件都写入该目录，禁止直接写入公共 Downloads 根目录或其他项目目录。验证格式、许可、哈希和去重后，将需要随包的文件复制到当前项目 `assets/` 对应目录并记录旧路径→新路径映射；运行时代码只能引用项目内 `assets/`，绝不引用 Downloads 的绝对路径。保留项目专属暂存目录以便复核，不把它打包进 App 或 `aduit/`，也不扫描、移动或覆盖其他项目的下载文件。
 
+统一资源暂存根目录由 `scripts/prepare_asset_staging.py` 实际创建并写入 `.codex-work/asset-staging.json`；所有生图、拉取、浏览器导出和转码文件只能进入 `/Users/admin/Downloads/<sanitized-project-name>/` 下的 `logo-candidates/`、`backgrounds/`、`content/`、`exports/`。运行 `validate_asset_staging.py` 拒绝公共 Downloads 根目录散落图片、其他项目文件、工程内伪目录、未登记子目录和符号链接。生图下载完成后必须通过 Stargate 页面或明确记录的官方删除动作删除本批生成记录，并以 `.codex-work/generation-cleanup.json` 留存 task IDs、已下载路径、精确删除 IDs、时间和证据；这一步就是生成记录删除门，运行 `cleanup_generation_history.py` 验证，删除不完整或执行方式不明不能通过。
+
 项目自有文件夹和文件名禁止出现 Codex 或 AI 相关词：包括工程根目录名、源码、资源、测试、工具、原生自定义文件、`aduit/` 材料及开发记录，按词及常见变体检查 `codex`、`ai`、`openai`、`genai`、`aigc`、`llm`、`gpt` 等；普通 `main.dart`、`rain.jpg` 不因字母组合误判。内部记录统一改为 `.codex-work/`，历史工作记录须实际迁移并同步引用、核对冲突，不覆盖记录或保留旧名软链接。`validate_path_names.py` 扫描真实目录，`keep` 不得豁免；外部技能路径、工程外父路径和真实构建/依赖强制路径保留工具边界。用户指定磁盘名冲突如实说明，不擅自移动工程或改展示品牌。具体见第 9.3.1 节。
 
 所有项目自有资源、文件夹与文件能简写就统一简写，但只修改有准确、清楚缩写的名称；已简短、无合适缩写或缩写会歧义的保留，不机械截断。生成前建立主题词表，架构建立后、资源整理后和交付前运行 `validate_path_names.py` 扫描实际工程；可缩写项未改不能通过命名验收。具体词表/保留项格式与命令见第 9.3.1 节；改名必须同步代码/配置/数据/原生工程及测试中的全部引用，并检查受影响构建和断网加载。符合禁用词规则的固定路径与用户项目磁盘名、用户显示名和三个协议文件名保持原样，详见第 9.3.1 节。`assets/` 内项目自有资源使用简短的英文主题/用途名称，例如 `assets/media/city/cbd_cover.jpg`；去掉下载附带的网站名、日期/时间戳、供应商编号和随机串，专有名词统一使用可辨认的缩写。完整名称、缩写及旧新路径映射保留在 `.codex-work/asset-names.md`，来源与许可记录继续保留；固定 `assets/logo.png` 和逐页背景路径不变。既有资源改名后同步声明、代码与数据引用，并重建确认实际加载，详见第 10.1.2、11.1 节。
 
 如果返回 403、429、超时、登录墙、验证码或许可证无法核验，将对应照片项记为 `Blocked`/`Not verified`；继续生成本地 AppListing、About、`aduit/` 和 `aduit/review/remarks.md`，不能再以素材失败停止整个交付流程。
 
-执行流程必须实际搜索 Pexels、Pixabay、Unsplash、Wikimedia Commons 等第三方网站，核对主题与许可，下载真实实物/实景摄影到目标工程的 `assets/media/` 并接入 App 页面。`http://stargate.local:3100/image` 用于生成 Logo，也可生成选定图片路线的逐页主题化背景装饰；复杂背景可直接动画生成或第三方组件合成，动画工具/服务不限且不强制为动画生图，但每页半透明图片点缀仍须实际取得、接入并验收。图像生成不得用于生成或替代内容照片、实景封面、视频帧或其他真实摄影。实际背景图片须按 `assets/backgrounds/<page_id>/<page_id>_background.png` 或真实格式单独保存并由对应页面引用；程序/动画场景按第 6.11 节记录代码入口、所用资源与真实运行。原生图标、代码矢量符号、其他装饰插画与渐变等非摄影 UI 素材不需要从照片网站取得，也不计作真实照片。没有 API Key 或资源下载技能时仍尝试可用公开网页与合法下载方式；来源失败则切换其他来源，按规范有限尝试，不无限等待。
+执行流程必须实际搜索 Pexels、Pixabay、Unsplash、Wikimedia Commons 等第三方网站，核对主题与许可，下载真实实物/实景摄影到目标工程的 `assets/media/` 并接入 App 页面。`http://stargate.local:3100/` 用于生成 Logo，也可生成选定图片路线的逐页主题化背景装饰；复杂背景可直接动画生成或第三方组件合成，动画工具/服务不限且不强制为动画生图，但每页半透明图片点缀仍须实际取得、接入并验收。图像生成不得用于生成或替代内容照片、实景封面、视频帧或其他真实摄影。实际背景图片须按 `assets/backgrounds/<page_id>/<page_id>_background.png` 或真实格式单独保存并由对应页面引用；程序/动画场景按第 6.11 节记录代码入口、所用资源与真实运行。原生图标、代码矢量符号、其他装饰插画与渐变等非摄影 UI 素材不需要从照片网站取得，也不计作真实照片。没有 API Key 或资源下载技能时仍尝试可用公开网页与合法下载方式；来源失败则切换其他来源，按规范有限尝试，不无限等待。
 
 Emoji、渐变、矢量插画、AI 拟真图或仅写素材清单不能代替真实照片。验收要有来源与许可、实际页面截图及离线展示证据；不能只下载不使用，也不能用一张图填满所有分类。所有可用途径确实失败时可继续独立开发，但照片缺口必须明确报告，不能把该项资源质量标为通过。搜索记录与接触表在目标工程 `.codex-work/`，内容照片不进入 `aduit/`。
 

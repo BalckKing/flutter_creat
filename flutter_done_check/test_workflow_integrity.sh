@@ -109,7 +109,7 @@ require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'offline_cold_start'
 require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'Dynamic Type'
 require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" '密钥'
 require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'generated_at'
-for task_new_script in validate_work_records.py validate_ios_artifacts.py validate_aduit_allowlist.py validate_welcome_flow.py validate_execution_state.py validate_capability_matrix.py validate_quality_records.py validate_release_readiness.py; do
+for task_new_script in validate_work_records.py validate_ios_artifacts.py validate_aduit_allowlist.py validate_welcome_flow.py validate_execution_state.py validate_capability_matrix.py validate_quality_records.py prepare_asset_staging.py validate_asset_staging.py cleanup_generation_history.py validate_logo_quality.py validate_release_readiness.py; do
   require_file "$TASK_ROOT/flutter-engine-runner/scripts/$task_new_script"
 done
 
@@ -499,9 +499,23 @@ require_text "$TASK_RUNNER" 'background\.asset'
 require_text "$TASK_DOCS_DIR/04-视觉与页面功能.md" '所有模式都必须填写真实.*asset.*opacity.*placement'
 require_text "$TASK_QA" '所有模式缺图片均失败'
 require_text "$TASK_RUNNER" 'Every mode requires background.asset, background.opacity'
+require_text "$TASK_RUNNER" 'prepare_asset_staging\.py'
+require_text "$TASK_RUNNER" 'validate_asset_staging\.py'
+require_text "$TASK_RUNNER" 'cleanup_generation_history\.py'
+require_text "$TASK_RUNNER" 'http://stargate\.local:3100/'
+require_text "$TASK_RUNNER" 'generation-cleanup\.json'
+require_text "$TASK_README" '统一资源暂存根目录'
+require_text "$TASK_README" '生成记录删除'
+require_text "$TASK_DOCS_DIR/06-素材与真实照片.md" 'asset-staging\.json'
+require_text "$TASK_DOCS_DIR/06-素材与真实照片.md" 'generation-cleanup\.json'
+require_text "$TASK_DOCS_DIR/06-素材与真实照片.md" '删除记录必须在下载完成后'
+require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'validate_asset_staging\.py'
+require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'cleanup_generation_history\.py'
 require_text "$TASK_PLANNING" '生图网站、工具和模型不要求统一'
 require_text "$TASK_README" '生图网站、工具和模型不要求统一'
 require_text "$TASK_RUNNER" 'Image-generation websites, tools and models do not need to be uniform'
+require_text "$TASK_CONVENTIONS" 'Logo 的生成来源不要求统一'
+forbid_text "$TASK_CONVENTIONS" 'Logo 的生成来源始终遵守第 2\.5 节，不更换供应商'
 for task_image_doc in "$TASK_PLANNING" "$TASK_RUNNER" "$TASK_CONVENTIONS" "$TASK_ORDER" "$TASK_DOCS_DIR/04-视觉与页面功能.md"; do
   forbid_text "$task_image_doc" 'Logo 唯一生成入口|不得使用 `pen.dev` 或其他生成服务|Logo 仅通过|仅 Stargate：|仅用 Stargate 生成|Logo 仍按第 2\.5 节只在 Stargate|or switch services|background images are not mandatory|Procedural/animation require no image|没有背景图片不构成失败|不因缺背景图片判失败|不强制本地背景图片'
 done

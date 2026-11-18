@@ -28,6 +28,9 @@ typeset -a TASK_CHECKS=(
   "$TASK_ROOT/flutter_done_check/test_validate_execution_state.py"
   "$TASK_ROOT/flutter_done_check/test_validate_capability_matrix.py"
   "$TASK_ROOT/flutter_done_check/test_validate_quality_records.py"
+  "$TASK_ROOT/flutter_done_check/test_asset_staging.py"
+  "$TASK_ROOT/flutter_done_check/test_cleanup_generation_history.py"
+  "$TASK_ROOT/flutter_done_check/test_validate_logo_quality.py"
   "$TASK_ROOT/flutter_done_check/test_validate_release_readiness.py"
 )
 

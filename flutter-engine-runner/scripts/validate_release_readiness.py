@@ -31,7 +31,7 @@ def validate(root: Path):
         if g.get("status") not in ALLOWED: errors.append(f"gates[{i}] has invalid status")
         if not isinstance(g.get("evidence"),list) or not g.get("evidence") or any(not isinstance(item,str) or not item.strip() for item in g.get("evidence", [])): errors.append(f"gates[{i}] evidence must contain non-empty paths")
         if g.get("status") in {"Failed","Blocked"} and not g.get("blocker"): errors.append(f"gates[{i}] failed/blocked gate requires blocker")
-    required={"runtime","ios_artifacts","aduit","quality_records","git_handoff"}; missing=sorted(required-names)
+    required={"runtime","ios_artifacts","aduit","quality_records","asset_staging","generation_cleanup","logo_quality","git_handoff"}; missing=sorted(required-names)
     if missing: errors.append("missing required release gates: "+", ".join(missing))
     blockers=[g.get("name") for g in gates if isinstance(g,dict) and g.get("status") in {"Failed","Blocked"}]
     unresolved=[g.get("name") for g in gates if isinstance(g,dict) and g.get("status")=="Not verified"]
