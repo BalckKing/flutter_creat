@@ -8,6 +8,7 @@ TASK_DOCS_DIR="$TASK_ROOT/工作流文档"
 TASK_MANIFEST="$TASK_DOCS_DIR/manifest.txt"
 TASK_ORDER="$TASK_DOCS_DIR/09-实施顺序与交付报告.md"
 TASK_START="$TASK_ROOT/start.sh"
+TASK_CHECK_DIR="$TASK_ROOT/flutter_done_check"
 
 fail() {
   print -u2 -- "FAIL: $1"
@@ -49,6 +50,8 @@ require_before() {
 require_file "$TASK_MANIFEST"
 require_file "$TASK_ORDER"
 require_file "$TASK_START"
+require_file "$TASK_CHECK_DIR/test_workflow_integrity.sh"
+[[ ! -e "$TASK_ROOT/tests" ]] || fail "残留旧检查目录：$TASK_ROOT/tests"
 
 typeset -a task_expected_docs=(
   '00-总入口.md'
@@ -506,7 +509,7 @@ require_text "$TASK_QA" '^### 11\.1 真实 App 运行时调试与验收'
 require_text "$TASK_QA" '资料包里的测试文件只验证工作流文档、脚本契约、安装器和检查器行为'
 require_text "$TASK_QA" '每次操作后观察页面是否改变、按钮是否响应'
 require_text "$TASK_RUNNER" '^## Real App runtime debugging contract'
-require_text "$TASK_RUNNER" 'test/` and `tests/` files may validate this workflow bundle'
+require_text "$TASK_RUNNER" 'test/` and `flutter_done_check/` files may validate this workflow bundle'
 require_text "$TASK_ROOT/工作流文档/02-创意与思维导图.md" 'Simulator Build/Run \+ UI Interaction \+ Logs'
 for task_runtime_file in "$TASK_README" "$TASK_DOCS_DIR/01-执行约定.md" "$TASK_QA" "$TASK_ORDER" "$TASK_RUNNER"; do
   forbid_text "$task_runtime_file" 'Widget \+ Integration Tests|widget/navigation checks|普通测试.*App 已通过|test App.*App 功能'

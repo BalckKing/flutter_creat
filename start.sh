@@ -63,7 +63,17 @@ for TASK_REQUIRED in "$TASK_DOC" "$TASK_DOC_MANIFEST" "$TASK_RUNNER_SOURCE/SKILL
   fi
 done
 
-TASK_WORKFLOW_INTEGRITY="$TASK_BUNDLE_DIR/tests/test_workflow_integrity.sh"
+TASK_BUNDLE_CHECK_LAYOUT="$TASK_BUNDLE_DIR/flutter_done_check/test_bundle_layout.sh"
+if [[ ! -f "$TASK_BUNDLE_CHECK_LAYOUT" || -L "$TASK_BUNDLE_CHECK_LAYOUT" ]]; then
+  print -u2 -- "资料包不完整，缺少检查目录布局检查：$TASK_BUNDLE_CHECK_LAYOUT"
+  exit 1
+fi
+if ! /bin/zsh "$TASK_BUNDLE_CHECK_LAYOUT"; then
+  print -u2 -- "检查目录布局检查失败；未更新技能安装。"
+  exit 1
+fi
+
+TASK_WORKFLOW_INTEGRITY="$TASK_BUNDLE_DIR/flutter_done_check/test_workflow_integrity.sh"
 if [[ ! -f "$TASK_WORKFLOW_INTEGRITY" || -L "$TASK_WORKFLOW_INTEGRITY" ]]; then
   print -u2 -- "资料包不完整，缺少工作流完整性检查：$TASK_WORKFLOW_INTEGRITY"
   exit 1

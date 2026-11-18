@@ -8,4 +8,4 @@ interface:
 # MaterialApp/CupertinoApp/WidgetsApp and Navigator routes, then run
 # validate_flutter_navigation.py before acceptance.
 
-Settings 必须使用主题化品牌头部、分组图标、摘要状态和真实选项值；不能生成单调的连续文字设置页。
+# Settings 必须使用主题化品牌头部、分组图标、摘要状态和真实选项值；不能生成单调的连续文字设置页。

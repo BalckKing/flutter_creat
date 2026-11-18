@@ -101,7 +101,7 @@ task_require "$TASK_EXECUTION" '^### 0\.9\.1 调试安装与构建产物复用'
 task_require "$TASK_EXECUTION" '禁止用 App 测试文件替代运行时验收'
 task_require "$TASK_EXECUTION" '运行时调试闭环'
 task_require "$TASK_SKILL" '^## Real App runtime debugging contract'
-task_require "$TASK_SKILL" 'test/` and `tests/` files may validate this workflow bundle'
+task_require "$TASK_SKILL" 'test/` and `flutter_done_check/` files may validate this workflow bundle'
 task_require "$TASK_IDEA" 'Simulator Build/Run \+ UI Interaction \+ Logs'
 for runtime_file in "$TASK_README" "$TASK_EXECUTION" "$TASK_QA" "$TASK_ORDER" "$TASK_SKILL"; do
   task_forbid "$runtime_file" 'Widget \+ Integration Tests|widget/navigation checks|普通测试.*App 已通过|test App.*App 功能'
