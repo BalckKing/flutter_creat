@@ -491,7 +491,7 @@ task_forbid "$TASK_SKILL" 'multiple coordinated Logo-derived gradients|varied Lo
 task_require "$TASK_SKILL" 'AnimationController` and `CustomPainter`'
 task_require "$TASK_SKILL" 'at the `onTapUp` coordinates'
 task_require "$TASK_SKILL" 'at least two real, reachable, semantically different tap actions'
-task_require "$TASK_SKILL" 'Use the selected iPhone tier.*mid-range by default; extreme-high-end'
+task_require "$TASK_SKILL" 'Use the selected iPhone tier.*high-end by default; extreme-high-end'
 task_require "$TASK_SKILL" 'minimum action coverage is not a cap'
 task_require "$TASK_README" 'gradient_tokens.*palette_hex.*可选元数据'
 task_require "$TASK_README" '所有适用 UI 视觉表现都须完成并验证'
