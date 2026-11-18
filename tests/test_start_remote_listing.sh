@@ -62,6 +62,7 @@ cmp "$TASK_BUNDLE_DIR/flutter-engine-runner/scripts/validate_review_remarks.py" 
 cmp "$TASK_BUNDLE_DIR/flutter-engine-runner/scripts/validate_public_copy.py" "$TASK_INSTALLED/scripts/validate_public_copy.py"
 cmp "$TASK_BUNDLE_DIR/flutter-engine-runner/scripts/validate_path_names.py" "$TASK_INSTALLED/scripts/validate_path_names.py"
 cmp "$TASK_BUNDLE_DIR/flutter-engine-runner/scripts/prepare_ios_config.py" "$TASK_INSTALLED/scripts/prepare_ios_config.py"
+cmp "$TASK_BUNDLE_DIR/flutter-engine-runner/scripts/prepare_git_handoff.py" "$TASK_INSTALLED/scripts/prepare_git_handoff.py"
 
 TASK_INSTALL_OUTPUT="$(FLUTTER_APP_LISTING_REPO="$TASK_TMP/missing.git" FLUTTER_APP_LISTING_FALLBACK="$TASK_TMP/no-local" CODEX_HOME="$TASK_CODEX_HOME" \
   /bin/zsh "$TASK_PORTABLE/start.sh" --install-only --skills-dir "$TASK_TMP/skills" 2>&1)"
@@ -110,6 +111,7 @@ cmp "$TASK_BUNDLE_DIR/flutter-engine-runner/scripts/validate_about_copy.py" "$TA
 cmp "$TASK_BUNDLE_DIR/flutter-engine-runner/scripts/validate_review_remarks.py" "$TASK_TMP/fresh-skills/flutter-engine-runner/scripts/validate_review_remarks.py"
 cmp "$TASK_BUNDLE_DIR/flutter-engine-runner/scripts/validate_public_copy.py" "$TASK_TMP/fresh-skills/flutter-engine-runner/scripts/validate_public_copy.py"
 cmp "$TASK_BUNDLE_DIR/flutter-engine-runner/scripts/validate_path_names.py" "$TASK_TMP/fresh-skills/flutter-engine-runner/scripts/validate_path_names.py"
+cmp "$TASK_BUNDLE_DIR/flutter-engine-runner/scripts/prepare_git_handoff.py" "$TASK_TMP/fresh-skills/flutter-engine-runner/scripts/prepare_git_handoff.py"
 [[ ! -e "$TASK_TMP/fresh-skills/flutter-engine-runner/references/ios-app-listing" ]]
 [[ "$(<"$TASK_TMP/fresh-skills/flutter-engine-runner/references/ios-app-listing-source.txt")" == *"mode=contract-fallback"* ]]
 print -r -- "PASS: latest remote, missing/incomplete remote, local fallback without optional validator, recoverable prior install, and fresh contract fallback."

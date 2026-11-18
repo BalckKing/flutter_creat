@@ -93,7 +93,7 @@ require_text "$TASK_ORDER" '^19\. .*最终图片加载检查'
 require_text "$TASK_ORDER" '^20\. .*最终 iOS 权限校验'
 require_text "$TASK_ORDER" '项目根目录.*aduit.*必须保留'
 require_text "$TASK_ORDER" '依赖树和 App bundle 中的 `aduit/` 副本必须移除'
-require_text "$TASK_ORDER" '三个固定 HTTP 协议链接.*文件名保持不变'
+require_text "$TASK_ORDER" '三个具体项目名 HTTP 协议链接.*文件名保持不变'
 require_text "$TASK_ORDER" '缺少证据不能标为 `Verified`'
 
 # Apple 4.3/5.6 gates must remain executable contracts, not prose that can
@@ -261,6 +261,56 @@ require_text "$TASK_QA" '动画前.*进行中.*结束状态'
 require_text "$TASK_RUNNER" 'Never construct animation or dynamic effects from solid color blocks'
 require_text "$TASK_RUNNER" 'At least two distinct visible dynamic elements on every App-owned screen'
 require_text "$TASK_README" '纯色块.*动画.*绝对禁止'
+require_text "$TASK_RUNNER" 'full-bleed bright gradient or hybrid background'
+require_text "$TASK_RUNNER" 'five required visual roles'
+require_text "$TASK_RUNNER" 'pure white or near-white background with a small centered image'
+require_text "$TASK_DOCS_DIR/06-素材与真实照片.md" 'validate_launch_screen_visual.py'
+require_text "$TASK_DOCS_DIR/06-素材与真实照片.md" '禁止纯白/近白底、居中小方图、单图留白屏'
+require_text "$TASK_QA" 'validate_launch_screen_visual.py'
+require_text "$TASK_QA" '不得出现纯白/近白底、居中小方图、大面积空白或单图一屏'
+require_text "$TASK_ORDER" 'validate_launch_screen_visual.py'
+require_text "$TASK_ORDER" '全屏明亮渐变/混合背景、主题图片叠层、品牌/文案/装饰五层构图'
+for task_launch_script in validate_launch_screen_visual.py; do
+  require_text "$TASK_ROOT/flutter-engine-runner/scripts/$task_launch_script" 'single centered image launch screen is forbidden'
+  require_text "$TASK_ROOT/flutter-engine-runner/scripts/$task_launch_script" 'full-bleed'
+done
+
+# Non-game work has the same refined-quality bar as game work.  A real tool,
+# consumer and runtime evidence must be traceable for every selected capability;
+# package installation or a static visual must never satisfy this gate.
+require_text "$TASK_DOCS_DIR/02-创意与思维导图.md" '^### 3\.2\.2 非游戏能力决策与真实工具记录（硬门槛）'
+require_text "$TASK_DOCS_DIR/04-视觉与页面功能.md" '^### 6\.14\.5 非游戏高级实现与真实能力门槛（硬门槛）'
+require_text "$TASK_ARCHITECTURE" '^#### 9\.3\.3 非游戏真实能力实现边界（硬门槛）'
+require_text "$TASK_QA" '^#### 11\.6\.0\.1 非游戏高级能力与真实工具验收（硬门槛）'
+for task_non_game_field in real_tool_or_sdk 'license/source' actual_consumer runtime_evidence formula_record; do
+  require_text "$TASK_DOCS_DIR/02-创意与思维导图.md" "$task_non_game_field"
+  require_text "$TASK_DOCS_DIR/04-视觉与页面功能.md" "$task_non_game_field"
+  require_text "$TASK_ARCHITECTURE" "$task_non_game_field"
+  require_text "$TASK_QA" "$task_non_game_field"
+  require_text "$TASK_RUNNER" "$task_non_game_field"
+done
+for task_map_term in '真实地图 SDK' '真实地图瓦片' MapKit Mapbox flutter_map '许可地理数据' '静态地图截图' '假坐标网格' '组件目录'; do
+  require_text "$TASK_DOCS_DIR/04-视觉与页面功能.md" "$task_map_term"
+  require_text "$TASK_QA" "$task_map_term"
+  require_text "$TASK_ARCHITECTURE" "$task_map_term"
+done
+for task_map_term in 'real map SDK' 'real map tiles' MapKit Mapbox flutter_map 'licensed geographic data' 'static screenshots' 'fake coordinate grids' 'reference component catalog'; do
+  require_text "$TASK_RUNNER" "$task_map_term"
+done
+require_text "$TASK_ORDER" '非游戏项目并行执行.*真实能力与视觉工具决策'
+require_text "$TASK_README" '非游戏项目同样必须使用真实能力完成精致成品'
+require_text "$TASK_README" '非游戏没有游戏引擎，但视觉质量、真实消费者和运行证据门槛不降低'
+for task_non_game_bypass in \
+  '非游戏可以使用简易线条地图' \
+  '静态地图截图即可' \
+  '包安装即通过' \
+  '只要依赖存在即可' \
+  '非游戏无需真实工具' \
+  '非游戏可使用占位地图'; do
+  for task_non_game_doc in "$TASK_DOCS_DIR/02-创意与思维导图.md" "$TASK_DOCS_DIR/04-视觉与页面功能.md" "$TASK_ARCHITECTURE" "$TASK_QA" "$TASK_ORDER" "$TASK_RUNNER" "$TASK_README"; do
+    forbid_text "$task_non_game_doc" "$task_non_game_bypass"
+  done
+done
 
 # Every logical page must have separate, detailed planning artifacts that are
 # consumed during implementation and checked again at delivery.
@@ -286,13 +336,21 @@ require_text "$TASK_ARCHITECTURE" '9\.4 产品差异化与真实功能边界'
 require_text "$TASK_ARCHITECTURE" '9\.3\.1 项目自有资源、文件夹与文件短名（硬门槛）'
 require_text "$TASK_ARCHITECTURE" '改名与引用是同一任务'
 require_text "$TASK_ARCHITECTURE" '父目录改名须更新全部后代引用'
-require_text "$TASK_ARCHITECTURE" '三个协议 URL.*HTTP.*项目名称.*固定注册表'
+require_text "$TASK_ARCHITECTURE" '三个协议 URL.*具体项目名称.*固定注册表'
 require_text "$TASK_RELEASE" 'http://【项目名称】/PrivacyPolicy\.html'
 require_text "$TASK_RELEASE" 'http://【项目名称】/Terms&Conditions\.html'
 require_text "$TASK_RELEASE" 'http://【项目名称】/Support\.html'
 require_text "$TASK_RELEASE" '三个文件名.*不得改动'
 require_text "$TASK_RELEASE" 'aduit.*完成.*App 内 WebView'
 require_text "$TASK_RELEASE" '不跳转到外部 App'
+require_text "$TASK_RUNNER" 'concrete project name.*generation.*fixed URL registry'
+require_text "$TASK_RUNNER" 'do not leave a placeholder in the final App configuration'
+require_text "$TASK_RUNNER" 'unreachable.*concrete URL.*WebView'
+require_text "$TASK_RELEASE" '生成阶段.*用户提供的具体项目名'
+require_text "$TASK_QA" '不得残留.*http://【项目名称】'
+forbid_text "$TASK_RUNNER" 'project-name placeholder is the only later replacement token'
+forbid_text "$TASK_RUNNER" 'an unreplaced host is retained for later search/replace'
+forbid_text "$TASK_README" '后续统一替换时只替换 `【项目名称】`'
 require_text "$TASK_QA" 'path-names\.md'
 require_text "$TASK_RUNNER" 'all project-owned resources, files and folders'
 require_text "$TASK_README" '所有项目自有资源、文件夹与文件能简写就统一简写'
@@ -304,7 +362,7 @@ require_text "$TASK_RUNNER" 'Use `\.work/` for all project development records'
 require_text "$TASK_README" '项目自有文件夹和文件名禁止出现 Codex 或 AI 相关词'
 require_text "$TASK_START" '项目自有文件夹和文件名禁止Codex/AI相关词'
 require_text "$TASK_ROOT/flutter-engine-runner/agents/openai.yaml" '项目自有文件夹和文件名禁止Codex/AI相关词'
-for task_record_script in validate_path_names.py validate_visual_implementation.py prepare_ios_config.py; do
+for task_record_script in validate_path_names.py validate_visual_implementation.py prepare_ios_config.py prepare_git_handoff.py; do
   require_text "$TASK_ROOT/flutter-engine-runner/scripts/$task_record_script" '\.work/'
   forbid_text "$TASK_ROOT/flutter-engine-runner/scripts/$task_record_script" '\.codex-work'
 done
@@ -352,12 +410,56 @@ require_file "$TASK_ROOT/flutter-engine-runner/scripts/validate_review_remarks.p
 require_file "$TASK_ROOT/flutter-engine-runner/scripts/validate_public_copy.py"
 require_file "$TASK_ROOT/flutter-engine-runner/scripts/validate_path_names.py"
 require_file "$TASK_ROOT/flutter-engine-runner/scripts/prepare_ios_config.py"
+require_file "$TASK_ROOT/flutter-engine-runner/scripts/prepare_git_handoff.py"
 require_file "$TASK_ROOT/flutter-engine-runner/scripts/validate_flutter_navigation.py"
+require_file "$TASK_ROOT/flutter-engine-runner/scripts/validate_game_project.py"
+require_text "$TASK_RUNNER" 'Game engine quality contract \(game and mixed projects only\)'
+require_text "$TASK_RUNNER" '\.work/game-engine\.json'
+require_text "$TASK_RUNNER" 'engine\.name.*engine\.version.*engine\.entrypoint'
+require_text "$TASK_RUNNER" 'engine environment.*scene boot.*authored asset load.*input.*update/physics.*success or failure result.*feedback.*restart'
+require_text "$TASK_RUNNER" 'validate_game_project\.py'
+require_text "$TASK_RUNNER" '--project-root <target-project-root> --json'
+require_text "$TASK_RUNNER" 'setState\(\) called during build'
+require_text "$TASK_RUNNER" 'RenderFlex overflow'
+require_text "$TASK_RUNNER" 'duplicate engine registration'
+require_text "$TASK_RUNNER" 'input hit-test mismatch'
+require_text "$TASK_RUNNER" 'Release readiness: Blocked'
+require_text "$TASK_ROOT/工作流文档/02-创意与思维导图.md" '是否需要专用引擎'
+require_text "$TASK_ROOT/工作流文档/02-创意与思维导图.md" 'implementation_mode'
+require_text "$TASK_ROOT/工作流文档/02-创意与思维导图.md" '引擎环境.*场景启动.*素材加载.*真实输入.*更新/物理.*结果.*反馈.*重开'
+require_text "$TASK_ROOT/工作流文档/02-创意与思维导图.md" 'Flutter 原生路线.*六部分效果提示词公式'
+require_text "$TASK_ROOT/工作流文档/04-视觉与页面功能.md" '6\.14\.4 游戏实现决策门'
+require_text "$TASK_ROOT/工作流文档/04-视觉与页面功能.md" 'validate_game_project\.py'
+require_text "$TASK_ROOT/工作流文档/04-视觉与页面功能.md" '前中后景空间.*材质与光影.*相机/遮挡'
+require_text "$TASK_ARCHITECTURE" '\.work/game-engine\.json'
+require_text "$TASK_ARCHITECTURE" '引擎环境.*垂直切片'
+require_text "$TASK_QA" 'setState\(\) called during build'
+require_text "$TASK_QA" 'RenderFlex overflow'
+require_text "$TASK_QA" 'Release readiness: Blocked'
+require_text "$TASK_ORDER" '先执行 `engine`/`flutter_native` 决策'
+require_text "$TASK_ORDER" '引擎路线为.*引擎环境'
+require_text "$TASK_ORDER" 'Flutter 原生路线为.*Flutter 运行时'
+require_text "$TASK_ORDER" '垂直切片通过后才扩展全部玩法'
+require_text "$TASK_README" '专用引擎'
+require_text "$TASK_RUNNER" 'explicit engine-necessity decision'
+require_text "$TASK_RUNNER" 'flutter-native'
+require_text "$TASK_RUNNER" 'six-part motion prompt formula'
+for task_game_bypass in 'Flutter-only game fallback' 'engine dependency alone passes' 'static screenshot as gameplay' 'expand content before vertical slice'; do
+  forbid_text "$TASK_RUNNER" "$task_game_bypass"
+done
 require_text "$TASK_ARCHITECTURE" '^### 9\.1\.2 打包前源配置补齐与复验'
 for task_ios_doc in "$TASK_CONVENTIONS" "$TASK_ARCHITECTURE" "$TASK_QA" "$TASK_ORDER" "$TASK_RUNNER" "$TASK_README"; do
   require_text "$task_ios_doc" 'prepare_ios_config\.py'
   require_text "$task_ios_doc" 'MinimumOSVersion'
 done
+require_text "$TASK_ORDER" 'prepare_git_handoff\.py'
+require_text "$TASK_RUNNER" 'prepare_git_handoff\.py'
+require_text "$TASK_README" 'prepare_git_handoff\.py'
+require_text "$TASK_ORDER" '工程根目录拥有自己的 `.git`'
+require_text "$TASK_ORDER" 'user\.name.*user\.email'
+require_text "$TASK_QA" '工程根目录拥有自己的 `.git`'
+require_text "$TASK_QA" 'user\.name.*user\.email'
+require_text "$TASK_START" 'TASK_RUNNER_SOURCE/scripts/prepare_git_handoff.py'
 require_text "$TASK_QA" 'AppFrameworkInfo\.plist.*缺少.*MinimumOSVersion'
 require_text "$TASK_CONVENTIONS" '最终报告单列这五项状态'
 forbid_text "$TASK_CONVENTIONS" '报告四项状态|单列这四项状态'
@@ -389,15 +491,26 @@ require_text "$TASK_ARCHITECTURE" 'GetX 永远禁止'
 require_text "$TASK_ARCHITECTURE" 'Flutter 原生 Navigator'
 require_text "$TASK_QA" 'GetX 禁用与原生 Navigator 静态验收'
 
-# One reusable App installation must not bypass updates or runtime evidence.
-require_text "$TASK_DOCS_DIR/01-执行约定.md" '^### 0\.9\.1 测试安装与构建产物复用'
+# One reusable real-App debug installation must not bypass runtime evidence.
+require_text "$TASK_DOCS_DIR/01-执行约定.md" '^### 0\.9\.1 调试安装与构建产物复用'
 require_text "$TASK_DOCS_DIR/01-执行约定.md" '增量构建并覆盖安装同一 Bundle ID'
-require_text "$TASK_DOCS_DIR/07-测试与质量验收.md" '稳定输出目录、单一串行 runner'
-require_text "$TASK_ORDER" '验证复用贯穿第 6–21 步'
+require_text "$TASK_DOCS_DIR/07-测试与质量验收.md" '稳定输出目录、单一串行 build/install/debug 会话'
+require_text "$TASK_ORDER" '运行验收贯穿第 6–21 步'
 require_text "$TASK_RUNNER" 'Unchanged builds need no reinstall'
 require_text "$TASK_RUNNER" 'incrementally rebuild and overwrite the same installation'
 require_text "$TASK_RUNNER" 'at most one necessary rollback artifact'
-require_text "$TASK_README" '验证复用是硬门槛'
+require_text "$TASK_README" '运行验收是硬门槛'
+require_text "$TASK_DOCS_DIR/01-执行约定.md" '禁止用 App 测试文件替代运行时验收'
+require_text "$TASK_DOCS_DIR/01-执行约定.md" '运行时调试闭环'
+require_text "$TASK_QA" '^### 11\.1 真实 App 运行时调试与验收'
+require_text "$TASK_QA" '资料包里的测试文件只验证工作流文档、脚本契约、安装器和检查器行为'
+require_text "$TASK_QA" '每次操作后观察页面是否改变、按钮是否响应'
+require_text "$TASK_RUNNER" '^## Real App runtime debugging contract'
+require_text "$TASK_RUNNER" 'test/` and `tests/` files may validate this workflow bundle'
+require_text "$TASK_ROOT/工作流文档/02-创意与思维导图.md" 'Simulator Build/Run \+ UI Interaction \+ Logs'
+for task_runtime_file in "$TASK_README" "$TASK_DOCS_DIR/01-执行约定.md" "$TASK_QA" "$TASK_ORDER" "$TASK_RUNNER"; do
+  forbid_text "$task_runtime_file" 'Widget \+ Integration Tests|widget/navigation checks|普通测试.*App 已通过|test App.*App 功能'
+done
 
 require_before '^17\. ' '^18\. \*\*生成 Review Remarks'
 require_before '^18\. \*\*生成 Review Remarks' '^19\. \*\*最终图片加载检查'
