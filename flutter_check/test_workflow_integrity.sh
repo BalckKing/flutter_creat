@@ -8,7 +8,7 @@ TASK_DOCS_DIR="$TASK_ROOT/工作流文档"
 TASK_MANIFEST="$TASK_DOCS_DIR/manifest.txt"
 TASK_ORDER="$TASK_DOCS_DIR/09-实施顺序与交付报告.md"
 TASK_START="$TASK_ROOT/start.sh"
-TASK_CHECK_DIR="$TASK_ROOT/flutter_done_check"
+TASK_CHECK_DIR="$TASK_ROOT/flutter_check"
 
 fail() {
   print -u2 -- "FAIL: $1"
@@ -385,7 +385,7 @@ for task_record_script in validate_path_names.py validate_visual_implementation.
   require_text "$TASK_ROOT/flutter-engine-runner/scripts/$task_record_script" '\.codex-work/'
 done
 for task_file in "$TASK_ROOT"/README.md "$TASK_ROOT"/start.sh "$TASK_ROOT"/flutter-engine-runner/SKILL.md \
-  "$TASK_ROOT"/flutter-engine-runner/scripts/*.py "$TASK_ROOT"/flutter_done_check/*.sh "$TASK_ROOT"/flutter_done_check/*.py \
+  "$TASK_ROOT"/flutter-engine-runner/scripts/*.py "$TASK_ROOT"/flutter_check/*.sh "$TASK_ROOT"/flutter_check/*.py \
   "$TASK_ROOT"/工作流文档/*.md; do
   [[ "$task_file" == "$TASK_CHECK_DIR/test_workflow_integrity.sh" ]] && continue
   if rg -q -- '[.]work(?:/|\b)' "$task_file"; then
@@ -546,7 +546,7 @@ require_text "$TASK_QA" '^### 11\.1 真实 App 运行时调试与验收'
 require_text "$TASK_QA" '资料包里的测试文件只验证工作流文档、脚本契约、安装器和检查器行为'
 require_text "$TASK_QA" '每次操作后观察页面是否改变、按钮是否响应'
 require_text "$TASK_RUNNER" '^## Real App runtime debugging contract'
-require_text "$TASK_RUNNER" 'test/` and `flutter_done_check/` files may validate this workflow bundle'
+require_text "$TASK_RUNNER" 'test/` and `flutter_check/` files may validate this workflow bundle'
 require_text "$TASK_ROOT/工作流文档/02-创意与思维导图.md" 'Simulator Build/Run \+ UI Interaction \+ Logs'
 for task_runtime_file in "$TASK_README" "$TASK_DOCS_DIR/01-执行约定.md" "$TASK_QA" "$TASK_ORDER" "$TASK_RUNNER"; do
   forbid_text "$task_runtime_file" 'Widget \+ Integration Tests|widget/navigation checks|普通测试.*App 已通过|test App.*App 功能'

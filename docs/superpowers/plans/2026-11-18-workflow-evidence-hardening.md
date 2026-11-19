@@ -4,7 +4,7 @@
 
 **Goal:** Strengthen the Flutter execution workflow with a `.codex-work` record contract, fresh evidence rules, artifact-level release gates, and a machine-readable readiness decision while preserving the package boundary between workflow checks and real App runtime validation.
 
-**Architecture:** Keep project-owned source and delivery artifacts outside the internal `.codex-work` directory. Add small read-only Python validators under `flutter-engine-runner/scripts/`, fixture-driven checks under `flutter_done_check/`, and wire them into `run_all.sh` and `test_workflow_integrity.sh`. The validators report `Passed`, `Failed`, or `Not verified` and never turn missing real-App evidence into a pass.
+**Architecture:** Keep project-owned source and delivery artifacts outside the internal `.codex-work` directory. Add small read-only Python validators under `flutter-engine-runner/scripts/`, fixture-driven checks under `flutter_check/`, and wire them into `run_all.sh` and `test_workflow_integrity.sh`. The validators report `Passed`, `Failed`, or `Not verified` and never turn missing real-App evidence into a pass.
 
 **Tech Stack:** POSIX shell, Python 3 standard library, JSON/Markdown contracts, existing Flutter workflow scripts.
 
@@ -23,7 +23,7 @@
 **Files:**
 - Modify: all tracked text files containing `.codex-work`
 - Modify: `flutter-engine-runner/scripts/validate_path_names.py`
-- Modify: `flutter_done_check/test_workflow_integrity.sh`
+- Modify: `flutter_check/test_workflow_integrity.sh`
 - Modify: `README.md`, `工作流文档/*.md`, `flutter-engine-runner/SKILL.md`, `docs/superpowers/plans/*.md`
 
 - [x] Replace every internal legacy work-record path with `.codex-work`.
@@ -37,8 +37,8 @@
 **Files:**
 - Create: `工作流文档/11-记录与证据契约.md`
 - Create: `flutter-engine-runner/scripts/validate_work_records.py`
-- Create: `flutter_done_check/test_validate_work_records.py`
-- Modify: `工作流文档/manifest.txt`, `README.md`, `flutter-engine-runner/SKILL.md`, `flutter_done_check/run_all.sh`, `flutter_done_check/test_workflow_integrity.sh`
+- Create: `flutter_check/test_validate_work_records.py`
+- Modify: `工作流文档/manifest.txt`, `README.md`, `flutter-engine-runner/SKILL.md`, `flutter_check/run_all.sh`, `flutter_check/test_workflow_integrity.sh`
 
 - [x] Define required record fields: `schema_version`, `run_id`, `project_root`, `bundle_id`, `build_id`, `device`, `udid`, `recorded_at`, `status`, `evidence`, `next_action`.
 - [x] Define status enum `Planned`, `In progress`, `Passed`, `Failed`, `Blocked`, `Not verified` and evidence item fields including `path`, `sha256`, `captured_at`, `source`, `kind`.
@@ -52,8 +52,8 @@
 **Files:**
 - Create: `flutter-engine-runner/scripts/validate_ios_artifacts.py`
 - Create: `flutter-engine-runner/scripts/validate_aduit_allowlist.py`
-- Create: `flutter_done_check/test_validate_ios_artifacts.py`
-- Create: `flutter_done_check/test_validate_aduit_allowlist.py`
+- Create: `flutter_check/test_validate_ios_artifacts.py`
+- Create: `flutter_check/test_validate_aduit_allowlist.py`
 - Modify: `工作流文档/06-素材与真实照片.md`, `工作流文档/07-测试与质量验收.md`, `工作流文档/08-发布与About材料.md`, `工作流文档/09-实施顺序与交付报告.md`, `README.md`, `flutter-engine-runner/SKILL.md`, `run_all.sh`, integrity test
 
 - [x] Check actual iOS source artifacts when a target root is supplied: `Info.plist`, `AppFrameworkInfo.plist` with `MinimumOSVersion`, Podfile validity, `PERMISSION_PHOTOS=1` when PhotoKit library access is used, and absence of ATT traces.
@@ -68,7 +68,7 @@
 - Create: `flutter-engine-runner/scripts/validate_execution_state.py`
 - Create: `flutter-engine-runner/scripts/validate_capability_matrix.py`
 - Modify: `flutter-engine-runner/scripts/validate_protocol_urls.py`
-- Create: matching `flutter_done_check/test_*.py` fixtures
+- Create: matching `flutter_check/test_*.py` fixtures
 - Modify: workflow docs, README, skill, run_all, integrity test
 
 - [x] Validate Welcome/Initialization rules, including `Enter`, no pause controls, clear-data-only initialization, and exactly one native Flutter Welcome entry.
@@ -80,7 +80,7 @@
 
 **Files:**
 - Create: `flutter-engine-runner/scripts/validate_release_readiness.py`
-- Create: `flutter_done_check/test_validate_release_readiness.py`
+- Create: `flutter_check/test_validate_release_readiness.py`
 - Modify: `工作流文档/07-测试与质量验收.md`, `工作流文档/08-发布与About材料.md`, `工作流文档/09-实施顺序与交付报告.md`, `README.md`, `flutter-engine-runner/SKILL.md`, `run_all.sh`, integrity test
 
 - [x] Define a machine-readable `.codex-work/release-readiness.json` aggregate with gate names, status, evidence references, blocker reasons, generated timestamp, and `release_readiness`.
@@ -92,8 +92,8 @@
 
 **Files:**
 - Create: `flutter-engine-runner/scripts/validate_quality_records.py`
-- Create: `flutter_done_check/test_validate_quality_records.py`
-- Modify: `工作流文档/06-素材与真实照片.md`, `工作流文档/07-测试与质量验收.md`, `工作流文档/09-实施顺序与交付报告.md`, `工作流文档/11-记录与证据契约.md`, `README.md`, `flutter-engine-runner/SKILL.md`, `flutter_done_check/run_all.sh`, `flutter_done_check/test_bundle_layout.sh`, `flutter_done_check/test_workflow_integrity.sh`
+- Create: `flutter_check/test_validate_quality_records.py`
+- Modify: `工作流文档/06-素材与真实照片.md`, `工作流文档/07-测试与质量验收.md`, `工作流文档/09-实施顺序与交付报告.md`, `工作流文档/11-记录与证据契约.md`, `README.md`, `flutter-engine-runner/SKILL.md`, `flutter_check/run_all.sh`, `flutter_check/test_bundle_layout.sh`, `flutter_check/test_workflow_integrity.sh`
 
 - [x] Define `.codex-work/quality-matrix.json` for resource hashes/byte ceilings, source/license, real consumers, accessibility, resilience, and secret scanning.
 - [x] Reject missing/stale resource hashes, oversized images, invalid signatures, package-only consumers, missing VoiceOver/Dynamic Type/Reduce Motion/contrast rows, missing offline/permission/background/interrupt scenarios, and secret-like values.
@@ -105,9 +105,9 @@
 Run after implementation:
 
 ```bash
-/bin/zsh flutter_done_check/run_all.sh
-python3 -m py_compile flutter-engine-runner/scripts/*.py flutter_done_check/*.py
-/bin/zsh -n start.sh start.command install.command flutter_done_check/*.sh
+/bin/zsh flutter_check/run_all.sh
+python3 -m py_compile flutter-engine-runner/scripts/*.py flutter_check/*.py
+/bin/zsh -n start.sh start.command install.command flutter_check/*.sh
 ruby -e "require 'yaml'; YAML.load_file('flutter-engine-runner/agents/openai.yaml')"
 git diff --check
 ```

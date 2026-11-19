@@ -44,20 +44,20 @@ Terms of Use and Privacy Policy
 
 随后接入 Settings 中仅有的 Privacy Policy、Terms of Use、Support 三个 WebView 入口；地址失效不会阻断 App 流程。无需提供域名，也不公开部署。
 
-安装器会先运行 `flutter_done_check/test_workflow_integrity.sh`，核对 `manifest.txt` 的完整文档集、实施步骤 1–22、跨文档硬性门槛以及第 17–22 步的最终顺序；检查失败时不会覆盖现有技能安装。手动复核可运行：
+安装器会先运行 `flutter_check/test_workflow_integrity.sh`，核对 `manifest.txt` 的完整文档集、实施步骤 1–22、跨文档硬性门槛以及第 17–22 步的最终顺序；检查失败时不会覆盖现有技能安装。手动复核可运行：
 
 ```bash
-zsh flutter_done_check/test_workflow_integrity.sh
+zsh flutter_check/test_workflow_integrity.sh
 ```
 
 选择游戏主题后的通过条件是精细可玩闭环而不是“有一个页面”：必须从 Welcome 到主游戏入口完成至少一局真实操作并能重开，并完成主题化角色/场景、HUD、反馈和交互 UI；空场景、彩色方块、静态截图、无效按钮、点击穿透或隐藏路由均不计入。必须先完成并记录 `.codex-work/game-engine.json` 的引擎必要性决策与可玩垂直切片；引擎路线按引擎环境、场景启动、已创作资源加载、真实输入、更新/物理、结果、反馈、重开执行，Flutter 原生路线按 Flutter 运行时、场景启动、已创作资源加载、真实输入、规则更新、结果、反馈、重开执行，并提交动画/效果目录与六部分效果提示词。未选择游戏主题的项目不执行这组游戏专项门槛。入口/路由、引擎或原生场景、规则结果、美术反馈、生命周期和交付材料允许并行推进，但已选择游戏时核心路径任一失败都会阻断发布结论；`setState() called during build`、RenderFlex overflow、dispose 后旧回调、重复引擎注册、引擎超时、输入命中错误、HUD 遮挡、前后台恢复重复更新、崩溃/白屏/卡死均为阻断项。
 
-需要一次性回归全部资料包契约时，运行 `flutter_done_check/run_all.sh`。它先检查检查目录布局、默认性能档位和工作流完整性，再按引导页、视觉实现、Review Remarks、公开文案、远程 AppListing 安装器、About 文案、记录与证据矩阵顺序检查资料包自身；任一项失败都会返回非零状态，但这些脚本结果不代表用户 App 已构建、安装、点击或通过运行验收。Review Remarks 检查器固定要求第 1 项依次为 `- iPhone 18 Pro, iOS 27` 与 `- Screenshot size: 1206 x 2622 pixels (portrait).` 两条项目符号：按 2026-10-30 Apple 官方规格选择原生尺寸符合要求且搭载 A20 Pro 的最新 Pro 机型，不使用尺寸不符的 Pro Max；实际截图须读取像素宽高核验，不能裁切/缩放其他机型截图凑尺寸。第 2 项固定按顺序为 `iPhone 15 Pro, iOS 18.6` 和 `iPhone 13, iOS 17.7.1`，两项设备章独立且非空，不随机替换、遗漏、重复或新增设备、第 6 项为 `All regions are the same.`，并拒绝待确认占位语、非 iPhone 设备、网页容器术语、中文、`**` 和超过 4,000 字符的公开备注。固定设备配置来自用户指定，不自动证明当前 App 已完成测试；测试范围和完成结果须另对照当前 App 的记录或用户明确确认，缺少结果依据时保留配置、不编造通过声明。公开文案检查器提供 Dart 直接 UI 字符串、独立 `aduit/welcome.html`、About 静态 HTML 与无障碍属性的补充扫描；间接字符串、脚本动态内容、图片嵌字及运行画面仍需按第 11.4 节复核。它不扫描内部记录，也不替代 Remarks 中真实外部服务的披露。
+需要一次性回归全部资料包契约时，运行 `flutter_check/run_all.sh`。它先检查检查目录布局、默认性能档位和工作流完整性，再按引导页、视觉实现、Review Remarks、公开文案、远程 AppListing 安装器、About 文案、记录与证据矩阵顺序检查资料包自身；任一项失败都会返回非零状态，但这些脚本结果不代表用户 App 已构建、安装、点击或通过运行验收。Review Remarks 检查器固定要求第 1 项依次为 `- iPhone 18 Pro, iOS 27` 与 `- Screenshot size: 1206 x 2622 pixels (portrait).` 两条项目符号：按 2026-10-30 Apple 官方规格选择原生尺寸符合要求且搭载 A20 Pro 的最新 Pro 机型，不使用尺寸不符的 Pro Max；实际截图须读取像素宽高核验，不能裁切/缩放其他机型截图凑尺寸。第 2 项固定按顺序为 `iPhone 15 Pro, iOS 18.6` 和 `iPhone 13, iOS 17.7.1`，两项设备章独立且非空，不随机替换、遗漏、重复或新增设备、第 6 项为 `All regions are the same.`，并拒绝待确认占位语、非 iPhone 设备、网页容器术语、中文、`**` 和超过 4,000 字符的公开备注。固定设备配置来自用户指定，不自动证明当前 App 已完成测试；测试范围和完成结果须另对照当前 App 的记录或用户明确确认，缺少结果依据时保留配置、不编造通过声明。公开文案检查器提供 Dart 直接 UI 字符串、独立 `aduit/welcome.html`、About 静态 HTML 与无障碍属性的补充扫描；间接字符串、脚本动态内容、图片嵌字及运行画面仍需按第 11.4 节复核。它不扫描内部记录，也不替代 Remarks 中真实外部服务的披露。
 
 欢迎页按第 7.1、10.5.1 节先选精细主视觉，再围绕主题与素材自由排版；不同介绍章节有各自的图文关系和视觉节奏，不能整页同骨架换图换字。主图、插画、场景和主要背景图片须有清楚主体、材质/笔触、光影/色彩和空间层次；所有来源及 SVG、Canvas/CustomPainter、代码绘图的位图导出均不得仅以简单线条或色块拼接充当成图。景深、纹理、透明材质与过渡按主题自主编排，静态/减少动态状态仍须精致。独立 `aduit/welcome.html` 的完整 UTF-8 文件尽量逼近 256 KB（建议至少 250,000 字节）且严格小于 262,144 字节；HTML/CSS/JavaScript、Logo、Base64 图片和编码开销全部计入，运行 `validate_public_copy.py --check-welcome-budget --require-near-cap`，不得用无意义填充。`lib/welcome.dart` 同步修改并保持章节 ID、核心文案、图片语义、明亮视觉、轮播/分页节奏及 Continue/准备/错误行为一致，记录 `.codex-work/welcome-sync.md`。四指定视口离线检查各章节和压缩后的实际画质。若已拉取图片资源不足以覆盖已确认的非摄影视觉位，可使用生图软件补充；必须先建立已拉取素材的 `style_reference`，按主体、构图、画幅、光线、色彩、材质/笔触、透明度和视觉密度保持同一视觉风格，逐张并排复核后接入。补充图标记为 `generated`，不冒充真实摄影、实景封面或用户媒体；生图来源不要求统一网站。
 
 ```bash
-./flutter_done_check/run_all.sh
+./flutter_check/run_all.sh
 ```
 
 `@Flutter工程` 是文件夹引用，不等于安装或调用技能。`@` 是否列出技能取决于客户端版本与技能加载状态；看到资料文件不代表执行技能已注册。优先使用技能选择器或 `$flutter-engine-runner`。如果仍未出现，复制安装器打印的“读取并使用……/SKILL.md，开始执行工作流”语句，直接让 Codex 使用已安装技能。
@@ -156,7 +156,7 @@ Flutter工程/
 ├── start.sh
 ├── start.command
 ├── install.command
-├── flutter_done_check/
+├── flutter_check/
 │   ├── run_all.sh
 │   ├── test_bundle_layout.sh
 │   ├── test_default_performance_tier.sh
@@ -334,7 +334,7 @@ Emoji、渐变、矢量插画、AI 拟真图或仅写素材清单不能代替真
 
 ## 最终交付目录
 
-运行验收是硬门槛：首次安装真实 App 后复用同一 Bundle ID、配置和现有 iPhone Simulator，不为每页、用例、截图或精修轮次创建测试 App、测试工程、测试 runner/host、临时 package 或 IPA。App 功能必须通过 Simulator 上真实点击、滑动、输入、返回、截图、录屏和原生日志观察；资料包 `flutter_done_check/` 只检查工作流、脚本和安装器，不能证明 App 已运行。无变更直接冷启动，必要变更增量构建并覆盖同一安装，最终仍验证最新完整构建。构建/安装/调试串行、输出目录复用，结束本任务多余调试、录屏及日志进程；精确清理失效副本，只保留当前产物、最多一份必要回滚产物和必需证据，不清用户数据或全局缓存，不删减 UI。详见第 0.9.1、11.1 节，结果写入项目已有 `.codex-work/quality.md`。
+运行验收是硬门槛：首次安装真实 App 后复用同一 Bundle ID、配置和现有 iPhone Simulator，不为每页、用例、截图或精修轮次创建测试 App、测试工程、测试 runner/host、临时 package 或 IPA。App 功能必须通过 Simulator 上真实点击、滑动、输入、返回、截图、录屏和原生日志观察；资料包 `flutter_check/` 只检查工作流、脚本和安装器，不能证明 App 已运行。无变更直接冷启动，必要变更增量构建并覆盖同一安装，最终仍验证最新完整构建。构建/安装/调试串行、输出目录复用，结束本任务多余调试、录屏及日志进程；精确清理失效副本，只保留当前产物、最多一份必要回滚产物和必需证据，不清用户数据或全局缓存，不删减 UI。详见第 0.9.1、11.1 节，结果写入项目已有 `.codex-work/quality.md`。
 
 目标工程中的 `aduit/` 必须严格保持（由最终生成的 `AppListing/` 改名/整理而来，不执行公开部署）。改名完成后立即在其根目录新建 `imgs/` 文件夹，创建时为空。工程、材料、最终图片/依赖及 iOS 权限校验和修复复验结束后，最后自主截取五个体现核心功能或操作成果的不同 App 画面放入其中。五张均须为原始竖屏 1206×2622 PNG，复用现有 iPhone 和最终调试安装，逐张检查尺寸、解码、内容差异和无占位；不裁切/缩放/补边凑尺寸。最终 imgs/ 恰好五张，无 `.gitkeep`、隐藏文件或其他产物，记录/旧图留 `.codex-work/`，报告提供五张链接。完整规则见第 12.5 节；原有 `site/img/logo.png` 保持原位置：
 

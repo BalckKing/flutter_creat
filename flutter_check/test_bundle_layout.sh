@@ -4,7 +4,7 @@ emulate -L zsh
 set -euo pipefail
 
 TASK_ROOT="${0:A:h:h}"
-TASK_CHECK_DIR="$TASK_ROOT/flutter_done_check"
+TASK_CHECK_DIR="$TASK_ROOT/flutter_check"
 
 fail() {
   print -u2 -- "FAIL: $1"
@@ -60,14 +60,14 @@ TASK_SKILL="$TASK_ROOT/flutter-engine-runner/SKILL.md"
 TASK_README="$TASK_ROOT/README.md"
 TASK_YAML="$TASK_ROOT/flutter-engine-runner/agents/openai.yaml"
 
-rg -q 'TASK_BUNDLE_DIR/flutter_done_check/test_workflow_integrity\.sh' "$TASK_START" || \
-  fail 'start.sh 未指向 flutter_done_check/test_workflow_integrity.sh'
+rg -q 'TASK_BUNDLE_DIR/flutter_check/test_workflow_integrity\.sh' "$TASK_START" || \
+  fail 'start.sh 未指向 flutter_check/test_workflow_integrity.sh'
 if rg -q 'TASK_BUNDLE_DIR/tests/' "$TASK_START"; then
   fail 'start.sh 残留旧 tests/ 路径'
 fi
 
 for task_file in "$TASK_RUN_ALL" "$TASK_START" "$TASK_README"; do
-  rg -q 'flutter_done_check' "$task_file" || fail "缺少新检查目录引用：$task_file"
+  rg -q 'flutter_check' "$task_file" || fail "缺少新检查目录引用：$task_file"
 done
 ruby -e 'require "yaml"; YAML.load_file(ARGV.fetch(0));' "$TASK_YAML" >/dev/null 2>&1 || \
   fail "openai.yaml 不是有效 YAML：$TASK_YAML"
@@ -82,14 +82,14 @@ for task_file in \
 done
 
 for task_file in "${task_expected[@]:1}"; do
-  rg -q "flutter_done_check/${task_file}" "$TASK_RUN_ALL" || \
+  rg -q "flutter_check/${task_file}" "$TASK_RUN_ALL" || \
     fail "run_all.sh 未纳入检查：$task_file"
 done
 
-if rg -q 'generation/flutter_done_check/build/package' "$TASK_SKILL"; then
-  fail 'SKILL.md 将英文 tests 动作误替换为 flutter_done_check'
+if rg -q 'generation/flutter_check/build/package' "$TASK_SKILL"; then
+  fail 'SKILL.md 将英文 tests 动作误替换为 flutter_check'
 fi
 rg -q 'generation/tests/build/package' "$TASK_SKILL" || \
   fail 'SKILL.md 缺少 generation/tests/build/package 原文'
 
-print -r -- 'PASS: flutter_done_check layout, references, and check-list coverage are complete.'
+print -r -- 'PASS: flutter_check layout, references, and check-list coverage are complete.'

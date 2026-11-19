@@ -46,7 +46,7 @@ cp "$TASK_BUNDLE_DIR/start.sh" "$TASK_PORTABLE/start.sh"
 cp "$TASK_BUNDLE_DIR/README.md" "$TASK_PORTABLE/README.md"
 cp -R "$TASK_BUNDLE_DIR/flutter-engine-runner" "$TASK_PORTABLE/flutter-engine-runner"
 cp -R "$TASK_BUNDLE_DIR/工作流文档" "$TASK_PORTABLE/工作流文档"
-cp -R "$TASK_BUNDLE_DIR/flutter_done_check" "$TASK_PORTABLE/flutter_done_check"
+cp -R "$TASK_BUNDLE_DIR/flutter_check" "$TASK_PORTABLE/flutter_check"
 [[ ! -e "$TASK_PORTABLE/ios-app-listing" ]]
 
 FLUTTER_APP_LISTING_REPO="$TASK_REMOTE" FLUTTER_APP_LISTING_FALLBACK="$TASK_TMP/no-local" CODEX_HOME="$TASK_CODEX_HOME" \

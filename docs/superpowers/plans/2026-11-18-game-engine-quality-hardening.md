@@ -61,8 +61,8 @@
 
 **Files:**
 - Create: `flutter-engine-runner/scripts/validate_game_project.py`
-- Create: `flutter_done_check/test_validate_game_project.py`
-- Modify: `flutter_done_check/run_all.sh`
+- Create: `flutter_check/test_validate_game_project.py`
+- Modify: `flutter_check/run_all.sh`
 
 **Interfaces:**
 - Consumes: `--project-root <Flutter root>`, optional `--json`, `.codex-work/game-engine.json`, `pubspec.yaml`, `lib/`, `ios/`, engine project files, and local evidence paths.
@@ -98,7 +98,7 @@
 
 - [ ] **Step 5: Run the focused validator tests**
 
-  Run `python3 -m unittest flutter_done_check/test_validate_game_project.py -v`; expected all fixtures pass/fail as designed.
+  Run `python3 -m unittest flutter_check/test_validate_game_project.py -v`; expected all fixtures pass/fail as designed.
 
 ---
 
@@ -143,9 +143,9 @@
 ### Task 4: Add regression coverage to workflow integrity and installer synchronization
 
 **Files:**
-- Modify: `flutter_done_check/test_workflow_integrity.sh`
-- Modify: `flutter_done_check/test_onboarding_guide_workflow.sh`
-- Modify: `flutter_done_check/test_start_remote_listing.sh` only if installer assertions need a new copied file
+- Modify: `flutter_check/test_workflow_integrity.sh`
+- Modify: `flutter_check/test_onboarding_guide_workflow.sh`
+- Modify: `flutter_check/test_start_remote_listing.sh` only if installer assertions need a new copied file
 - Modify: `start.sh` only if the new script is not already copied by the recursive scripts step
 
 **Interfaces:**
@@ -182,15 +182,15 @@
 - [ ] **Step 1: Run focused Python checks**
 
   ```sh
-  python3 -m unittest flutter_done_check/test_validate_game_project.py -v
+  python3 -m unittest flutter_check/test_validate_game_project.py -v
   python3 -m py_compile flutter-engine-runner/scripts/*.py
   ```
 
 - [ ] **Step 2: Run full workflow regression**
 
   ```sh
-  ./flutter_done_check/run_all.sh
-  /bin/zsh -n start.sh flutter_done_check/run_all.sh flutter_done_check/test_workflow_integrity.sh flutter_done_check/test_onboarding_guide_workflow.sh
+  ./flutter_check/run_all.sh
+  /bin/zsh -n start.sh flutter_check/run_all.sh flutter_check/test_workflow_integrity.sh flutter_check/test_onboarding_guide_workflow.sh
   ruby -e "require 'yaml'; YAML.load_file('flutter-engine-runner/agents/openai.yaml'); puts 'yaml ok'"
   git diff --check
   ```
@@ -205,7 +205,7 @@
 
 - [ ] **Step 4: Re-run full regression after installation**
 
-  Run `./flutter_done_check/run_all.sh` again and inspect the complete output.
+  Run `./flutter_check/run_all.sh` again and inspect the complete output.
 
 - [ ] **Step 5: Record runtime limitation**
 

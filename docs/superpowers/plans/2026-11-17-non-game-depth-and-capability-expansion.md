@@ -22,8 +22,8 @@
 ### Task 1: Add failing contract tests
 
 **Files:**
-- Modify: `flutter_done_check/test_workflow_integrity.sh`
-- Modify: `flutter_done_check/test_onboarding_guide_workflow.sh`
+- Modify: `flutter_check/test_workflow_integrity.sh`
+- Modify: `flutter_check/test_onboarding_guide_workflow.sh`
 
 - [ ] Add assertions for the expanded non-game scale and capability matrix.
 - [ ] Run the focused shell tests and confirm they fail because the workflow text is still at the old scale/restricted permission language.
@@ -69,6 +69,6 @@
 **Files:**
 - Synchronize source files to `/Users/admin/.codex/skills/flutter工程执行/`.
 
-- [ ] Run `flutter_done_check/run_all.sh`, Python compilation, shell syntax, YAML parsing, and `git diff --check`.
+- [ ] Run `flutter_check/run_all.sh`, Python compilation, shell syntax, YAML parsing, and `git diff --check`.
 - [ ] Confirm source and installed copies match.
 - [ ] Confirm no commit, push, or repository association occurs.
