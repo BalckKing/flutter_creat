@@ -10,7 +10,14 @@ SCRIPT = Path(__file__).resolve().parents[1] / "flutter-engine-runner/scripts/va
 
 
 class ProtocolUrlChecks(unittest.TestCase):
-    def make_project(self, project_name="项目A", urls=None, with_webview=True):
+    def make_project(
+        self,
+        project_name="项目A",
+        urls=None,
+        with_webview=True,
+        direct_load=True,
+        intermediate_marker=None,
+    ):
         root = Path(tempfile.mkdtemp())
         (root / "pubspec.yaml").write_text("name: demo\n", encoding="utf-8")
         (root / "lib").mkdir()
@@ -22,8 +29,17 @@ class ProtocolUrlChecks(unittest.TestCase):
             "final urls = [\n" + "\n".join(repr(u) + "," for u in (urls or [])) + "\n];"
             if with_webview else "final urls = " + repr(list(urls or [])) + ";"
         )
+        direct_loader = ""
+        if direct_load and with_webview:
+            direct_loader = """
+void openProtocolUrl(String url) {
+  final controller = WebViewController()
+    ..loadRequest(Uri.parse(url));
+}
+"""
+        intermediate = f"\nfinal route = '{intermediate_marker}';\n" if intermediate_marker else ""
         (root / "lib/policy_page.dart").write_text(
-            webview_import + url_source,
+            webview_import + url_source + direct_loader + intermediate,
             encoding="utf-8",
         )
         (root / "aduit/site").mkdir(parents=True)
@@ -86,6 +102,32 @@ class ProtocolUrlChecks(unittest.TestCase):
         result = self.run_check(root)
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertIn("in-app WebView", result.stdout)
+
+    def test_requires_direct_url_load_call(self):
+        root = self.make_project(
+            urls=[
+                "http://项目A/PrivacyPolicy.html",
+                "http://项目A/Terms&Conditions.html",
+                "http://项目A/Support.html",
+            ],
+            direct_load=False,
+        )
+        result = self.run_check(root)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("directly load", result.stdout)
+
+    def test_rejects_protocol_index_or_selector_intermediate(self):
+        root = self.make_project(
+            urls=[
+                "http://项目A/PrivacyPolicy.html",
+                "http://项目A/Terms&Conditions.html",
+                "http://项目A/Support.html",
+            ],
+            intermediate_marker="showProtocolPicker",
+        )
+        result = self.run_check(root)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("intermediate", result.stdout)
 
 
 if __name__ == "__main__":

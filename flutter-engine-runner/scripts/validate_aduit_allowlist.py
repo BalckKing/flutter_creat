@@ -3,7 +3,7 @@
 from __future__ import annotations
 import argparse, json, struct, sys
 from pathlib import Path
-TOP={"intro.md","welcome.html","imgs","site","review"}; SITE={"PrivacyPolicy.html","Terms&Conditions.html","Support.html","img"}
+TOP={"intro.md","welcome.html","imgs","site","review"}; SITE={"index.html","PrivacyPolicy.html","Terms&Conditions.html","Support.html","img"}
 def png_size(path: Path):
     data=path.read_bytes()
     if data[:8] != b"\x89PNG\r\n\x1a\n" or len(data)<24: return None
@@ -20,11 +20,24 @@ def validate(root: Path, *, final=False):
         if site_actual-SITE: errors.append("site contains unapproved entries: "+", ".join(sorted(site_actual-SITE)))
         for name in ("PrivacyPolicy.html","Terms&Conditions.html","Support.html"):
             if not (site/name).is_file(): errors.append(f"missing policy page: {name}")
+        site_index=site/"index.html"
+        welcome=aduit/"welcome.html"
+        if not site_index.is_file() or site_index.is_symlink():
+            errors.append("site/index.html must be a regular copy of aduit/welcome.html")
+        elif not welcome.is_file() or welcome.is_symlink():
+            errors.append("aduit/welcome.html is required for the site/index.html copy")
+        else:
+            try:
+                if site_index.read_bytes() != welcome.read_bytes():
+                    errors.append("site/index.html must be byte-identical to aduit/welcome.html")
+            except OSError as error:
+                errors.append(f"cannot compare site/index.html and aduit/welcome.html: {error}")
         logo=site/"img/logo.png"
         if not logo.is_file() or logo.is_symlink(): errors.append("site/img/logo.png is missing or invalid")
     for path in aduit.rglob("*"):
         if path.is_symlink(): errors.append(f"symlink is not allowed: {path.relative_to(root)}")
-        if path.name=="index.html": errors.append(f"index.html is not allowed: {path.relative_to(root)}")
+        if path.name=="index.html" and path.parent != aduit/"site":
+            errors.append(f"index.html is only allowed as aduit/site/index.html: {path.relative_to(root)}")
     imgs=aduit/"imgs"
     if not imgs.exists():
         if final: errors.append("aduit/imgs is required for final delivery")

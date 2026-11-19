@@ -123,6 +123,8 @@ TASK_CONVENTIONS="$TASK_DOCS_DIR/01-执行约定.md"
 TASK_ARCHITECTURE="$TASK_DOCS_DIR/05-数据与工程架构.md"
 TASK_QA="$TASK_DOCS_DIR/07-测试与质量验收.md"
 TASK_RELEASE="$TASK_DOCS_DIR/08-发布与About材料.md"
+TASK_PUBLISH="$TASK_RELEASE"
+TASK_MATERIALS="$TASK_DOCS_DIR/06-素材与真实照片.md"
 TASK_RUNNER="$TASK_ROOT/flutter-engine-runner/SKILL.md"
 TASK_README="$TASK_ROOT/README.md"
 
@@ -366,6 +368,20 @@ require_text "$TASK_RELEASE" 'http://【项目名称】/Support\.html'
 require_text "$TASK_RELEASE" '三个文件名.*不得改动'
 require_text "$TASK_RELEASE" 'aduit.*完成.*App 内 WebView'
 require_text "$TASK_RELEASE" '不跳转到外部 App'
+require_text "$TASK_PRODUCT" 'App 内搜索不是默认能力'
+require_text "$TASK_PRODUCT" '搜索.*Not appropriate'
+require_text "$TASK_PRODUCT" '第三方照片网站搜索属于素材采集流程.*与 App 内搜索无关'
+require_text "$TASK_ARCHITECTURE" '仅在.*Search capability.*Selected.*注册.*search.*filter'
+require_text "$TASK_QA" '只有选定搜索能力才验收'
+require_text "$TASK_QA" '未选搜索.*不创建.*搜索.*路由.*页面.*状态.*模型'
+require_text "$TASK_MATERIALS" '搜索第三方照片网站'
+require_text "$TASK_RELEASE" '点击协议按钮后直接进入唯一 WebView 展示容器并立即加载对应 URL'
+require_text "$TASK_RELEASE" '不得出现协议索引页、协议列表页、文档选择页或中间跳转页'
+require_text "$TASK_RUNNER" 'button -> fixed URL -> immediate WebView load'
+require_text "$TASK_RUNNER" 'no protocol index/list/selector/intermediate page'
+require_text "$TASK_PUBLISH" '将 `aduit/welcome.html` 复制为 `aduit/site/index.html`'
+require_text "$TASK_PUBLISH" 'site/index\.html.*welcome\.html.*交付副本'
+require_text "$TASK_ORDER" 'welcome\.html.*site/index\.html'
 require_text "$TASK_RUNNER" 'concrete project name.*generation.*fixed URL registry'
 require_text "$TASK_RUNNER" 'do not leave a placeholder in the final App configuration'
 require_text "$TASK_RUNNER" 'unreachable.*concrete URL.*WebView'

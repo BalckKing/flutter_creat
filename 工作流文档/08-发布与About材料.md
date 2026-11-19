@@ -8,7 +8,7 @@
 - `Terms of Use`：完整说明功能范围、内容来源、许可、可用性、用户责任和禁止滥用，以及实际涉及的用户内容权利、保存与删除、重要内容备份、服务限制和联系方式；仅实际提供拍摄/录音时加入对应权利与使用条款；不得将这些条款变为隐蔽免责。准确描述每次启动的入口：非游戏项目进入 Welcome 并点击 `Continue`，游戏/混合项目进入 `lib/welcome.dart` 游戏大厅并按 `Play` 或 `Load` 流程进入 Game；按第 7.7 节采用实际 Clear Data / Exit App 及二次确认；只有 Clear Data 成功后进入 Initialization，Exit App 说明结束当前流程且保留偏好。不加入不存在的登录、会员、上传或社交功能，也不宣称按钮代表勾选协议、授予系统权限。
 - `Disclaimer` 章节：在 `Terms&Conditions.html` 或 `PrivacyPolicy.html` 中根据主题提供仅供参考的说明，以及适当的专业意见排除条款。
 - `Content & Copyright Notice` 章节：在现有法律页中用简洁、真实的内容使用与权利说明及更正/删除联系渠道表达，不默认逐项列举图片/视频供应商、作者、来源链接或素材许可。按第 10.1.1 节仅加入实际许可要求的最小必要声明；没有公开署名义务的素材只留内部核验记录。若存在用户本地拍摄/导入/录音，则与随包内容区分；不声称拥有用户媒体，不把私有媒体列入公开清单，也不作虚假的全部原创或自有版权声明。
-- 三个协议页与 Support：生成器输出整理为 `PrivacyPolicy.html`、`Terms&Conditions.html`、`Support.html` 三页；不生成或保留站点首页，Support 通过既有协议 WebView 入口展示。
+- 三个协议页与 Support：生成器输出整理为 `PrivacyPolicy.html`、`Terms&Conditions.html`、`Support.html` 三页；不生成其他站点首页；只保留规定的 `site/index.html` Welcome 副本，Support 通过既有协议 WebView 入口展示。
 
 aduit 生成完成后，App 内 WebView 显示三个协议页面，不跳转到外部 App。
 
@@ -18,7 +18,7 @@ aduit 生成完成后，App 内 WebView 显示三个协议页面，不跳转到�
 
 #### 仅保留三个协议页，不生成首页（硬门槛）
 
-生成完成后只整理三个协议 HTML 页面与 `img/logo.png` 到 `aduit/site/`；不生成、不复制、不保留站点首页或其他额外 HTML，避免协议页继续依赖首页内容。该规则覆盖远程技能、本机后备、契约后备、重跑、迁移、清理和最终精修阶段。
+生成完成后整理 `index.html`（由 `aduit/welcome.html` 字节复制而来）、三个协议 HTML 页面与 `img/logo.png` 到 `aduit/site/`；不生成其他首页或额外 HTML，避免协议页继续依赖首页内容。该规则覆盖远程技能、本机后备、契约后备、重跑、迁移、清理和最终精修阶段。
 
 实际 App 欢迎页仍独立实现为 `lib/welcome.dart`；独立交付文件仍单独保留/生成于 `aduit/welcome.html`，不被 App 使用。 App 运行时只使用 `lib/welcome.dart`，不加载 `aduit/welcome.html`；保留 `aduit/welcome.html` 作为独立交付文件，不删除。Dart 运行 Welcome 与 HTML 交付文件的生成、修改或旧文件迁移只操作各自路径，不创建站点首页、不向站点目录写入欢迎内容，也不把三个 `All URL` 地址改成 welcome/enter。`site/` 的其余三个 HTML、`img/` 和目录白名单照常保留。
 
@@ -111,17 +111,17 @@ AppListing/About 生成、改名和最终精修时，按第 10.1.1 节移除生�
 CSS/JavaScript 内联到三个协议 HTML 与独立 `aduit/welcome.html`，字体使用系统字体。站点图片仅用 `img/logo.png`，独立欢迎 HTML 图片用 Base64 data URI，遵守其严格体积预算；实际 Dart Welcome 使用已登记的本地 assets。清理额外文件前消除旧外置依赖，复验锚点、相对链接与离线显示。`aduit/html/`、过程截图、日志、备份及其他白名单外项先可恢复归档 `.codex-work/`，不移入 `site/` 或 `img/`；第 12.5 节五张最终项目截图必须保留在 `aduit/imgs/`。
 
 1. **按来源优先级生成当前项目的 AppListing 与 About 页面**：优先完整读取安装器同步的 `Workflow resource root/ios-app-listing/SKILL.md` 及其要求的 references、scripts、assets 和 validators，并核对 Git `origin`、`feature/1.2.1-A1` 分支与当前 revision；远程 checkout 缺失、不完整或同步失败时自动读取 `/Users/admin/Desktop/config/ios-app-listing`，本机后备也不可用时按随包生成契约继续。对当前可用来源按技能检查实际 App、分类、选定描述样式、生成与验证；不使用资料包内旧副本、旧安装或无关项目目录。`description` 必须由当前智能体根据已实现的主题、功能和最终 UI 文案撰写，再通过当前来源实际支持的 `--authoring-json` 输入；不把脚本的默认文案当作已自行撰写，不虚构账号、社区、上传或 AI 功能。固定使用 `--no-deploy-about` 与 `--no-sync-project-listing-urls`，生成并验证本地产物；不调用域名查询、About 部署接口或线上访问工具。生成前确认 `assets/logo.png` 或 AppIcon 候选是真实可解码图片；如果正式 Logo 服务只返回生成网页或正式 Logo 超时，不能把网页保存为图片，先将已有有效 iPhone 品牌图归一化为 `assets/logo.png`，或将仅供本地产物的 `unverified` 开发期品牌图独立保存在 `assets/dev_brand.png` 并仅在 `.codex-work/` 记录来源与状态，Listing/About 继续生成但不得称为正式品牌通过。若无可解码品牌图，保留失败证据并按来源输出/校验结果处理；不得伪造正式品牌通过。远程、本机与契约来源均不可完整验证时，只标记相应校验为 `Blocked`/`Not verified`，仍继续生成可完成的本地材料、整理 `aduit/`、引导页和 Review Remarks。
-站点目录只保留三个协议 HTML 页面与 `img/logo.png`，不生成或保留首页。`aduit/site/` 最终严格保留生成器的 `PrivacyPolicy.html`、`Terms&Conditions.html`、`Support.html` 和 `img/logo.png`；不得在 `site/` 下新增 Disclaimer、Content & Copyright Notice 或其他协议文件，若法律内容需要披露，应合并到这三个页面并保持可达链接。三页必须是完整、自然、彼此独立的成品文案；正文、标题、描述元数据、替代文本和无障碍标签不得出现 `Draft` 等页面状态标签、`WIP`、`TBD`、`TODO`、`Placeholder`、`Pending confirmation`、方括号填空项或作者/开发状态说明。真实产品功能名称以项目事实为据，不得用作页面状态说明。description、网页正文与最终截图执行第 6.6、11.4 节的英语及显示文案检查，不沿用技能模板里的技术术语、中文、框架名称或 `local`/`device`；固定文件名、机器字段和内部报告不作为页面正文展示。公开文案和法律陈述据实，联系地址不能靠推测；没有经确认的支持邮箱时不推断或生成 `support@<slug>.com`，省略对应联系区并在内部摘要标记公开法律审阅缺口。用自然英文准确描述所选 `Clear Data` / `Exit App` 的实际行为与隐私事实，不因关键词命中删掉必要披露。遇到校验冲突须记录对应规则与实际依据并针对性核验，不伪报所有技能校验通过，不为过词库而虚构功能或更改数据行为。
+站点目录保留 `index.html`（与 `aduit/welcome.html` 字节一致）、三个协议 HTML 页面与 `img/logo.png`；不生成其他首页。`aduit/site/` 最终严格保留与 `aduit/welcome.html` 字节一致的 `index.html`、生成器的 `PrivacyPolicy.html`、`Terms&Conditions.html`、`Support.html` 和 `img/logo.png`；不得在 `site/` 下新增 Disclaimer、Content & Copyright Notice 或其他协议文件，若法律内容需要披露，应合并到这三个页面并保持可达链接。三页必须是完整、自然、彼此独立的成品文案；正文、标题、描述元数据、替代文本和无障碍标签不得出现 `Draft` 等页面状态标签、`WIP`、`TBD`、`TODO`、`Placeholder`、`Pending confirmation`、方括号填空项或作者/开发状态说明。真实产品功能名称以项目事实为据，不得用作页面状态说明。description、网页正文与最终截图执行第 6.6、11.4 节的英语及显示文案检查，不沿用技能模板里的技术术语、中文、框架名称或 `local`/`device`；固定文件名、机器字段和内部报告不作为页面正文展示。公开文案和法律陈述据实，联系地址不能靠推测；没有经确认的支持邮箱时不推断或生成 `support@<slug>.com`，省略对应联系区并在内部摘要标记公开法律审阅缺口。用自然英文准确描述所选 `Clear Data` / `Exit App` 的实际行为与隐私事实，不因关键词命中删掉必要披露。遇到校验冲突须记录对应规则与实际依据并针对性核验，不伪报所有技能校验通过，不为过词库而虚构功能或更改数据行为。
 3. **About Logo 与项目主题核验**：站点的 `img/logo.png` 必须来自当前项目验收后的 `assets/logo.png`，核对来源与内容，不用技能自行选中的旧 AppIcon 或旧品牌图覆盖。About 色彩统一明亮，不要求取自 Logo；检查实际主题色、主按钮、链接、背景和实际消费的渐变令牌，修正与所选方案不符的默认值及共享 CSS 覆盖，再核验明亮表现、文字/控件对比度与全部站点页面。白底、明亮冷暖色均可采用；每个视觉表面必须消费渐变令牌，整体灰暗或压黑须修正。缺少正式 Logo 时按第 2.5 节在内部记录发布阻断，并继续可完成的本地整理；About 页面不加开发状态水印，不能以临时图标冒充正式 Logo 验收。
 4. **不设置域名或公开部署关卡**：生成的 URL/元数据保持技能产物原样；不得要求用户提供域名，不调用域名查询接口，不推测、替换、拼接或验证任何域名/公开主机。固定使用本地生成参数，不调用 About 部署接口、不创建或轮询部署任务、不做 DNS 或公开访问探测。记录 `AppListing generation: succeeded/failed` 与 `Delivery: Local only`；无公开 URL、域名或线上页面不阻断本地页面生成、改名和白名单核验，也不把生成的 URL 说成已上线或可访问地址。
-5. **将生成目录改名为 `aduit`，明确替换旧介绍并保留审核目录**：把技能生成的 `AppListing/` 目录按可恢复方式改名/整理为项目根目录的 `aduit/`；若 `aduit/` 已存在，先把旧目录完整备份到 `.codex-work/`，并将其中既有 `review/` 目录安全暂存，避免随旧版替换而丢失，再整理新生成内容；不把新介绍追加到旧内容后。改名完成后立即按本节创建空的 `aduit/imgs/`，后续清理不得移除该目录。站点目录只保留三个协议 HTML 页面与 `img/logo.png`，不生成或保留首页。将暂存的 `review/` 恢复到新 `aduit/`；若没有既有目录，则在第 12.2 节创建。既有 `remarks.md` 在替换前另存可恢复副本，其他 review 文件移至 `.codex-work/`。`aduit/` 最终只能有 `intro.md`、`welcome.html`、`imgs/`（最终五张截图）、`site/` 与 `review/`；`site/` 只能有三个协议 HTML 页面与 `img/logo.png`，`review/` 只能有 `remarks.md`。除第 12.5 节五张最终截图保留于 `aduit/imgs/` 外，CSS、JS、字体、过程截图、日志、报告、备份或其他额外生成文件必须移入 `.codex-work/`，不能保留在 `aduit/`。CSS/JS 应内联或由页面生成流程处理，不能因此增加白名单外文件。以文件清单、必要哈希、可读性和相对引用验证无遗漏，不能只转移首页而漏掉 Logo、Support 或协议。
+5. **将生成目录改名为 `aduit`，明确替换旧介绍并保留审核目录**：把技能生成的 `AppListing/` 目录按可恢复方式改名/整理为项目根目录的 `aduit/`；若 `aduit/` 已存在，先把旧目录完整备份到 `.codex-work/`，并将其中既有 `review/` 目录安全暂存，避免随旧版替换而丢失，再整理新生成内容；不把新介绍追加到旧内容后。改名完成后立即按本节创建空的 `aduit/imgs/`，后续清理不得移除该目录。站点目录保留 `index.html`（与 `aduit/welcome.html` 字节一致）、三个协议 HTML 页面与 `img/logo.png`；不生成其他首页。将暂存的 `review/` 恢复到新 `aduit/`；若没有既有目录，则在第 12.2 节创建。既有 `remarks.md` 在替换前另存可恢复副本，其他 review 文件移至 `.codex-work/`。`aduit/` 最终只能有 `intro.md`、`welcome.html`、`imgs/`（最终五张截图）、`site/` 与 `review/`；`site/` 只能有 `index.html`（与 `aduit/welcome.html` 字节一致）、三个协议 HTML 页面与 `img/logo.png`，`review/` 只能有 `remarks.md`。除第 12.5 节五张最终截图保留于 `aduit/imgs/` 外，CSS、JS、字体、过程截图、日志、报告、备份或其他额外生成文件必须移入 `.codex-work/`，不能保留在 `aduit/`。CSS/JS 应内联或由页面生成流程处理，不能因此增加白名单外文件。以文件清单、必要哈希、可读性和相对引用验证无遗漏，不能只转移首页而漏掉 Logo、Support 或协议。
 6. **核验改名后的 `aduit/site/` 并清理多余内容**：以改名后的 `aduit/site/` 作为后续正文维护源，按第 7.6 节核验三个协议 HTML 页面及其法律章节、稳定文档注册、相对引用和离线显示，不让改名产生失效链接或两份不同版本。逐项核验 `aduit/intro.md`、三个协议 HTML 文件和 `img/logo.png` 的存在、内容、Logo 配色与离线显示；不执行线上访问检查。将改名前生成的临时输出和开发记录移入 `.codex-work/`，不得创建或保留 `aduit/html/`。改名/核验失败时保留可恢复备份并修复，未解决时如实说明；清理失败不谎报成功、不删除唯一副本。
 
 **改名后的品牌复验**：按第 10.4 节将当前正式 Logo 按本节压缩成网页小体积派生图放到 `aduit/site/img/logo.png`，记录源/派生哈希和视觉同一性，实际查看本地三页的 Logo/品牌封面与选定配色，修正旧图片引用；同时确认 App 的桌面图标、原生启动品牌图和 Welcome/Initialization 页面未被生成器或后续构建改回旧图。站点不新增独立封面图片文件，保持原白名单。
 
 **页面成品文案检查**：最终生成或修改三个协议 HTML 页面后，必须按本节运行随运行器提供的 `validate_about_copy.py` 并查看三页实际渲染。所选 `ios-app-listing` 来源另有 `scripts/validate_site_publication_ready.py` 时，再运行其支持的 `--site-dir <project-root>/aduit/site` 检查；缺失时记录该工具不可用，不等待、不伪称执行成功，继续随包检查与页面复核。修复正文、标题、描述元数据或无障碍标签中的草稿/占位内容，并确认页面不是空壳。若缺少真实联系或其他法定事实，只在内部摘要标记公开法律审阅未完成；继续本地生成和接入，不在页面中显示待补字段，也不谎称法律材料已完成。
 
-**AppListing 改名后：Dart 欢迎页与独立 HTML 交付**：在最终 `AppListing/` 已改名/整理为 `aduit/` 后、URL 回接和 Review Remarks 之前，依据最终源码、配置、实际页面与 `aduit/intro.md` 同步完成以下两份产物。站点目录只保留三个协议 HTML 页面与 `img/logo.png`，不生成或保留首页。
+**AppListing 改名后：Dart 欢迎页与独立 HTML 交付**：在最终 `AppListing/` 已改名/整理为 `aduit/` 后、URL 回接和 Review Remarks 之前，依据最终源码、配置、实际页面与 `aduit/intro.md` 同步完成以下两份产物。站点目录保留 `index.html`（与 `aduit/welcome.html` 字节一致）、三个协议 HTML 页面与 `img/logo.png`；不生成其他首页。
 
 1. **App 实际使用 `lib/welcome.dart`**：定义并导出 Flutter Welcome surface，将 `/welcome` 路由实际指向它；具体跳转由 `.codex-work/code-architecture.json` 选择的 `Navigator`、GetX 或 `go_router` 方案负责，并保持单一主路由入口。**非游戏项目**按第 6.13、7.1 节自由设计本项目独有、复杂且贴题的精致欢迎构图，不固定卡片形状、区域顺序或按钮位置，保持必要内容与行为：3–5 个真实介绍章节/卡片、自动轮播、可点击且有可访问名称的分页圆点、英文文案、按创意选定的明亮色彩与实际消费的渐变令牌、主题背景、圆角图片、图标、Emoji 和适用图片/GIF，以及 `Continue`、真实准备步骤/百分比/进度、错误态 `Try again` 与所选 `Clear Data` / `Exit App`。**游戏/混合项目**仍使用同一 `lib/welcome.dart`，但将其实现为竖屏一屏式沉浸游戏大厅，只显示 `Play`、`Load`、`Operation`，顶部显示 `Exit`、`Settings`，不显示普通章节、分页点或 `Continue`；`Play` 进入 `Loading → Game`，`Load` 进入 `Save Slot → Game`。不能只放一个按钮、删除视觉效果或把 HTML 字符串包进 Dart。使用 Flutter Widget，可选择 `PageView` / `PageController` 或等价章节呈现与可释放的控制器/计时器；不能把组件选择当作固定整页骨架；复杂子组件按原页面分类拆分，欢迎入口固定在 `lib/welcome.dart`，其余页面不集中到该文件。图片/背景/GIF 使用已登记并随包的项目 `assets/`，通过 `Image.asset` 等加载，不从 `aduit/`、HTML、网络或超大 Base64 字符串读取。此 Dart 文件不适用 HTML 的 256 KiB、内联 CSS/JS 或 Base64 限制；正常资源解码、命名、圆角、许可和最终图片验收继续执行。
 2. **原行为改为 Dart 调用**：非游戏的 `Continue` 直接调用现有 Welcome-to-main 的 Dart callback/路由逻辑，游戏大厅的 `Play`/`Load` 按声明流程调用 Loading/Save Slot 与主游戏路由；所有入口防重复点击/重复导航，不通过 WebView、JavaScript、AppBridge 或 URL scheme。保留原准备条件与进入目标，准备就绪且原生承接层淡出后才允许非游戏继续；不增加 `Enter` 或协议页脚。非游戏每次启动进入 Welcome，游戏/混合每次启动进入游戏大厅；只有所选 `Clear Data` / `Exit App` 二次确认且真实成功后才进入独立 Initialization（`/entry`、`Enter`），协议通用文案仅初始化页显示。协议页继续由 App 内 WebView 显示；改名为 `aduit/` 后才接入这三个 HTTP 模板，不跳转到外部 App。
@@ -232,3 +232,18 @@ Terms of Use and Privacy Policy
 - **尺寸与画质**：每张必须是原始竖屏 PNG，实际像素宽 1206、高 2622。沿用第 12.2 节的指定 iPhone 截图配置并核对实际运行目标；设备/工具输出不符时修正采集目标或方法后重截，不裁切、缩放、拉伸或补边凑尺寸，不将其他设备截图改名冒充。逐张读取像素尺寸、完整解码并实际查看，确认本地图片正常显示、文字清晰、无占位图/黑白空屏/重叠裁切/无关系统弹窗或调试浮层；同哈希或语义近似重复均重新选图。
 - **文件与记录**：按展示顺序使用 `01_<短页面或功能ID>.png` 至 `05_<短页面或功能ID>.png`，ID 使用本项目真实简短英文标识。截图先在 `.codex-work/` 中完成采集与核验，再将合格的五张交付到 `aduit/imgs/`；既有内容先可恢复归档，清除多余文件、子目录、链接及隐藏项，不加入 `.gitkeep`、`.DS_Store`、日志或清单。该目录与 `aduit/site/img/logo.png` 分开，不被 App 引用或打包。将每张的文件路径、展示价值、页面/操作路径、构建/Bundle ID、实际 iPhone/iOS/UDID、真机或模拟器、采集时间、像素尺寸与哈希写入既有 `.codex-work/quality.md`，最终报告提供五张文件链接。
 - **复验与完成**：截图中发现可修复问题先修复、更新同一安装并复验；之后的代码、资源或配置变更若改变截图画面，重截受影响项并核对五张仍来自最终构建，相关图片/权限验收按原规则刷新。再次检查目录数量、尺寸、解码、内容差异与当前构建一致后才将此项标为 `Verified`。实际 iPhone/截图工具不可用时保留已完成产物，记录具体缺口并继续独立工作，不能生成假截图、复制同图凑五张或声称完整交付。
+
+### 协议按钮直达 App 内 WebView（本轮硬规则）
+
+`Settings` 的 `Privacy Policy`、`Terms of Use`、`Support` 三个按钮，以及 Initialization 的两个协议链接，均直接把各自具体项目名 HTTP URL 传给唯一协议 WebView 展示容器并立即调用 `loadRequest(Uri.parse(url))` 或等价直接加载 API。不得经过协议索引页、协议列表页、文档选择页、站点首页或任何中间跳转页；可以复用同一个 WebView Widget，但按钮到目标 URL 必须是一次直接加载。加载失败仍在 App 内显示错误、返回和有限重试，不打开外部 App 或系统浏览器。
+
+### Welcome HTML 的 site 交付副本（本轮硬规则）
+
+生成和精修 `aduit/welcome.html` 后，按字节复制一份为 `aduit/site/index.html`。`site/index.html` 只是 Welcome 交付副本，不是协议索引、协议选择页或 App 运行入口；校验时必须与 `aduit/welcome.html` 字节一致。`aduit/site/` 最终只允许 `index.html`、`PrivacyPolicy.html`、`Terms&Conditions.html`、`Support.html` 和 `img/logo.png`，不允许其他首页或额外 HTML。App 运行时仍只使用 `lib/welcome.dart`，不加载或打包这些 HTML。
+
+
+点击协议按钮后直接进入唯一 WebView 展示容器并立即加载对应 URL；不得出现协议索引页、协议列表页、文档选择页或中间跳转页。
+
+将 `aduit/welcome.html` 复制为 `aduit/site/index.html`，并在验收时确认两个文件字节一致；site/index.html 是 Welcome 交付副本，不是协议中间页。
+
+`site/index.html` 是从 `welcome.html` 生成的字节一致交付副本。

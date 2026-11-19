@@ -8,6 +8,27 @@ import re
 PAGES = ("PrivacyPolicy.html", "Terms&Conditions.html", "Support.html")
 PLACEHOLDER = "【项目名称】"
 WEBVIEW_MARKERS = ("WebView", "webview_flutter", "flutter_inappwebview", "InAppWebView")
+# A WebView import alone is not enough: each policy button must pass its
+# concrete URL directly into the in-app loading call.  Keep these markers
+# intentionally small so equivalent Flutter WebView implementations remain
+# valid while a URL registry with no load call is rejected.
+DIRECT_LOAD_PATTERNS = (
+    re.compile(r"loadRequest\s*\(\s*Uri\.parse\s*\("),
+    re.compile(r"loadUrl\s*\(\s*Uri\.parse\s*\("),
+    re.compile(r"openProtocolUrl\s*\("),
+)
+# These names describe an intermediate protocol chooser/index.  A single
+# reusable WebView page is allowed; an explicit picker/list route is not.
+INTERMEDIATE_PROTOCOL_MARKERS = (
+    "protocol_index",
+    "protocol_list",
+    "document_selector",
+    "showProtocolPicker",
+    "policyChooser",
+    "protocolIndex",
+    "protocolList",
+    "documentSelector",
+)
 
 
 def validate(root: Path, project_name: str) -> list[str]:
@@ -69,6 +90,18 @@ def validate(root: Path, project_name: str) -> list[str]:
         findings.append(f"protocol URL uses a different project name/host: {sorted(set(wrong_hosts))}")
     if not any(marker in combined for marker in WEBVIEW_MARKERS):
         findings.append("in-app WebView integration is required even when the URL may be unreachable")
+    if not any(pattern.search(combined) for pattern in DIRECT_LOAD_PATTERNS):
+        findings.append(
+            "protocol buttons must directly load their URL in the in-app WebView "
+            "(for example loadRequest(Uri.parse(url)) or openProtocolUrl(url)); "
+            "a URL registry/import alone is insufficient"
+        )
+    intermediate = [marker for marker in INTERMEDIATE_PROTOCOL_MARKERS if marker in combined]
+    if intermediate:
+        findings.append(
+            "protocol links must not pass through an intermediate protocol "
+            f"index/list/selector: {', '.join(intermediate)}"
+        )
     return findings
 
 

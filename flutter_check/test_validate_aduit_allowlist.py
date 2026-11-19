@@ -9,12 +9,25 @@ class AduitTests(unittest.TestCase):
         self.temp=tempfile.TemporaryDirectory(); self.addCleanup(self.temp.cleanup); self.root=Path(self.temp.name)
         (self.root/"aduit/site/img").mkdir(parents=True); (self.root/"aduit/imgs").mkdir()
         for name in ("intro.md","welcome.html"): (self.root/"aduit"/name).write_text("ok", encoding="utf-8")
+        (self.root/"aduit/site/index.html").write_bytes((self.root/"aduit/welcome.html").read_bytes())
         for name in ("PrivacyPolicy.html","Terms&Conditions.html","Support.html"): (self.root/"aduit/site"/name).write_text("ok", encoding="utf-8")
         (self.root/"aduit/site/img/logo.png").write_bytes(PNG)
         for i in range(5): (self.root/"aduit/imgs"/f"shot{i}.png").write_bytes(PNG)
     def test_final_allowlist_passes(self): self.assertEqual(module.validate(self.root, final=True)["status"], "Passed")
-    def test_index_and_extra_files_fail(self):
+    def test_root_index_and_extra_files_fail(self):
         (self.root/"aduit/index.html").write_text("bad", encoding="utf-8"); (self.root/"aduit/extra.txt").write_text("bad", encoding="utf-8")
         report=module.validate(self.root, final=True); self.assertEqual(report["status"], "Failed"); self.assertTrue(any("index.html" in e for e in report["errors"]))
+
+    def test_site_index_must_match_welcome(self):
+        (self.root/"aduit/site/index.html").write_text("different", encoding="utf-8")
+        report=module.validate(self.root, final=True)
+        self.assertEqual(report["status"], "Failed")
+        self.assertTrue(any("byte-identical" in e for e in report["errors"]))
+
+    def test_site_index_is_required(self):
+        (self.root/"aduit/site/index.html").unlink()
+        report=module.validate(self.root, final=True)
+        self.assertEqual(report["status"], "Failed")
+        self.assertTrue(any("site/index.html" in e for e in report["errors"]))
 
 if __name__ == "__main__": unittest.main()

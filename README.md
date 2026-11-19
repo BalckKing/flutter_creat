@@ -268,7 +268,7 @@ Settings 页面必须重新设计为主题化品牌头部、分组图标、状�
 
 Listing 生成器优先使用有效的 `assets/logo.png`，不再优先选旧 AppIcon。没有正式 Logo 时可用已有有效图标或项目内的 `assets/dev_brand.png` 继续本地生成，来源记录放 `.codex-work/` 并保留品牌未验证状态；完全无有效图片时仍输出介绍与三页 HTML，缺图和目录契约检查如实失败，后续 `aduit/` 整理及 Remarks 继续执行。
 
-所有页面还须按第 6.10 节落实与任务相关的图文表达，不只美化首页：内容/详情结合主题摄影或图解与有信息价值的模块，搜索使用缩略图/分类图标和元信息，Settings 有品牌区与分组图标，媒体页呈现真实预览与反馈，空/错误态有对应图形和下一步。确认框保持风险清楚、操作简洁，协议保留完整易读正文与品牌层次。每页及适用状态都纳入规划和当前构建验收；纯文字堆叠、反复贴 Logo、同文换容器、假统计或无关装饰不算丰富，必要实景照片仍从已列第三方网站取得并核许可。
+所有页面还须按第 6.10 节落实与任务相关的图文表达，不只美化首页：内容/详情结合主题摄影或图解与有信息价值的模块，若 Search capability = Selected，搜索使用缩略图/分类图标和元信息；未选搜索时不创建搜索 UI、路由或验收项，Settings 有品牌区与分组图标，媒体页呈现真实预览与反馈，空/错误态有对应图形和下一步。确认框保持风险清楚、操作简洁，协议保留完整易读正文与品牌层次。每页及适用状态都纳入规划和当前构建验收；纯文字堆叠、反复贴 Logo、同文换容器、假统计或无关装饰不算丰富，必要实景照片仍从已列第三方网站取得并核许可。
 
 内部 UI 使用唯一正式 Logo 并减少重复：AppIcon、iOS 原生启动页及其同款承接层保留选中 Logo；所有 HTML 不因这次调整改动，继续按原规则使用正式 Logo，Welcome Flutter 外层不额外叠加。Initialization、Settings、内容等普通 Flutter 页面优先用其余生成图中合格贴题的图，逐张评估并尽量利用，进入 assets 前按主题/用途另起短名，不叫 `logo2`、`logo_alt` 或备用 Logo。资源放入 `assets/illustrations/<feature_or_page_id>/` 并实际接入；记录每张的源候选/哈希、新名称、消费位置、当前截图与未用理由。明显瑕疵或不适用图不强塞，转用图不替代真实摄影，正式 Logo 来源保持不变，主题色仍可自由选择；可自行绘制图解补足需要。详见第 6.12、10.4 节。
 
@@ -407,4 +407,16 @@ aduit/
 
 发布前会使用唯一 Bundle ID 核对产品身份，并扫描隐藏审核模式、远程换功能、虚假账号/计费/服务/权限、伪造测试记录、评价诱导、评分奖励、搜索/榜单/引荐/安装量操纵，以及崩溃、白屏、占位图、死链接、错误权限、数据丢失和核心流程失败。App Store 元数据、截图、About、Intro、Support 和 Remarks 只能写已确认事实，且必须互相一致。专项结果写入 `.codex-work/app-review-risk.md`；关键项失败会记录为 `Release readiness: Blocked`，不会因为其他材料已生成而报告为可上架。外部网络或素材失败仍按现有回退继续独立任务。
 
-免责与版权说明合并到原法律页。最终 `aduit/site/` 只保留三个协议 HTML 和 `img/logo.png`；站点目录只保留三个协议页面与 `img/logo.png`，不生成或保留首页。Logo 配色、草稿清理等只做有记录的必要定点修正；保存原副本/哈希，在 Dart 运行 Welcome 与 HTML 交付文件制作和清理后复核其余内容字节一致。`aduit/` 顶层仅 `intro.md`、`welcome.html`、`imgs/`（最终五张截图）、`site/`、`review/`，review 仅 remarks.md。Welcome 运行时唯一使用 `lib/welcome.dart`；`aduit/welcome.html` 保留为独立交付文件，不删除、不加载、不注册、不桥接、不复制或打包到 App，仍内联全部内容与 Base64 图片并严格小于 262,144 字节。HTML 只做独立离线验收，不能作为第二个 App Welcome 或运行证据。五张最终项目截图只放 `aduit/imgs/`，过程证据/备份/额外产物只放 `.codex-work/`。Remarks 全英文、最多 4,000 字符、七章分点、设置按顺序编号、仅指定 iPhone 记录和已确认事实，无 WebView/WebKit/内部模块描述。清理旧 AppListing、首页 HTML、aduit/html 和根目录旧 welcome/enter HTML，保留三个协议页与三个 URL。
+免责与版权说明合并到原法律页。最终 `aduit/site/` 保留与 `aduit/welcome.html` 字节一致的 `index.html`、三个协议 HTML 和 `img/logo.png`；不生成其他首页。Logo 配色、草稿清理等只做有记录的必要定点修正；保存原副本/哈希，在 Dart 运行 Welcome 与 HTML 交付文件制作和清理后复核其余内容字节一致。`aduit/` 顶层仅 `intro.md`、`welcome.html`、`imgs/`（最终五张截图）、`site/`、`review/`，review 仅 remarks.md。Welcome 运行时唯一使用 `lib/welcome.dart`；`aduit/welcome.html` 保留为独立交付文件，不删除、不加载、不注册、不桥接、不复制或打包到 App，仍内联全部内容与 Base64 图片并严格小于 262,144 字节。HTML 只做独立离线验收，不能作为第二个 App Welcome 或运行证据。五张最终项目截图只放 `aduit/imgs/`，过程证据/备份/额外产物只放 `.codex-work/`。Remarks 全英文、最多 4,000 字符、七章分点、设置按顺序编号、仅指定 iPhone 记录和已确认事实，无 WebView/WebKit/内部模块描述。清理旧 AppListing、首页 HTML、aduit/html 和根目录旧 welcome/enter HTML，保留三个协议页与三个 URL。
+
+### App 内搜索能力决策（本轮硬规则）
+
+App 内搜索不是默认能力；它是条件能力。主题确认时在 capability matrix 写入 `Search: Selected` 或 `Search: Not appropriate` 及主题依据。只有 Search capability = Selected 时，才创建搜索输入、结果/空态/错误状态、`/search` 路由、必要的 `/filter` 路由、搜索状态/控制器、`searchableText` 字段、搜索依赖、搜索截图和搜索验收；未选时不得创建空搜索页、空路由、搜索模型、搜索 UI、搜索依赖或搜索测试。第三方照片网站搜索仍是素材采集流程，与 App 内搜索无关，继续按素材章节执行。
+
+### 协议按钮直达 App 内 WebView（本轮硬规则）
+
+`Settings` 的 `Privacy Policy`、`Terms of Use`、`Support` 三个按钮，以及 Initialization 的两个协议链接，均直接把各自具体项目名 HTTP URL 传给唯一协议 WebView 展示容器并立即调用 `loadRequest(Uri.parse(url))` 或等价直接加载 API。不得经过协议索引页、协议列表页、文档选择页、站点首页或任何中间跳转页；可以复用同一个 WebView Widget，但按钮到目标 URL 必须是一次直接加载。加载失败仍在 App 内显示错误、返回和有限重试，不打开外部 App 或系统浏览器。
+
+### Welcome HTML 的 site 交付副本（本轮硬规则）
+
+生成和精修 `aduit/welcome.html` 后，按字节复制一份为 `aduit/site/index.html`。`site/index.html` 只是 Welcome 交付副本，不是协议索引、协议选择页或 App 运行入口；校验时必须与 `aduit/welcome.html` 字节一致。`aduit/site/` 最终只允许 `index.html`、`PrivacyPolicy.html`、`Terms&Conditions.html`、`Support.html` 和 `img/logo.png`，不允许其他首页或额外 HTML。App 运行时仍只使用 `lib/welcome.dart`，不加载或打包这些 HTML。
