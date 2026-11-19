@@ -40,6 +40,7 @@ typeset -a task_expected=(
   test_validate_execution_state.py
   test_validate_capability_matrix.py
   test_validate_quality_records.py
+  test_validate_final_visual_product.py
   test_asset_staging.py
   test_cleanup_generation_history.py
   test_validate_logo_quality.py

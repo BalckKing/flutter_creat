@@ -113,7 +113,7 @@ class WelcomePage {
   void settings() {}
 }
 """)
-        self.write(".codex-work/game-lobby.json", json.dumps({"device": "iPhone 17 Pro", "recording": ".codex-work/gameplay.mp4"}))
+        self.write(".codex-work/game-lobby.json", json.dumps({"device": "iPhone 17 Pro", "recording": ".codex-work/iphone-gameplay-recording.mp4"}))
         return manifest
 
     def write_native_manifest(self, **changes):
@@ -179,7 +179,7 @@ class WelcomePage {
   void settings() {}
 }
 """)
-        self.write(".codex-work/game-lobby.json", json.dumps({"device": "iPhone 17 Pro", "recording": ".codex-work/gameplay.mp4"}))
+        self.write(".codex-work/game-lobby.json", json.dumps({"device": "iPhone 17 Pro", "recording": ".codex-work/iphone-gameplay-recording.mp4"}))
         self.write(".codex-work/native-motion.md", """主题锚点：明亮纸牌桌与材质纹理。\n主体：卡牌、纸张、金属筹码。\n前中后景：桌面、卡列、背景光。\n运动：点击后卡牌翻转并推进回合。\n技术：CustomPainter + AnimationController，0.45s，12px，opacity 0.9。\n循环/完成/中断：完成停留；后台取消；Reduce Motion 淡化。\n负面限制：禁止色块拼贴和静态截图冒充。""")
         source = """
 import 'package:flutter/material.dart';
@@ -210,17 +210,65 @@ class MockNativeGame extends StatelessWidget { const MockNativeGame({super.key})
             "bundle_id": "com.example.auroraGame",
             "device": device,
             "os": "iOS 26.1",
-            "recording": ".codex-work/gameplay.mp4" if recording else "",
-            "screenshots": [".codex-work/gameplay.png"] if screenshots else [],
-            "logs": [".codex-work/gameplay.log"] if logs else [],
+            "recording": ".codex-work/iphone-gameplay-recording.mp4" if recording else "",
+            "screenshots": [".codex-work/iphone-gameplay-screenshot.png"] if screenshots else [],
+            "logs": [".codex-work/iphone-gameplay.log"] if logs else [],
         }
         self.write(".codex-work/game-runtime.json", json.dumps(record, indent=2))
         if recording:
-            self.write(".codex-work/gameplay.mp4", b"recording")
+            self.write(".codex-work/iphone-gameplay-recording.mp4", b"recording")
         if screenshots:
-            self.write(".codex-work/gameplay.png", b"screenshot")
+            self.write(".codex-work/iphone-gameplay-screenshot.png", b"screenshot")
         if logs:
-            self.write(".codex-work/gameplay.log", "iPhone gameplay log\n")
+            self.write(".codex-work/iphone-gameplay.log", "iPhone gameplay log\n")
+        # The playable vertical slice is intentionally separate from the final
+        # visual product gate.  Passing fixtures include both contracts.
+        self.write("assets/game/final_subject.png", b"authored subject")
+        self.write("assets/game/final_environment.png", b"authored environment")
+        self.write("assets/game/final_prop.png", b"authored prop")
+        self.write("assets/game/final_effect.png", b"authored effect")
+        final_evidence = ".codex-work/iphone-gameplay-recording.mp4" if recording else ".codex-work/iphone-gameplay.log"
+        final_contract = {
+            "schema_version": 1,
+            "project_type": "game",
+            "claim": "final_visual_product",
+            "development_stage": "final_visual_product",
+            "prototype_boundary": {"vertical_slice_status": "Passed", "cannot_substitute_for_final": True},
+            "common_visual_contract": {
+                "no_simple_line_art": True,
+                "no_flat_color_blocks": True,
+                "no_solid_color_background": True,
+                "no_placeholder_or_static_mock": True,
+                "authored_asset_review": "Verified",
+                "composition_review": "Verified",
+                "motion_review": "Verified",
+                "state_coverage_review": "Verified",
+                "accessibility_review": "Verified",
+                "refinement_rounds": 3,
+                "current_iphone_evidence": [final_evidence],
+            },
+            "game_visual_contract": {
+                "visual_mode": "2.5d",
+                "renderer": "authored layered game renderer",
+                "camera_model": "depth-aware camera with occlusion",
+                "depth_layers": ["background", "midground", "foreground"],
+                "materials_lighting": "textured materials and directional lighting",
+                "state_variants": "idle active success failure restart",
+                "animation_feedback": "subject animation and impact feedback",
+                "hud_hierarchy": "goal state score and controls",
+                "content_scope": "complete approved game scope",
+                "authored_assets": [
+                    "assets/game/final_subject.png",
+                    "assets/game/final_environment.png",
+                    "assets/game/final_prop.png",
+                    "assets/game/final_effect.png",
+                ],
+                "runtime_evidence": [final_evidence],
+            },
+            "non_game_visual_contract": None,
+            "evidence": [".codex-work/game-lobby.json", final_evidence],
+        }
+        self.write(".codex-work/final-visual-product.json", json.dumps(final_contract, indent=2))
 
     def write_flame_fixture(self, *, full=True):
         self.write("assets/game/hero.png", b"hero image")
@@ -364,6 +412,14 @@ class GodotPage extends StatelessWidget {
         findings = self.load_module().validate_project(self.root)
         self.assertEqual(findings, [], findings)
 
+    def test_vertical_slice_alone_does_not_pass_final_visual_gate(self):
+        self.write_manifest()
+        self.write_flame_fixture()
+        self.write_runtime_evidence()
+        (self.root / ".codex-work" / "final-visual-product.json").unlink()
+        findings = self.load_module().validate_project(self.root)
+        self.assertTrue(any("final visual product" in item and "missing" in item for item in findings), findings)
+
     def test_flutter_native_requires_motion_consumer_and_formula(self):
         self.write_native_manifest()
         self.write_native_fixture(full=False)
@@ -431,7 +487,7 @@ class GodotPage extends StatelessWidget {
 
     def test_paths_must_stay_inside_project_and_scene_assets_cannot_be_work_records(self):
         self.write_manifest(engine={
-            "scene_assets": [".codex-work/gameplay.png", "../outside.png"],
+            "scene_assets": [".codex-work/iphone-gameplay-screenshot.png", "../outside.png"],
             "evidence": ["../outside.mp4"],
         })
         self.write_flame_fixture()

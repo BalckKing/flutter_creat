@@ -11,6 +11,7 @@ The iPhone Simulator run remains the final acceptance authority.
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import re
 import sys
@@ -486,6 +487,20 @@ def _runtime_code_text(root: Path, files: Mapping[Path, str]) -> str:
     return "\n".join(chunks)
 
 
+def _final_visual_findings(root: Path) -> list[str]:
+    """Run the universal final visual product gate for game and mixed apps."""
+    validator_path = Path(__file__).with_name("validate_final_visual_product.py")
+    try:
+        spec = importlib.util.spec_from_file_location("validate_final_visual_product", validator_path)
+        if spec is None or spec.loader is None:
+            return ["final visual product: cannot load validate_final_visual_product.py"]
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return [f"final visual product: {item}" for item in module.validate_project(root)]
+    except (OSError, ImportError, AttributeError, TypeError) as error:
+        return [f"final visual product: validator failed to load: {error}"]
+
+
 def _visual_contract(manifest: Mapping[str, Any], root: Path, findings: list[str]) -> dict[str, Any] | None:
     """Validate the game-wide 2.5D/3D visual contract.
 
@@ -736,6 +751,7 @@ def validate_project(project_root: Path | str) -> list[str]:
             pubspec = ""
         _text, files = _source_text(root)
         _validate_native_runtime(root, manifest, files, findings)
+        findings.extend(_final_visual_findings(root))
         return findings
 
     engine = _merged_engine_contract(manifest, findings)
@@ -760,6 +776,10 @@ def validate_project(project_root: Path | str) -> list[str]:
         _validate_unity(root, engine, text, files, findings)
     else:
         _validate_generic_engine(root, engine, manifest, files, findings)
+
+    # A playable vertical slice is an early technical gate.  It is never the
+    # final visual product and cannot release the project by itself.
+    findings.extend(_final_visual_findings(root))
 
     return findings
 

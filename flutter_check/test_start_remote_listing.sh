@@ -67,6 +67,7 @@ cmp "$TASK_BUNDLE_DIR/flutter-engine-runner/scripts/validate_asset_staging.py" "
 cmp "$TASK_BUNDLE_DIR/flutter-engine-runner/scripts/cleanup_generation_history.py" "$TASK_INSTALLED/scripts/cleanup_generation_history.py"
 cmp "$TASK_BUNDLE_DIR/flutter-engine-runner/scripts/validate_logo_quality.py" "$TASK_INSTALLED/scripts/validate_logo_quality.py"
 cmp "$TASK_BUNDLE_DIR/flutter-engine-runner/scripts/validate_release_readiness.py" "$TASK_INSTALLED/scripts/validate_release_readiness.py"
+cmp "$TASK_BUNDLE_DIR/flutter-engine-runner/scripts/validate_final_visual_product.py" "$TASK_INSTALLED/scripts/validate_final_visual_product.py"
 
 TASK_INSTALL_OUTPUT="$(FLUTTER_APP_LISTING_REPO="$TASK_TMP/missing.git" FLUTTER_APP_LISTING_FALLBACK="$TASK_TMP/no-local" CODEX_HOME="$TASK_CODEX_HOME" \
   /bin/zsh "$TASK_PORTABLE/start.sh" --install-only --skills-dir "$TASK_TMP/skills" 2>&1)"
@@ -121,6 +122,7 @@ cmp "$TASK_BUNDLE_DIR/flutter-engine-runner/scripts/validate_asset_staging.py" "
 cmp "$TASK_BUNDLE_DIR/flutter-engine-runner/scripts/cleanup_generation_history.py" "$TASK_TMP/fresh-skills/flutter-engine-runner/scripts/cleanup_generation_history.py"
 cmp "$TASK_BUNDLE_DIR/flutter-engine-runner/scripts/validate_logo_quality.py" "$TASK_TMP/fresh-skills/flutter-engine-runner/scripts/validate_logo_quality.py"
 cmp "$TASK_BUNDLE_DIR/flutter-engine-runner/scripts/validate_release_readiness.py" "$TASK_TMP/fresh-skills/flutter-engine-runner/scripts/validate_release_readiness.py"
+cmp "$TASK_BUNDLE_DIR/flutter-engine-runner/scripts/validate_final_visual_product.py" "$TASK_TMP/fresh-skills/flutter-engine-runner/scripts/validate_final_visual_product.py"
 [[ ! -e "$TASK_TMP/fresh-skills/flutter-engine-runner/references/ios-app-listing" ]]
 [[ "$(<"$TASK_TMP/fresh-skills/flutter-engine-runner/references/ios-app-listing-source.txt")" == *"mode=contract-fallback"* ]]
 print -r -- "PASS: latest remote, missing/incomplete remote, local fallback without optional validator, recoverable prior install, and fresh contract fallback."

@@ -113,7 +113,7 @@ require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'offline_cold_start'
 require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'Dynamic Type'
 require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" '密钥'
 require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'generated_at'
-for task_new_script in validate_work_records.py validate_ios_artifacts.py validate_aduit_allowlist.py validate_welcome_flow.py validate_execution_state.py validate_capability_matrix.py validate_quality_records.py prepare_asset_staging.py validate_asset_staging.py cleanup_generation_history.py validate_logo_quality.py validate_release_readiness.py; do
+for task_new_script in validate_work_records.py validate_ios_artifacts.py validate_aduit_allowlist.py validate_welcome_flow.py validate_execution_state.py validate_capability_matrix.py validate_quality_records.py validate_final_visual_product.py prepare_asset_staging.py validate_asset_staging.py cleanup_generation_history.py validate_logo_quality.py validate_release_readiness.py; do
   require_file "$TASK_ROOT/flutter-engine-runner/scripts/$task_new_script"
 done
 
@@ -434,6 +434,9 @@ require_text "$TASK_RUNNER" 'ui-ux-pro-max'
 require_text "$TASK_RUNNER" 'design-system/<slug>/MASTER.md'
 require_text "$TASK_RUNNER" 'ui-ux-review\.md'
 require_text "$TASK_RUNNER" 'There are no soft UI requirements'
+require_text "$TASK_RUNNER" 'final visual product'
+require_text "$TASK_RUNNER" 'validate_final_visual_product\.py'
+require_text "$TASK_QA" 'final visual product'
 for task_design_field in accessibility touch_interaction safe_area typography color_contrast responsive_layout motion navigation reduced_motion; do
   require_text "$TASK_DOCS_DIR/02-创意与思维导图.md" "$task_design_field"
   require_text "$TASK_DOCS_DIR/04-视觉与页面功能.md" "$task_design_field"
@@ -480,6 +483,8 @@ require_text "$TASK_ORDER" '差异化证据'
 
 require_text "$TASK_RUNNER" 'Apple 4\.3 and 5\.6 release gate'
 require_file "$TASK_ROOT/flutter-engine-runner/scripts/validate_visual_implementation.py"
+require_file "$TASK_ROOT/flutter-engine-runner/scripts/validate_final_visual_product.py"
+require_file "$TASK_ROOT/flutter_check/test_validate_final_visual_product.py"
 require_file "$TASK_ROOT/flutter-engine-runner/scripts/validate_review_remarks.py"
 require_file "$TASK_ROOT/flutter-engine-runner/scripts/validate_public_copy.py"
 require_file "$TASK_ROOT/flutter-engine-runner/scripts/validate_path_names.py"
@@ -513,7 +518,7 @@ require_text "$TASK_QA" 'Release readiness: Blocked'
 require_text "$TASK_ORDER" '先执行 `engine`/`flutter_native` 决策'
 require_text "$TASK_ORDER" '引擎路线为.*引擎环境'
 require_text "$TASK_ORDER" 'Flutter 原生路线为.*Flutter 运行时'
-require_text "$TASK_ORDER" '垂直切片通过后才扩展全部玩法'
+require_text "$TASK_ORDER" '垂直切片通过后继续完成全量范围并通过 `final_visual_product` 门禁'
 require_text "$TASK_README" '专用引擎'
 require_text "$TASK_RUNNER" 'explicit engine-necessity decision'
 require_text "$TASK_RUNNER" 'flutter-native'

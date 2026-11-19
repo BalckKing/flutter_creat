@@ -150,6 +150,27 @@ class QualityRecordTests(unittest.TestCase):
         self.assertEqual(report["status"], "Failed")
         self.assertTrue(any("secret" in error.lower() for error in report["errors"]))
 
+    def test_project_type_requires_final_visual_product_quality_section(self):
+        data = self.record()
+        data["project_type"] = "non_game"
+        self.write(data)
+        report = module.validate(self.root)
+        self.assertEqual(report["status"], "Failed")
+        self.assertTrue(any("final_visual_product" in error for error in report["errors"]))
+
+    def test_project_type_with_final_visual_product_quality_section_passes(self):
+        data = self.record()
+        data["project_type"] = "non_game"
+        data["final_visual_product"] = {
+            "contract": ".codex-work/final-visual-product.json",
+            "status": "Passed",
+            "refinement_evidence": [".codex-work/evidence.png"],
+            "current_iphone_evidence": [".codex-work/evidence.png"],
+        }
+        self.write(data)
+        report = module.validate(self.root)
+        self.assertEqual(report["status"], "Passed", report)
+
 
 if __name__ == "__main__":
     unittest.main()

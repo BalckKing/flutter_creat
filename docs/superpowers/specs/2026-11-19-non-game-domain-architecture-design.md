@@ -344,3 +344,105 @@ domain_reason
 - 规格中的“真实 iPhone 运行证据”仍明确区分为当前资料包不可验证的事项。
 
 实现完成后，最终报告必须分别列出：基础契约状态、主领域状态、副领域状态、领域加载状态、领域矩阵状态、领域专项验收状态、真实运行证据缺口，以及不影响本地资料包回归的外部阻断项。
+
+## 11. 全项目最终视觉成品门禁补充
+
+用户进一步明确：非游戏项目也必须遵守与游戏项目相同的最终视觉成品约定。任何项目都不能因为功能已经可点击、垂直切片已经跑通、引擎已安装、页面数量已完成或数据已经接入，就被称为最终视觉成品。
+
+### 11.1 技术垂直切片不是最终交付
+
+工作流统一采用以下顺序：
+
+```text
+technical_vertical_slice
+  → full domain/game implementation
+  → final_visual_product
+  → final screenshots / release materials
+  → Git handoff
+```
+
+技术垂直切片只证明一条代表性技术闭环：游戏是引擎或 Flutter 运行时、场景、输入、规则、结果、反馈和重开；非游戏是一个真实领域任务的输入、处理、结果、回访和恢复。垂直切片通过后必须继续完成批准的全部领域/游戏范围和视觉精修，不能停在简单色块、线条轮廓、默认控件、空场景或基础功能页。
+
+垂直切片状态不得直接写入最终完成字段。它不能单独触发：
+
+- `final_visual_product`；
+- 最终五张截图；
+- AppListing、Review Remarks 或发布就绪结论；
+- Git 仓库关联、`feat/1.0.0` 分支交接；
+- 面向用户的“已完成”“最终成品”报告。
+
+### 11.2 统一机器可读契约
+
+游戏、非游戏和混合项目都必须在项目 `.codex-work/final-visual-product.json` 写入最终视觉成品契约：
+
+```json
+{
+  "schema_version": 1,
+  "project_type": "game | non_game | mixed",
+  "claim": "final_visual_product",
+  "development_stage": "final_visual_product",
+  "prototype_boundary": {
+    "vertical_slice_status": "Passed",
+    "cannot_substitute_for_final": true
+  },
+  "common_visual_contract": {
+    "no_simple_line_art": true,
+    "no_flat_color_blocks": true,
+    "no_solid_color_background": true,
+    "no_placeholder_or_static_mock": true,
+    "authored_asset_review": "Verified",
+    "composition_review": "Verified",
+    "motion_review": "Verified",
+    "state_coverage_review": "Verified",
+    "accessibility_review": "Verified",
+    "refinement_rounds": 3,
+    "current_iphone_evidence": [".codex-work/final-visual/iphone-recording.mp4"]
+  },
+  "game_visual_contract": null,
+  "non_game_visual_contract": null,
+  "evidence": [".codex-work/final-visual-product.md"]
+}
+```
+
+所有 `game` 项目必须填写 `game_visual_contract`，所有 `non_game` 项目必须填写 `non_game_visual_contract`，`mixed` 项目必须同时填写两者。公共契约和对应领域/游戏契约的每个证据路径都必须存在于项目内、不是符号链接，并指向当前同一 iPhone 构建或其可核验的最终视觉记录。
+
+### 11.3 游戏最终视觉成品要求
+
+游戏最终门禁在可玩垂直切片之外，还必须验证：
+
+- 完整的 2.5D 或 3D 视觉运行时，而不是 2D 色块演示；
+- 至少背景、中景、前景三层有明确空间关系，角色/主体与环境资产由主题化成图构成；
+- 相机、视差、遮挡、材质、纹理、光源、接触阴影或等价空间处理真实消费并能解释；
+- 角色/主体、环境、交互对象、成功/失败/重开等状态有不同的成品视觉变体；
+- 动画、粒子、命中反馈、结果反馈和 HUD 层级在当前 iPhone 上运行，不以自动播放或静态截图冒充；
+- 已批准的关卡/挑战/内容范围完成，不能把一个技术演示场景包装成完整游戏；
+- 发生失败、空态、暂停/恢复、前后台、重新开始和返回时，视觉状态仍完整、可读且无默认占位。
+
+引擎或依赖通过、单个垂直切片通过、单张场景截图、默认材质、几何碰撞演示和基础按钮板都不能标记 `final_visual_product`。
+
+### 11.4 非游戏最终视觉成品要求
+
+非游戏最终门禁必须与主领域和副领域一起验证：
+
+- 主领域的视觉语言、内容对象、媒体比例、信息层级和结果表达在多个主要页面中真实消费；
+- 页面不共享同一通用壳后只替换颜色、图片、标题或卡片数据；主任务、结果、历史回访、设置、帮助、空/错误/权限状态都有独立且精修的视觉骨架；
+- 至少两个真实 UI/动效/渲染/媒体/地图/图表组件有精确版本、许可证、实际消费者和当前 iPhone 证据；只安装包不算；
+- 领域结果至少有三个独立的结果表面或信息表达方式，能够显示真实数据、过程变化、解释和回访价值；
+- 图片、材质、光影、景深、透明层、渐变和动态效果形成有主题依据的完整构图，不能退化为线条、色块或纯色背景；
+- 领域适用能力的成功、空态、失败、拒绝、离线和恢复状态都经过精修，不能以单一成功路径代替；
+- 主领域、受控副领域和实际数据关系在视觉与交互中可辨认，副领域不能只是文案标签。
+
+工具、科普教育、美食、旅游、体育、健美健康、摄影与录像都适用这条门禁；领域不同只改变最终视觉契约的具体内容，不降低门槛。
+
+### 11.5 完成语言和发布阻断
+
+内部历史记录可以描述“原型阶段”或“垂直切片阶段”，但最终报告、公开文案、截图说明、`release-readiness.json`、Review Remarks 和 Git handoff 报告不得把当前交付称为：
+
+- 功能原型、视觉原型、功能演示、基础工作台；
+- prototype、functional demo、rough build、visual prototype；
+- 未完成的美术阶段、待精修、后续再完善、to be polished；
+- 任何暗示当前项目只是临时占位或低质量过渡版本的同义表述。
+
+如果最终视觉契约缺失、状态不完整、证据不足或发现色块/线条/占位/默认材质等缺陷，必须写入 `Blocked` 或 `Not verified`，继续独立可执行任务，但不得进入最终截图、发布材料或 Git handoff。
+
+新增 `flutter-engine-runner/scripts/validate_final_visual_product.py` 作为统一源预检，并在 `flutter_check`、`release-readiness`、游戏验收、非游戏领域验收和安装副本中保持同一契约。该预检不能代替当前 iPhone 的人工视觉查看；它只负责拒绝缺失字段、错误阶段、空证据、项目类型不匹配和明确的低质/原型绕过声明。

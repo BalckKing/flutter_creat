@@ -127,6 +127,21 @@ def validate(root: Path) -> dict[str, Any]:
     if not _non_empty(data.get("run_id")):
         errors.append("run_id must be a non-empty string")
 
+    project_type = data.get("project_type")
+    if project_type in {"game", "non_game", "mixed"}:
+        final_visual = data.get("final_visual_product")
+        if not isinstance(final_visual, dict):
+            errors.append("final_visual_product quality section is required for game, non_game, and mixed projects")
+        else:
+            if final_visual.get("contract") != ".codex-work/final-visual-product.json":
+                errors.append("final_visual_product.contract must point to .codex-work/final-visual-product.json")
+            if final_visual.get("status") not in ALLOWED_STATUS:
+                errors.append("final_visual_product.status is invalid or missing")
+            for field in ("refinement_evidence", "current_iphone_evidence"):
+                values = final_visual.get(field)
+                if not isinstance(values, list) or not values:
+                    errors.append(f"final_visual_product.{field} must be a non-empty list")
+
     resources = data.get("resources")
     if not isinstance(resources, list) or not resources:
         errors.append("resources must be a non-empty list")

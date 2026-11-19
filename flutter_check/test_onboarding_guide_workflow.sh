@@ -528,7 +528,7 @@ task_require "$TASK_QA" 'Release readiness: Blocked'
 task_require "$TASK_ORDER" '先执行 `engine`/`flutter_native` 决策'
 task_require "$TASK_ORDER" '引擎路线为.*引擎环境'
 task_require "$TASK_ORDER" 'Flutter 原生路线为.*Flutter 运行时'
-task_require "$TASK_ORDER" '垂直切片通过后才扩展全部玩法'
+task_require "$TASK_ORDER" '垂直切片通过后继续完成全量范围并通过 `final_visual_product` 门禁'
 task_require "$TASK_README" '专用引擎'
 for task_game_bypass in 'Flutter-only game fallback' 'engine dependency alone passes' 'static screenshot as gameplay' 'expand content before vertical slice'; do
   task_forbid "$TASK_SKILL" "$task_game_bypass"
@@ -558,6 +558,9 @@ task_require "$TASK_SKILL" 'Theme-confirmed design system and absolute UI qualit
 task_require "$TASK_SKILL" 'awesome-design-md'
 task_require "$TASK_SKILL" 'ui-ux-pro-max'
 task_require "$TASK_SKILL" 'There are no soft UI requirements'
+task_require "$TASK_SKILL" 'final visual product'
+task_require "$TASK_SKILL" 'validate_final_visual_product\.py'
+task_require "$TASK_QA" 'final visual product'
 
 # Final iOS permission review must catch a missing macro when the selected API requires it,
 # while not requesting broad photo-library access for picker-only imports. ATT is removed

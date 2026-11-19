@@ -64,7 +64,7 @@
 
 运行入口需要安装 `$flutter-engine-runner`；没有统一必装的额外 Codex 插件。生成 App 仍需要可用的 Flutter、Xcode/iPhone SDK、适用的 CocoaPods，以及满足质量要求的生图工具/服务与浏览/下载能力，安装器不会自动安装这些工具。可选插件缺失时使用可用 CLI/工具；实际能力缺失则记录受影响项并继续独立任务。
 
-执行确认后，互不依赖的 Logo、素材、页面、协议页、文案和静态校验任务可并行推进；单项受阻立即记录并跳过，不无限等待，只有真实依赖才等待并在恢复后补做。最终 iOS 验收、截图和 Git 交接仍按硬门槛顺序执行。项目实现会按类型分流。游戏是可选主题，不是每个项目都必须制作游戏：只有用户选择游戏主题，或创意明确包含真实游戏模块时，先判断是否需要专用引擎；持续世界、实时物理/碰撞、复杂 3D、高频实体或编辑器导出管线使用精确版本的 Flame/Godot/Unity 等引擎，回合制、卡牌、问答、轻量棋盘和有限状态解谜可用 Flutter 原生实现。游戏运行时使用保留的 `lib/welcome.dart` 沉浸式大厅：首屏只显示 Play、Load、Operation，顶部显示 Exit、Settings；Play 经过 Loading/初始化后进入主游戏，Load 经过 Save Slot/存档加载后进入主游戏，禁止把游戏藏在 Settings、About、二级菜单或隐藏路由；在同一 iPhone App 中验证真实输入、规则更新、成功/失败结果、反馈和重开。非游戏项目才使用普通 Welcome 的 Continue 规则。游戏/混合项目必须先建立 `.codex-work/game-engine.json`，声明 `implementation_mode`、`engine_required`、`decision_reason` 及对应运行时契约；引擎路线完成“引擎环境 → 场景启动 → 已创作资源加载 → 真实输入 → 更新/物理 → 结果 → 反馈 → 重开”，Flutter 原生路线完成“Flutter 运行时 → 场景启动 → 已创作资源加载 → 真实输入 → 规则更新 → 结果 → 反馈 → 重开”，并按原生路线使用动画/效果目录和六部分效果提示词公式。切片未通过不得扩展全量玩法、制作最终截图或执行 Git 交接。非游戏项目不接入游戏引擎或游戏专项验收，按自身主题在多个主要场景使用贴题的本地动态图。 iOS 工程验收只保留 iPhone destination，移除 iPad、Mac、Mac Catalyst 和 Apple Vision；`iPhone Orientation` 只保留 `Portrait`，其余方向全部取消并在修正后重建复验。每个项目独立设计领域架构、导航、页面骨架和视觉样式，不套用同一套底栏/列表壳；素材、运行效果与结构差异均须实测验收。详见第 6.10.2、9.5–9.6、11.11 节。
+执行确认后，互不依赖的 Logo、素材、页面、协议页、文案和静态校验任务可并行推进；单项受阻立即记录并跳过，不无限等待，只有真实依赖才等待并在恢复后补做。最终 iOS 验收、截图和 Git 交接仍按硬门槛顺序执行。项目实现会按类型分流。游戏是可选主题，不是每个项目都必须制作游戏：只有用户选择游戏主题，或创意明确包含真实游戏模块时，先判断是否需要专用引擎；持续世界、实时物理/碰撞、复杂 3D、高频实体或编辑器导出管线使用精确版本的 Flame/Godot/Unity 等引擎，回合制、卡牌、问答、轻量棋盘和有限状态解谜可用 Flutter 原生实现。游戏运行时使用保留的 `lib/welcome.dart` 沉浸式大厅：首屏只显示 Play、Load、Operation，顶部显示 Exit、Settings；Play 经过 Loading/初始化后进入主游戏，Load 经过 Save Slot/存档加载后进入主游戏，禁止把游戏藏在 Settings、About、二级菜单或隐藏路由；在同一 iPhone App 中验证真实输入、规则更新、成功/失败结果、反馈和重开。非游戏项目才使用普通 Welcome 的 Continue 规则。游戏/混合项目必须先建立 `.codex-work/game-engine.json`，声明 `implementation_mode`、`engine_required`、`decision_reason` 及对应运行时契约；引擎路线完成“引擎环境 → 场景启动 → 已创作资源加载 → 真实输入 → 更新/物理 → 结果 → 反馈 → 重开”，Flutter 原生路线完成“Flutter 运行时 → 场景启动 → 已创作资源加载 → 真实输入 → 规则更新 → 结果 → 反馈 → 重开”，并按原生路线使用动画/效果目录和六部分效果提示词公式。切片未通过不得扩展全量玩法；切片通过后仍须完成全量范围并通过 `final_visual_product` 门禁，未通过不得制作最终截图、发布材料或执行 Git 交接。非游戏项目不接入游戏引擎或游戏专项验收，按自身主题在多个主要场景使用贴题的本地动态图。 iOS 工程验收只保留 iPhone destination，移除 iPad、Mac、Mac Catalyst 和 Apple Vision；`iPhone Orientation` 只保留 `Portrait`，其余方向全部取消并在修正后重建复验。每个项目独立设计领域架构、导航、页面骨架和视觉样式，不套用同一套底栏/列表壳；素材、运行效果与结构差异均须实测验收。详见第 6.10.2、9.5–9.6、11.11 节。
 
 ## 第一次使用
 
@@ -420,3 +420,15 @@ App 内搜索不是默认能力；它是条件能力。主题确认时在 capabi
 ### Welcome HTML 的 site 交付副本（本轮硬规则）
 
 生成和精修 `aduit/welcome.html` 后，按字节复制一份为 `aduit/site/index.html`。`site/index.html` 只是 Welcome 交付副本，不是协议索引、协议选择页或 App 运行入口；校验时必须与 `aduit/welcome.html` 字节一致。`aduit/site/` 最终只允许 `index.html`、`PrivacyPolicy.html`、`Terms&Conditions.html`、`Support.html` 和 `img/logo.png`，不允许其他首页或额外 HTML。App 运行时仍只使用 `lib/welcome.dart`，不加载或打包这些 HTML。
+
+## 通用 `final_visual_product` 最终视觉成品门禁（硬门槛）
+
+功能垂直切片只证明技术闭环；它不是最终视觉成品。游戏、非游戏和混合项目都必须另行通过 `final-visual-product.json` 的最终视觉成品门禁。未通过时只能记录 `Blocked`/`Not verified`，不得生成最终截图、发布材料或 Git handoff。
+
+阶段顺序固定为：`technical_vertical_slice → full_scope_implementation → final_visual_product → release_materials → Git handoff`。垂直切片通过后必须继续完成已确认的全部领域/游戏范围、页面、内容、资源、状态、错误恢复和视觉精修，再建立项目根目录 `.codex-work/final-visual-product.json`；切片证据、引擎依赖、单张截图、默认控件或可点击首屏均不能单独设置最终完成状态。
+
+`final-visual-product.json` 必须明确 `schema_version: 1`、`project_type: game | non_game | mixed`、`claim: final_visual_product`、`development_stage: final_visual_product`、`prototype_boundary.vertical_slice_status: Passed` 与 `prototype_boundary.cannot_substitute_for_final: true`。公共契约必须记录 `no_simple_line_art`、`no_flat_color_blocks`、`no_solid_color_background`、`no_placeholder_or_static_mock`、至少三轮 `refinement_rounds`、`authored_asset_review`、`composition_review`、`motion_review`、`state_coverage_review`、`accessibility_review` 和当前同一 iPhone 构建证据。
+
+游戏项目还必须提供最终 `2.5d` 或 `3d` 视觉契约：主题化成品资产、前中后景或等价空间层次、相机/遮挡、材质与光影、状态变体、动画/粒子反馈、清楚 HUD、完整玩法范围和当前 iPhone 运行证据。非游戏项目必须提供领域专属视觉语言、至少三个不同结果或页面构图、真实 UI/动效/渲染组件的精确版本/许可证/实际消费者/运行证据、具有主体与材质深度的图像层、完整状态覆盖和当前 iPhone 运行证据。混合项目必须同时通过游戏与非游戏两套契约；非游戏没有游戏引擎时，视觉完成度、真实消费者、状态覆盖和运行证据门槛不降低。
+
+最终报告、公开文案、`release-readiness.json`、截图说明、Review Remarks 和 Git handoff 报告不得把当前交付称为 `prototype`、`functional demo`、`rough build`、`visual prototype`、`unfinished`、`to be polished` 或等价的未完成状态。早期历史记录可以描述原型或垂直切片，但必须明确它是早期阶段；最终状态只能使用 `Passed`、`Failed`、`Blocked` 或 `Not verified`。运行 `python3 <skill-root>/scripts/validate_final_visual_product.py --project-root <target-project-root> --json`，并在发布就绪记录中保留 `final_visual_product` 门禁及其证据。
