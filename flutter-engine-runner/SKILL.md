@@ -7,11 +7,17 @@ metadata:
 
 # Flutter 工程执行
 
-## Native Navigator only
+## Declared routing, storage and architecture
 
-GetX is forbidden for the entire project. Do not add the `get` dependency or use `GetMaterialApp`, `GetCupertinoApp`, `GetX`, `GetBuilder`, `Obx`, `GetPage`, `GetController`, `Rx`, `.obs`, `Get.to`, `Get.off`, `Get.offAll`, `Get.back`, `Get.dialog`, `Get.bottomSheet`, `Get.snackbar`, `Get.put`, or `Get.find`. Do not add `go_router`, `auto_route`, or another external routing framework. Use a native `MaterialApp`, `CupertinoApp`, or `WidgetsApp`; connect Welcome, Initialization, Settings, policy WebViews, and the selected main task with `Navigator.of(context)` / `NavigatorState`, `MaterialPageRoute`, `CupertinoPageRoute`, `PageRouteBuilder`, `RouteSettings`, and `NavigatorObserver`. Native state primitives such as `StatefulWidget`, `setState`, `ChangeNotifier`, `ValueNotifier`, and `ValueListenableBuilder` are allowed. Before final iOS acceptance, run `scripts/validate_flutter_navigation.py` against the actual project root and inspect resolved dependencies.
+Each Flutter project must create `.codex-work/code-architecture.json` before page implementation. Declare exactly one primary route strategy: `navigator`, `getx`, or `go_router`. Native `MaterialApp`/`CupertinoApp`/`WidgetsApp` and Navigator APIs, GetX APIs, or `go_router` APIs are allowed when they match the declaration; do not mix route entry points. The manifest records the package/SDK version, actual consumer files, entrypoint, return behavior, and current iPhone runtime evidence. A native route declaration uses a native `MaterialApp` or equivalent app shell.
+
+Declare one primary code architecture: `mvvm`, `mvc`, or `viper`, with a rationale and real boundary evidence. Storage may use `shared_preferences` for onboarding and lightweight preferences, `flutter_secure_storage` for secrets/tokens/keys, and SQLite through `sqflite` or `drift` for structured offline data and history. Multiple storage backends are allowed when each has a distinct purpose and real consumer. Package installation without a consumer, a missing manifest, a mixed route implementation, or missing evidence blocks acceptance.
+
+Before final iOS acceptance, run `scripts/validate_code_architecture.py --project-root <actual-project-root> --json` and `scripts/validate_flutter_navigation.py --project-root <actual-project-root>`, then inspect resolved dependencies and the same iPhone runtime evidence.
 
 This is an execution skill. When the user requests execution, perform the current workflow step; do not merely describe the document. If the current request is to edit, diagnose, or explain these files, handle that request without starting app development.
+
+At architecture setup, create `.codex-work/code-architecture.json` and run the code-architecture validator before selecting page components.
 
 ## Load the portable workflow
 

@@ -26,6 +26,7 @@ typeset -a task_expected=(
   test_prepare_ios_config.py
   test_prepare_git_handoff.py
   test_validate_flutter_navigation.py
+  test_validate_code_architecture.py
   test_validate_protocol_urls.py
   test_validate_launch_screen_visual.py
   test_validate_review_remarks.py

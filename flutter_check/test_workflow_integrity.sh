@@ -51,6 +51,7 @@ require_file "$TASK_MANIFEST"
 require_file "$TASK_ORDER"
 require_file "$TASK_START"
 require_file "$TASK_CHECK_DIR/test_workflow_integrity.sh"
+require_file "$TASK_ROOT/flutter-engine-runner/scripts/validate_code_architecture.py"
 [[ ! -e "$TASK_ROOT/tests" ]] || fail "残留旧检查目录：$TASK_ROOT/tests"
 
 typeset -a task_expected_docs=(
@@ -576,11 +577,18 @@ require_text "$TASK_README" '统一采用明亮色调'
 forbid_text "$TASK_ROOT/工作流文档/02-创意与思维导图.md" '建立配色矩阵|至少 4 个.*主色家族|最多 3 张|至少三种清晰可辨的鲜明色彩'
 forbid_text "$TASK_QA" '至少两个不同的 `gradient_tokens`|至少三个 Logo 派生 `palette_hex`|至少四种用途明确的 Logo 派生渐变'
 require_text "$TASK_README" 'validate_public_copy\.py'
-require_text "$TASK_RUNNER" 'GetX is forbidden'
-require_text "$TASK_RUNNER" 'native `MaterialApp`'
-require_text "$TASK_ARCHITECTURE" 'GetX 永远禁止'
-require_text "$TASK_ARCHITECTURE" 'Flutter 原生 Navigator'
-require_text "$TASK_QA" 'GetX 禁用与原生 Navigator 静态验收'
+require_text "$TASK_RUNNER" 'code-architecture.json'
+require_text "$TASK_RUNNER" 'navigator.*getx.*go_router'
+require_text "$TASK_RUNNER" 'shared_preferences'
+require_text "$TASK_RUNNER" 'flutter_secure_storage'
+require_text "$TASK_RUNNER" 'validate_code_architecture.py'
+require_text "$TASK_ARCHITECTURE" '8\.1\.2 路由、存储与代码架构清单'
+require_text "$TASK_ARCHITECTURE" 'mvvm.*mvc.*viper'
+require_text "$TASK_ARCHITECTURE" 'shared_preferences'
+require_text "$TASK_ARCHITECTURE" 'flutter_secure_storage'
+require_text "$TASK_ARCHITECTURE" 'sqflite.*drift'
+require_text "$TASK_QA" '路由、存储与代码架构静态验收'
+require_text "$TASK_QA" 'validate_code_architecture.py'
 
 # One reusable real-App debug installation must not bypass runtime evidence.
 require_text "$TASK_DOCS_DIR/01-执行约定.md" '^### 0\.9\.1 调试安装与构建产物复用'

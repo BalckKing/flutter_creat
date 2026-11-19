@@ -3,7 +3,45 @@
 
 主题确认后先使用 `awesome-design-md` 选择最小匹配的 `DESIGN.md` 参考；没有匹配项目时创建自有 `DESIGN.md` 并记录 custom 原因；随后使用 `ui-ux-pro-max --design-system` 针对 Flutter/iPhone 生成并持久化 `design-system/<slug>/MASTER.md`，完成 `.codex-work/ui-ux-review.md` 的九类 UI/UX 评测并全部标记 `Verified`，之后才选择组件和实现页面。现在没有软性 UI 要求：半成品、占位、低质、只换色换图、只安装组件、只有静态设计稿/截图或缺少当前 iPhone 证据的结果都不能交付；只有能力矩阵有事实依据的 `Not appropriate` 才能排除某项主题能力。
 
-### 导航实现硬门槛
+### 导航、存储与代码架构硬门槛
+
+每个实际 Flutter 工程必须在创建页面前写入 `.codex-work/code-architecture.json`，声明一个主路由方案（`navigator`、`getx` 或 `go_router`）、一个主代码架构（`mvvm`、`mvc` 或 `viper`）以及实际使用的存储后端。路由可以使用 Flutter 原生 Navigator、GetX 或 `go_router`，但不能混用多个路由入口；每个声明都必须记录精确版本、实际消费者、入口、返回行为和当前 iPhone 运行证据。代码架构必须记录选择理由、边界目录/文件和真实页面消费者。
+
+存储按数据性质选择：`shared_preferences` 用于引导状态和普通轻量偏好，`flutter_secure_storage` 用于令牌、密钥和其他敏感私有值，SQLite（如 `sqflite`/`drift`）用于结构化离线数据、历史记录和复杂查询。可以组合使用，但每个后端都必须写明用途、精确包版本、真实消费者和运行证据；只安装依赖而不消费、没有架构清单、声明与代码不一致或路由混用均阻断验收。使用 `python3 <Skill 根目录>/scripts/validate_code_architecture.py --project-root <实际 App 根目录> --json` 与 `validate_flutter_navigation.py` 复核。
+
+示例清单（实际项目需替换为真实路径、版本和证据）：
+
+```json
+{
+  "schema_version": 1,
+  "architecture": {
+    "style": "mvvm",
+    "rationale": "The feature state and repository boundaries match the product workflow.",
+    "evidence": ["lib/views/home_view.dart", "lib/view_models/home_view_model.dart", "lib/repositories/home_repository.dart", "lib/models/home_model.dart"]
+  },
+  "routing": {
+    "kind": "go_router",
+    "package": "go_router",
+    "version": "14.0.0",
+    "actual_consumer": ["lib/app/router.dart"],
+    "entrypoint": "lib/app/router.dart",
+    "return_behavior": "Back returns to the previous reachable destination.",
+    "runtime_evidence": [".codex-work/navigation.mp4"]
+  },
+  "storage": [
+    {
+      "kind": "shared_preferences",
+      "purpose": "Onboarding and non-sensitive preferences",
+      "package": "shared_preferences",
+      "version": "2.2.3",
+      "actual_consumer": ["lib/data/preferences_store.dart"],
+      "runtime_evidence": [".codex-work/storage.mp4"]
+    }
+  ]
+}
+```
+
+
 
 ### 非游戏深度与 iOS 能力矩阵
 
@@ -15,7 +53,7 @@
 
 最终资源、依赖、无障碍、恢复与安全证据统一写入 `.codex-work/quality-matrix.json`：资源必须有来源/许可、真实消费者、展示位、哈希、字节数和图片体积上限（默认不超过 262,144 字节，Welcome/Logo 可填写更窄限制）；依赖必须有精确版本、许可证和真实消费者；每个页面记录 VoiceOver、Dynamic Type、Reduce Motion 与对比度；离线冷启动、权限拒绝、前后台恢复和清除中断恢复都要有当前构建证据；源码和配置必须完成密钥扫描。运行 `python3 <Skill 根目录>/scripts/validate_quality_records.py --project-root <实际 App 根目录>`，缺少真实工程或证据时输出 `Not verified`，不得把资料包脚本回归当作 App 运行通过。最终 readiness 还必须包含 `asset_staging` 与 `generation_cleanup` 两个门，分别引用 `asset-staging.json`/`validate_asset_staging.py` 和下载完成后精确删除的 `generation-cleanup.json`/`cleanup_generation_history.py`。
 
-工程全程禁用 GetX 和外部路由框架。使用 Flutter 原生 `MaterialApp`/`CupertinoApp`/`WidgetsApp`、`Navigator.of(context)`/`NavigatorState`、`MaterialPageRoute`/`CupertinoPageRoute`/`PageRouteBuilder` 与 `RouteSettings`；Welcome、Initialization、Settings、三个协议入口和主任务必须在原生 Navigator 图中可达。安装后可对真实工程运行 `python3 <Skill 根目录>/scripts/validate_flutter_navigation.py --project-root <实际 App 根目录>`，该检查同时拒绝 GetX 依赖/API 与缺少原生 Navigator 的工程。
+路由、存储和代码架构按项目清单选择并验收。允许使用 Flutter 原生 `MaterialApp`/`CupertinoApp`/`WidgetsApp` 与 Navigator，也允许使用 GetX 或 `go_router`；Welcome、Initialization、Settings、三个协议入口和主任务必须在所选路由图中可达。安装后对真实工程运行 `python3 <Skill 根目录>/scripts/validate_code_architecture.py --project-root <实际 App 根目录> --json` 与 `python3 <Skill 根目录>/scripts/validate_flutter_navigation.py --project-root <实际 App 根目录>`，两者会检查声明、依赖、真实 API 消费、返回行为和证据，并拒绝路由混用。
 # Flutter 工程：复制、安装、执行
 
 这是可移植的 Codex 执行技能资料包。整个文件夹可以放在另一台 Mac 的任意位置，不要求用户名是 `admin`，也不要求放在桌面。

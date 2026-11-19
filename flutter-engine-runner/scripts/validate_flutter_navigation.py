@@ -1,60 +1,56 @@
 #!/usr/bin/env python3
-"""Validate that a Flutter project uses Flutter's native Navigator stack only.
+"""Validate the declared Flutter routing strategy and its real consumers.
 
-This is a read-only static gate. It intentionally rejects GetX and other
-external routing packages so the onboarding, initialization, settings and
-main flows remain auditable through MaterialApp/CupertinoApp/WidgetsApp and
-Navigator routes.
+Routing is selected per project in ``.codex-work/code-architecture.json``.
+The allowed primary strategies are Flutter Navigator, GetX and go_router. The
+validator rejects undeclared, missing or mixed route implementations while
+leaving architecture and storage checks to validate_code_architecture.py.
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
 from pathlib import Path
 
 
+MANIFEST = Path(".codex-work/code-architecture.json")
+ALLOWED = {"navigator", "getx", "go_router"}
+EXCLUDED_DIRS = {".git", ".dart_tool", ".codex-work", "build", "Pods", ".symlinks"}
 TEXT_SUFFIXES = {
     ".dart", ".yaml", ".yml", ".json", ".plist", ".pbxproj", ".xcconfig",
     ".swift", ".m", ".mm", ".h", ".xml", ".html", ".md", ".txt",
 }
-EXCLUDED_DIRS = {".git", ".dart_tool", "build", "Pods", ".symlinks"}
+SOURCE_SUFFIXES = {
+    ".dart", ".yaml", ".yml", ".plist", ".pbxproj", ".xcconfig",
+    ".swift", ".m", ".mm", ".h", ".xml",
+}
 
-FORBIDDEN_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
-    ("GetX dependency", re.compile(r"(?im)^\s*get\s*:")),
-    ("GetX package import", re.compile(r"package:get(?:/|\\)")),
-    ("GetMaterialApp", re.compile(r"\bGetMaterialApp\b")),
-    ("GetCupertinoApp", re.compile(r"\bGetCupertinoApp\b")),
-    ("GetX", re.compile(r"\bGetX\b")),
-    ("GetBuilder", re.compile(r"\bGetBuilder\b")),
-    ("Obx", re.compile(r"\bObx\b")),
-    ("GetPage", re.compile(r"\bGetPage\b")),
-    ("GetController", re.compile(r"\bGetController\b")),
-    ("Rx", re.compile(r"\bRx(?:<|\b)")),
-    ("Get navigation/service API", re.compile(
-        r"\bGet\.(?:to|off|offAll|back|dialog|bottomSheet|snackbar|put|find)\s*\(")),
-    ("GetX observable", re.compile(r"\.[A-Za-z_][A-Za-z0-9_]*\.obs\b|\bobs\b")),
-    ("external routing package", re.compile(r"(?im)^\s*(?:go_router|auto_route|beamer|fluro|qlevar_router)\s*:")),
-    ("external routing import", re.compile(r"package:(?:go_router|auto_route|beamer|fluro|qlevar_router)(?:/|\\)")),
-)
-
-APP_TOKENS = re.compile(r"\b(?:MaterialApp|CupertinoApp|WidgetsApp)\b")
-NAVIGATOR_TOKENS = re.compile(r"\b(?:Navigator|NavigatorState)\b")
-ROUTE_TOKENS = re.compile(
-    r"\b(?:Route|MaterialPageRoute|CupertinoPageRoute|PageRouteBuilder|RouteSettings|NavigatorObserver)\b"
-)
+ROUTE_SIGNALS = {
+    "navigator": (
+        re.compile(r"\b(?:Navigator|NavigatorState)\b"),
+        re.compile(r"\b(?:MaterialPageRoute|CupertinoPageRoute|PageRouteBuilder|RouteSettings|Route)\b"),
+        re.compile(r"\b(?:MaterialApp|CupertinoApp|WidgetsApp)\b"),
+    ),
+    "getx": (
+        re.compile(r"package:get(?:/|\\)"),
+        re.compile(r"\b(?:GetMaterialApp|GetCupertinoApp|Get\.to|Get\.off|Get\.offAll|Get\.back|GetPage|GetX|Obx)\b"),
+    ),
+    "go_router": (
+        re.compile(r"package:go_router(?:/|\\)"),
+        re.compile(r"\b(?:GoRouter|GoRoute|GoRouterState|MaterialApp\.router|RouterConfig)\b"),
+    ),
+}
+DEPENDENCY_NAMES = {"getx": "get", "go_router": "go_router"}
 
 
 def iter_project_files(root: Path):
     for path in root.rglob("*"):
         if not path.is_file() or path.suffix.lower() not in TEXT_SUFFIXES:
             continue
-        try:
-            relative_parts = path.relative_to(root).parts
-        except ValueError:
-            continue
-        if any(part in EXCLUDED_DIRS for part in relative_parts):
+        if any(part in EXCLUDED_DIRS for part in path.relative_to(root).parts):
             continue
         yield path
 
@@ -63,57 +59,109 @@ def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace")
 
 
+def iter_source_files(root: Path):
+    for path in iter_project_files(root):
+        if path.suffix.lower() in SOURCE_SUFFIXES:
+            yield path
+
+
+def _list_field(value, field: str, errors: list[str]) -> list[str]:
+    if not isinstance(value, list) or not value:
+        errors.append(f"{field} must be a non-empty list")
+        return []
+    values: list[str] = []
+    for item in value:
+        if not isinstance(item, str) or not item.strip():
+            errors.append(f"{field} entries must be non-empty strings")
+        else:
+            values.append(item)
+    return values
+
+
 def validate(root: Path) -> list[str]:
-    findings: list[str] = []
+    errors: list[str] = []
+    root = root.resolve()
     if not root.is_dir():
         return [f"{root}: project root does not exist"]
     pubspec = root / "pubspec.yaml"
     lib = root / "lib"
     if not pubspec.is_file():
-        findings.append(f"{root}: pubspec.yaml is required for a Flutter project")
+        errors.append(f"{root}: pubspec.yaml is required for a Flutter project")
     if not lib.is_dir():
-        findings.append(f"{root}: lib/ is required for a Flutter project")
-    if findings:
-        return findings
+        errors.append(f"{root}: lib/ is required for a Flutter project")
+    manifest_path = root / MANIFEST
+    if not manifest_path.is_file():
+        errors.append(f"{MANIFEST.as_posix()} is required")
+        return errors
+    try:
+        manifest = json.loads(read_text(manifest_path))
+    except json.JSONDecodeError as error:
+        errors.append(f"{MANIFEST.as_posix()} is invalid JSON: {error}")
+        return errors
+    if not isinstance(manifest, dict):
+        return ["code architecture manifest must be a JSON object"]
+    routing = manifest.get("routing")
+    if not isinstance(routing, dict):
+        errors.append("routing must be an object in code architecture manifest")
+        return errors
+    kind = str(routing.get("kind", "")).lower()
+    if kind not in ALLOWED:
+        errors.append("routing.kind must be one of navigator, getx, go_router")
+        return errors
+    consumer = _list_field(routing.get("actual_consumer"), "routing.actual_consumer", errors)
+    evidence = _list_field(routing.get("runtime_evidence"), "routing.runtime_evidence", errors)
+    for field, paths in (("routing.actual_consumer", consumer), ("routing.runtime_evidence", evidence)):
+        for value in paths:
+            if not (root / value).exists():
+                errors.append(f"{field} path does not exist: {value}")
+    entrypoint = routing.get("entrypoint")
+    if not isinstance(entrypoint, str) or not entrypoint.strip() or not (root / entrypoint).is_file():
+        errors.append("routing.entrypoint must point to an existing project file")
+    version = routing.get("version")
+    if not isinstance(version, str) or not version.strip():
+        errors.append("routing.version must be a non-empty SDK/package version")
+    return_behavior = routing.get("return_behavior")
+    if not isinstance(return_behavior, str) or not return_behavior.strip():
+        errors.append("routing.return_behavior must describe back/return behavior")
 
-    lib_files = sorted(lib.rglob("*.dart"))
-    if not lib_files:
-        findings.append(f"{lib}: at least one Dart source file is required")
+    all_text = "\n".join(read_text(path) for path in iter_source_files(root))
+    signals = {
+        route: bool(all(pattern.search(all_text) for pattern in patterns))
+        for route, patterns in ROUTE_SIGNALS.items()
+    }
+    selected_signals = [route for route, active in signals.items() if active]
+    if kind not in selected_signals:
+        errors.append(f"routing declaration {kind} has no matching route API consumer")
+    if len(selected_signals) > 1:
+        errors.append(f"routing strategies are mixed: {', '.join(selected_signals)}")
 
-    all_text: list[tuple[Path, str]] = []
-    for path in iter_project_files(root):
-        try:
-            all_text.append((path, read_text(path)))
-        except OSError as error:
-            findings.append(f"{path}: cannot read: {error}")
+    pubspec_text = read_text(pubspec) if pubspec.is_file() else ""
+    if kind == "navigator":
+        if re.search(r"(?im)^\s*(?:get|go_router|auto_route|beamer|fluro|qlevar_router)\s*:", pubspec_text):
+            errors.append("navigator routing cannot declare an external routing dependency")
+    else:
+        dependency = DEPENDENCY_NAMES[kind]
+        if not re.search(rf"(?im)^\s*{re.escape(dependency)}\s*:", pubspec_text):
+            errors.append(f"routing dependency {dependency} is missing from pubspec.yaml")
 
-    for path, text in all_text:
-        for label, pattern in FORBIDDEN_PATTERNS:
-            match = pattern.search(text)
-            if match:
-                line = text.count("\n", 0, match.start()) + 1
-                findings.append(f"{path.relative_to(root)}:{line}: forbidden {label}")
-
-    dart_source = "\n".join(text for path, text in all_text if path.suffix.lower() == ".dart" and path.is_relative_to(lib))
-    if not APP_TOKENS.search(dart_source):
-        findings.append("lib/: native Flutter app shell required (MaterialApp, CupertinoApp, or WidgetsApp)")
-    if not NAVIGATOR_TOKENS.search(dart_source):
-        findings.append("lib/: native Navigator usage required (Navigator or NavigatorState)")
-    if not ROUTE_TOKENS.search(dart_source):
-        findings.append("lib/: native Navigator route required (Route/MaterialPageRoute/CupertinoPageRoute/PageRouteBuilder/RouteSettings)")
-    return findings
+    consumer_text = "\n".join(read_text(root / value) for value in consumer if (root / value).is_file())
+    if not consumer_text:
+        errors.append("routing.actual_consumer must include readable project sources")
+    elif not all(pattern.search(consumer_text) for pattern in ROUTE_SIGNALS[kind]):
+        errors.append(f"routing.actual_consumer does not consume the declared {kind} route API")
+    return errors
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--project-root", required=True, type=Path)
     args = parser.parse_args()
-    findings = validate(args.project_root.resolve())
-    if findings:
-        for finding in findings:
-            print(f"FAIL {finding}")
+    errors = validate(args.project_root)
+    if errors:
+        for error in errors:
+            print(f"FAIL {error}")
         return 1
-    print("PASS: Flutter project uses a native app shell and Navigator routes with no forbidden GetX or external router usage.")
+    print("PASS: declared Flutter routing strategy has matching dependency, API consumer and evidence.")
     return 0
 
 

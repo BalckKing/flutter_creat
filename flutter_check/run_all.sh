@@ -14,6 +14,7 @@ typeset -a TASK_CHECKS=(
   "$TASK_ROOT/flutter_check/test_prepare_ios_config.py"
   "$TASK_ROOT/flutter_check/test_prepare_git_handoff.py"
   "$TASK_ROOT/flutter_check/test_validate_flutter_navigation.py"
+  "$TASK_ROOT/flutter_check/test_validate_code_architecture.py"
   "$TASK_ROOT/flutter_check/test_validate_protocol_urls.py"
   "$TASK_ROOT/flutter_check/test_validate_launch_screen_visual.py"
   "$TASK_ROOT/flutter_check/test_validate_review_remarks.py"
