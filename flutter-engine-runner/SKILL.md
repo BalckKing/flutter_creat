@@ -19,6 +19,12 @@ This is an execution skill. When the user requests execution, perform the curren
 
 At architecture setup, create `.codex-work/code-architecture.json` and run the code-architecture validator before selecting page components.
 
+## Execution-time optimization without reducing gates
+
+Read the workflow entry and all ten ordered body documents once, build an index of sections, requirement IDs, page IDs, dependencies, checkers and evidence paths, then read only the affected page/section for later work. Use the dependency graph and input fingerprints to rerun changed checks and their downstream dependents only; reuse a result when its inputs, dependencies and this skill/checker revision are unchanged. Every check record includes the input fingerprint, skill/script revision, command, working directory, start/end time, duration, exit code, evidence path and status.
+
+Parallelize only isolated static checks, copy/material generation and resource inspection that do not share a project tree, mutable asset manifest, build/output directory, Simulator, log stream or screenshot directory. Keep real App build/install, Simulator actions, log capture, recording and screenshots in one serial session, and replay parallel output in the original acceptance order. Reuse the same Bundle ID, configuration, DerivedData/output directory and installation when build inputs are unchanged; update that installation incrementally when inputs change. Use bounded waits and finite retries for external jobs and terminals; after no progress or the retry limit, record `Blocked`/`Not verified`, continue independent work and resume the affected checks later. Never convert a missing artifact, runtime interaction, log or screenshot into `Verified`, and never use static parallel checks in place of real-App evidence.
+
 ## Load the portable workflow
 
 First record the Codex workspace/current working directory **before** changing directories. This is `Invocation cwd`, not the directory containing this skill.

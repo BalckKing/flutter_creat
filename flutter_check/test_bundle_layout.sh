@@ -93,4 +93,13 @@ fi
 rg -q 'generation/tests/build/package' "$TASK_SKILL" || \
   fail 'SKILL.md 缺少 generation/tests/build/package 原文'
 
+rg -q 'TASK_PARALLEL_CHECKS' "$TASK_RUN_ALL" || \
+  fail 'run_all.sh 缺少可并行静态检查清单'
+rg -q 'TASK_PIDS' "$TASK_RUN_ALL" || \
+  fail 'run_all.sh 缺少并行检查进程收集'
+rg -q 'wait ' "$TASK_RUN_ALL" || \
+  fail 'run_all.sh 缺少并行检查等待与结果汇总'
+rg -q 'TASK_SEQUENTIAL_CHECKS' "$TASK_RUN_ALL" || \
+  fail 'run_all.sh 缺少串行门禁清单'
+
 print -r -- 'PASS: flutter_check layout, references, and check-list coverage are complete.'
