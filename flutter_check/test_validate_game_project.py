@@ -48,6 +48,29 @@ class GameProjectFixtures(unittest.TestCase):
             engine = "Flame"
         manifest = {
             "project_type": "game",
+            "game_lobby": {
+                "role": "immersive_game_lobby",
+                "mode": "immersive_portrait",
+                "orientation": "portrait",
+                "entrypoint": "lib/welcome.dart",
+                "primary_actions": ["Play", "Load", "Operation"],
+                "top_actions": ["Exit", "Settings"],
+                "play_flow": ["Play", "Loading", "Game"],
+                "load_flow": ["Load", "Save Slot", "Game"],
+                "operation_controls": ["Volume", "Graphics Quality"],
+                "performance_adaptation": "adapts graphics quality to the selected iPhone performance tier",
+                "evidence": [".codex-work/game-lobby.json"],
+            },
+            "visual_mode": "2.5d",
+            "visual_contract": {
+                "renderer": "Flame renderer with parallax layers",
+                "camera_model": "orthographic camera with perspective parallax",
+                "depth_layers": ["background environment", "midground gameplay space", "foreground subject and effects"],
+                "materials_lighting": "textured materials, directional light and contact shadows",
+                "authored_assets": ["assets/game/hero.png", "assets/game/scene.png"],
+                "animation_feedback": "character animation, camera parallax and particle impact",
+                "no_flat_color_blocks": True,
+            },
             "implementation_mode": "engine",
             "engine_required": True,
             "decision_reason": "Real scene entities and continuous update require an engine.",
@@ -78,11 +101,47 @@ class GameProjectFixtures(unittest.TestCase):
             else:
                 manifest[key] = value
         self.write(".codex-work/game-engine.json", json.dumps(manifest, indent=2))
+        self.write("lib/welcome.dart", """
+class WelcomePage {
+  final primaryActions = const ['Play', 'Load', 'Operation'];
+  final topActions = const ['Exit', 'Settings'];
+  void play() => initializeGame();
+  void initializeGame() => showLoading();
+  void load() => loadSaveSlot();
+  void operation() { setVolume(); setGraphicsQuality(); adaptPerformanceTier(); }
+  void exit() {}
+  void settings() {}
+}
+""")
+        self.write(".codex-work/game-lobby.json", json.dumps({"device": "iPhone 17 Pro", "recording": ".codex-work/gameplay.mp4"}))
         return manifest
 
     def write_native_manifest(self, **changes):
         manifest = {
             "project_type": "game",
+            "game_lobby": {
+                "role": "immersive_game_lobby",
+                "mode": "immersive_portrait",
+                "orientation": "portrait",
+                "entrypoint": "lib/welcome.dart",
+                "primary_actions": ["Play", "Load", "Operation"],
+                "top_actions": ["Exit", "Settings"],
+                "play_flow": ["Play", "Loading", "Game"],
+                "load_flow": ["Load", "Save Slot", "Game"],
+                "operation_controls": ["Volume", "Graphics Quality"],
+                "performance_adaptation": "adapts graphics quality to the selected iPhone performance tier",
+                "evidence": [".codex-work/game-lobby.json"],
+            },
+            "visual_mode": "2.5d",
+            "visual_contract": {
+                "renderer": "Flutter 2.5D layered renderer",
+                "camera_model": "depth-aware parallax camera",
+                "depth_layers": ["background environment", "midground gameplay space", "foreground subject and effects"],
+                "materials_lighting": "textured materials, directional light and contact shadows",
+                "authored_assets": ["assets/game/cards.png", "assets/game/table.png"],
+                "animation_feedback": "card motion, depth parallax and state lighting",
+                "no_flat_color_blocks": True,
+            },
             "implementation_mode": "flutter-native",
             "engine_required": False,
             "decision_reason": "Turn-based rules are finite state and do not need a continuously simulated world.",
@@ -108,6 +167,19 @@ class GameProjectFixtures(unittest.TestCase):
     def write_native_fixture(self, *, full=True):
         self.write("assets/game/cards.png", b"cards image")
         self.write("assets/game/table.png", b"table image")
+        self.write("lib/welcome.dart", """
+class WelcomePage {
+  final primaryActions = const ['Play', 'Load', 'Operation'];
+  final topActions = const ['Exit', 'Settings'];
+  void play() => initializeGame();
+  void initializeGame() => showLoading();
+  void load() => loadSaveSlot();
+  void operation() { setVolume(); setGraphicsQuality(); adaptPerformanceTier(); }
+  void exit() {}
+  void settings() {}
+}
+""")
+        self.write(".codex-work/game-lobby.json", json.dumps({"device": "iPhone 17 Pro", "recording": ".codex-work/gameplay.mp4"}))
         self.write(".codex-work/native-motion.md", """主题锚点：明亮纸牌桌与材质纹理。\n主体：卡牌、纸张、金属筹码。\n前中后景：桌面、卡列、背景光。\n运动：点击后卡牌翻转并推进回合。\n技术：CustomPainter + AnimationController，0.45s，12px，opacity 0.9。\n循环/完成/中断：完成停留；后台取消；Reduce Motion 淡化。\n负面限制：禁止色块拼贴和静态截图冒充。""")
         source = """
 import 'package:flutter/material.dart';
@@ -202,6 +274,8 @@ class MockGame extends StatelessWidget {
         self.write("lib/game/game.dart", source)
 
     def write_godot_fixture(self):
+        self.write("assets/game/hero.png", b"hero image")
+        self.write("assets/game/scene.png", b"scene image")
         self.write("assets/game/city.png", b"city image")
         self.write("game/project.godot", "[application]\nconfig/name=City\n")
         self.write("game/scenes/city.tscn", "[gd_scene load_steps=2 format=3]\n")
@@ -383,6 +457,79 @@ class MyGame extends FlameGame { @override void update(double dt) {} }
         self.assertIn("restart", joined)
         self.assertIn("lifecycle", joined)
         self.assertTrue(any("recording" in item for item in findings), findings)
+
+    def test_game_requires_explicit_25d_or_3d_visual_mode(self):
+        self.write_manifest()
+        self.write_flame_fixture()
+        self.write_runtime_evidence()
+        manifest_path = self.root / ".codex-work/game-engine.json"
+        manifest = json.loads(manifest_path.read_text())
+        manifest.pop("visual_mode")
+        manifest_path.write_text(json.dumps(manifest, indent=2))
+        findings = self.load_module().validate_project(self.root)
+        self.assertTrue(any("visual_mode" in item for item in findings), findings)
+
+    def test_game_requires_immersive_game_lobby_contract(self):
+        self.write_manifest()
+        self.write_flame_fixture()
+        self.write_runtime_evidence()
+        manifest_path = self.root / ".codex-work/game-engine.json"
+        manifest = json.loads(manifest_path.read_text())
+        manifest.pop("game_lobby")
+        manifest_path.write_text(json.dumps(manifest, indent=2))
+        findings = self.load_module().validate_project(self.root)
+        self.assertTrue(any("game_lobby" in item for item in findings), findings)
+
+    def test_game_lobby_rejects_standard_welcome_actions(self):
+        self.write_manifest()
+        self.write_flame_fixture()
+        self.write_runtime_evidence()
+        manifest_path = self.root / ".codex-work/game-engine.json"
+        manifest = json.loads(manifest_path.read_text())
+        manifest["game_lobby"]["primary_actions"] = ["Continue"]
+        manifest_path.write_text(json.dumps(manifest, indent=2))
+        findings = self.load_module().validate_project(self.root)
+        self.assertTrue(any("primary_actions" in item for item in findings), findings)
+
+    def test_unknown_engine_uses_declared_generic_runtime_contract(self):
+        self.write_manifest("Defold", visual_mode="3d", visual_contract={
+            "renderer": "Defold iOS renderer",
+            "camera_model": "perspective camera",
+            "depth_layers": ["background", "midground", "foreground"],
+            "materials_lighting": "PBR materials, directional lighting and contact shadows",
+            "authored_assets": ["assets/game/hero.png", "assets/game/scene.png"],
+            "animation_feedback": "state-driven animation and particles",
+            "no_flat_color_blocks": True,
+        })
+        self.write("assets/game/hero.png", b"hero image")
+        self.write("assets/game/scene.png", b"scene image")
+        self.write("lib/game/game.defold", """
+camera = PerspectiveCamera.new()
+scene = Scene3D.new()
+background = MeshInstance3D.new()
+midground = MeshInstance3D.new()
+foreground = MeshInstance3D.new()
+hero = TexturedModel.new(material='PBR', shadow=True)
+function on_input(event) update_rules(event)
+function update_rules(dt) animate_particles(dt)
+function success() show_result('Success')
+function failure() show_result('Failure')
+function restart() reset_scene()
+function pause_game() stop_runtime()
+function resume_game() start_runtime()
+""")
+        manifest_path = self.root / ".codex-work/game-engine.json"
+        manifest = json.loads(manifest_path.read_text())
+        manifest["engine"].update({
+            "entrypoint": "lib/game/game.defold",
+            "scene_assets": ["assets/game/hero.png", "assets/game/scene.png"],
+            "runtime_markers": ["PerspectiveCamera", "MeshInstance3D", "TexturedModel", "animate_particles"],
+            "native_bridge": "Defold iOS host adapter",
+        })
+        manifest_path.write_text(json.dumps(manifest, indent=2))
+        self.write_runtime_evidence()
+        findings = self.load_module().validate_project(self.root)
+        self.assertEqual(findings, [], findings)
 
 
 if __name__ == "__main__":

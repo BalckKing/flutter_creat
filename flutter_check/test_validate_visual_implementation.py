@@ -62,6 +62,78 @@ class VisualImplementationContractTests(unittest.TestCase):
                 self.assertTrue((root / ledger["surfaces"][0]["background"]["asset"]).is_file())
                 self.assertEqual(MODULE.validate_visual_ledger(root), [])
 
+    def test_non_game_requires_real_ui_component_contract(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ledger = self.procedural_ledger(root)
+            ledger["project_type"] = "non_game"
+            (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
+            findings = MODULE.validate_visual_ledger(root)
+            self.assertTrue(any("ui_component_contract" in item for item in findings), findings)
+
+    def test_non_game_rejects_flat_visual_treatment_and_unused_component(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ledger = self.procedural_ledger(root)
+            ledger["project_type"] = "non_game"
+            ledger["ui_component_contract"] = {
+                "components": [{
+                    "name": "flutter_animate",
+                    "version": "4.5.0",
+                    "license/source": "pub.dev",
+                    "actual_consumer": "lib/page_module/home_page.dart",
+                    "runtime_markers": ["flutter_animate"],
+                }],
+                "visual_constraints": {
+                    "no_simple_line_art": True,
+                    "no_flat_color_blocks": True,
+                    "no_solid_color_background": True,
+                },
+                "runtime_evidence": [".codex-work/motion.mov"],
+            }
+            ledger["surfaces"][0]["background"]["visual_treatment"] = "solid color background"
+            (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
+            findings = MODULE.validate_visual_ledger(root)
+            self.assertTrue(any("at least two" in item for item in findings), findings)
+            self.assertTrue(any("flat/simple" in item or "solid color" in item for item in findings), findings)
+
+    def test_non_game_accepts_two_real_ui_components_and_rich_background_treatment(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ledger = self.procedural_ledger(root)
+            ledger["project_type"] = "non_game"
+            page = root / ledger["surfaces"][0]["source"]
+            page.write_text(page.read_text() + " flutter_animate BackdropFilter", encoding="utf-8")
+            ledger["surfaces"][0]["background"]["visual_treatment"] = (
+                "textured translucent scene with material, directional light and depth"
+            )
+            ledger["ui_component_contract"] = {
+                "components": [
+                    {
+                        "name": "flutter_animate",
+                        "version": "4.5.0",
+                        "license/source": "pub.dev",
+                        "actual_consumer": "lib/page_module/home_page.dart",
+                        "runtime_markers": ["flutter_animate"],
+                    },
+                    {
+                        "name": "BackdropFilter",
+                        "version": "Flutter SDK",
+                        "license/source": "Flutter SDK",
+                        "actual_consumer": "lib/page_module/home_page.dart",
+                        "runtime_markers": ["BackdropFilter"],
+                    },
+                ],
+                "visual_constraints": {
+                    "no_simple_line_art": True,
+                    "no_flat_color_blocks": True,
+                    "no_solid_color_background": True,
+                },
+                "runtime_evidence": [".codex-work/motion.mov"],
+            }
+            (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
+            self.assertEqual(MODULE.validate_visual_ledger(root), [])
+
     def test_every_background_mode_requires_a_translucent_image(self):
         for mode in ("image", "procedural", "animation", "hybrid"):
             with self.subTest(mode=mode), tempfile.TemporaryDirectory() as tmp:

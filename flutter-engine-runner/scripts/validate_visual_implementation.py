@@ -158,6 +158,111 @@ def validate_layout_diversity(surfaces, history=()):
     return findings
 
 
+def validate_non_game_ui_contract(root: Path, ledger: dict, surfaces, findings: list[str]) -> None:
+    """Require real UI components and authored visual treatment for non-game work.
+
+    The contract is deliberately separate from the game-engine manifest. A
+    non-game app may choose any suitable Flutter SDK widget, package, renderer,
+    shader or animation component, but it must identify a real consumer and
+    provide visual evidence. Pure line art, flat color-block collages and a
+    single solid-color background are rejected as implementation shortcuts.
+    """
+    project_type = ledger.get("project_type")
+    if project_type not in {"non_game", "mixed"}:
+        return
+
+    contract = ledger.get("ui_component_contract")
+    if not isinstance(contract, dict):
+        findings.append("ui_component_contract is required for non-game and mixed projects")
+        return
+
+    components = contract.get("components")
+    if not isinstance(components, list) or len(components) < 2:
+        findings.append("ui_component_contract.components must list at least two selected UI components")
+        components = []
+
+    for index, component in enumerate(components):
+        label = f"ui_component_contract.components[{index}]"
+        if not isinstance(component, dict):
+            findings.append(f"{label} must be an object")
+            continue
+        for key in ("name", "version", "license/source", "actual_consumer"):
+            value = component.get(key)
+            if not isinstance(value, str) or not value.strip():
+                findings.append(f"{label}.{key} is required")
+
+        consumer_value = component.get("actual_consumer")
+        consumer = None
+        if isinstance(consumer_value, str) and consumer_value.strip():
+            consumer = (root / consumer_value).resolve()
+            if Path(consumer_value).is_absolute() or not is_within(consumer, root):
+                findings.append(f"{label}.actual_consumer must stay inside the project: {consumer_value}")
+                consumer = None
+            elif not consumer.is_file():
+                findings.append(f"{label}.actual_consumer is missing: {consumer_value}")
+
+        markers = component.get("runtime_markers")
+        if not isinstance(markers, list) or not markers or any(not isinstance(marker, str) or not marker.strip() for marker in markers):
+            findings.append(f"{label}.runtime_markers must list the component calls consumed at runtime")
+        elif consumer is not None and consumer.is_file():
+            source = consumer.read_text(encoding="utf-8", errors="replace")
+            missing = [marker for marker in markers if marker not in source]
+            if missing:
+                findings.append(f"{label}.runtime_markers are not consumed by {consumer_value}: {', '.join(missing)}")
+
+    constraints = contract.get("visual_constraints")
+    if not isinstance(constraints, dict):
+        findings.append("ui_component_contract.visual_constraints is required")
+    else:
+        for key, label in (
+            ("no_simple_line_art", "simple line art"),
+            ("no_flat_color_blocks", "flat color blocks"),
+            ("no_solid_color_background", "solid color backgrounds"),
+        ):
+            if constraints.get(key) is not True:
+                findings.append(f"ui_component_contract must reject {label}")
+
+    runtime_evidence = contract.get("runtime_evidence")
+    if not isinstance(runtime_evidence, list) or not runtime_evidence:
+        findings.append("ui_component_contract.runtime_evidence must list current iPhone visual evidence")
+    else:
+        for index, value in enumerate(runtime_evidence):
+            evidence = local_contract_file(root, value, f"ui_component_contract.runtime_evidence[{index}]", findings)
+            if evidence is not None and evidence.suffix.lower() not in MEDIA_EXTENSIONS:
+                findings.append(f"ui_component_contract.runtime_evidence[{index}] must be an image or recording: {value}")
+
+    forbidden = re.compile(r"(?:solid\s+colou?r|flat\s+colou?r|colour\s*block|color\s*block|simple\s+line|line\s*art|纯色|色块|简易线条|线条拼接)", re.I)
+    rich_markers = re.compile(r"(?:texture|material|lighting|light|depth|layer|image|illustration|scene|gradient|translucent|photo|纹理|材质|光影|景深|层次|图片|插画|场景|渐变|半透明)", re.I)
+    for surface in surfaces:
+        if not isinstance(surface, dict):
+            continue
+        surface_id = surface.get("id", "?")
+        background = surface.get("background") if isinstance(surface.get("background"), dict) else {}
+        treatment = background.get("visual_treatment")
+        if not isinstance(treatment, str) or not treatment.strip():
+            findings.append(f"{surface_id}: non-game background.visual_treatment must describe an authored layered treatment")
+            continue
+        if forbidden.search(treatment):
+            findings.append(f"{surface_id}: visual treatment contains forbidden flat/simple visual language")
+        if len(rich_markers.findall(treatment)) < 2:
+            findings.append(f"{surface_id}: visual treatment must describe at least two rich material/image/depth qualities")
+
+
+def local_contract_file(root: Path, value, label: str, findings: list[str]) -> Path | None:
+    if not isinstance(value, str) or not value.strip():
+        findings.append(f"{label}: expected a project-relative file path")
+        return None
+    relative = Path(value)
+    candidate = (root / relative).resolve()
+    if relative.is_absolute() or not is_within(candidate, root):
+        findings.append(f"{label}: path must stay inside project: {value}")
+        return None
+    if not candidate.is_file() or candidate.stat().st_size == 0:
+        findings.append(f"{label}: missing or empty file: {value}")
+        return None
+    return candidate
+
+
 def is_within(path: Path, root: Path) -> bool:
     """Keep path checks compatible with Python versions before 3.9."""
     try:
@@ -205,6 +310,7 @@ def validate_visual_ledger(root: Path):
     if not isinstance(surfaces, list) or not surfaces:
         findings.append("visual ledger needs a nonempty surfaces list")
         surfaces = []
+    validate_non_game_ui_contract(root, ledger, surfaces, findings)
     history = ledger.get("layout_history")
     records = []
     if (not isinstance(history, dict) or not isinstance(history.get("scope"), str)

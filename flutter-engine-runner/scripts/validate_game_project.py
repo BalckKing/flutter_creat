@@ -23,10 +23,12 @@ RUNTIME_EVIDENCE_PATH = Path(".codex-work/game-runtime.json")
 TEXT_EXTENSIONS = {
     ".dart", ".yaml", ".yml", ".json", ".swift", ".m", ".mm", ".h", ".gd",
     ".tscn", ".godot", ".unity", ".cs", ".shader", ".asmdef", ".pbxproj", ".xcconfig", ".xml", ".plist", ".md",
-    ".txt", ".html",
+    ".txt", ".html", ".defold", ".scene", ".world", ".js", ".ts", ".tsx",
+    ".c", ".cc", ".cpp", ".cxx", ".hpp", ".rs", ".kt", ".java",
 }
 EXCLUDED_DIRS = {".git", ".dart_tool", "build", "Pods", ".symlinks", ".codex-work"}
 SEMVER = re.compile(r"(?<!\d)(\d+\.\d+(?:\.\d+)?)(?!\d)")
+VISUAL_MODES = {"2.5d", "3d"}
 
 
 def _is_within(path: Path, root: Path) -> bool:
@@ -155,6 +157,9 @@ def _manifest(root: Path, findings: list[str]) -> dict[str, Any] | None:
     project_type = value.get("project_type")
     if project_type not in {"game", "mixed"}:
         findings.append("game-engine.json project_type must be 'game' or 'mixed'")
+    visual_mode = value.get("visual_mode")
+    if not isinstance(visual_mode, str) or visual_mode.strip().casefold() not in VISUAL_MODES:
+        findings.append("game-engine.json visual_mode must be '2.5d' or '3d' for every game or mixed project")
     return value
 
 
@@ -465,7 +470,11 @@ def _runtime_dart_text(root: Path, files: Mapping[Path, str]) -> str:
 
 def _runtime_code_text(root: Path, files: Mapping[Path, str]) -> str:
     """Return implementation sources while excluding prose and work ledgers."""
-    code_suffixes = {".dart", ".gd", ".swift", ".m", ".mm", ".h", ".cs", ".shader", ".tscn", ".unity"}
+    code_suffixes = {
+        ".dart", ".gd", ".swift", ".m", ".mm", ".h", ".cs", ".shader", ".tscn", ".unity",
+        ".defold", ".scene", ".world", ".js", ".ts", ".tsx", ".c", ".cc", ".cpp", ".cxx",
+        ".hpp", ".rs", ".kt", ".java",
+    }
     chunks: list[str] = []
     for path, source in files.items():
         try:
@@ -475,6 +484,152 @@ def _runtime_code_text(root: Path, files: Mapping[Path, str]) -> str:
         if path.suffix.lower() in code_suffixes and ".codex-work" not in relative.parts:
             chunks.append(source)
     return "\n".join(chunks)
+
+
+def _visual_contract(manifest: Mapping[str, Any], root: Path, findings: list[str]) -> dict[str, Any] | None:
+    """Validate the game-wide 2.5D/3D visual contract.
+
+    This is intentionally engine-neutral.  A game can use any suitable engine
+    or third-party renderer when it declares the real camera/depth/material
+    path and provides source/runtime evidence for that choice.
+    """
+    raw_mode = manifest.get("visual_mode")
+    mode = raw_mode.strip().casefold() if isinstance(raw_mode, str) else ""
+    if mode not in VISUAL_MODES:
+        return None
+    contract = manifest.get("visual_contract")
+    if not isinstance(contract, dict):
+        findings.append("game-engine.json visual_contract is required for 2.5d/3d games")
+        return None
+
+    required_text = {
+        "renderer": "renderer",
+        "camera_model": "camera_model",
+        "materials_lighting": "materials_lighting",
+        "animation_feedback": "animation_feedback",
+    }
+    for key, label in required_text.items():
+        value = contract.get(key)
+        if not isinstance(value, str) or not value.strip():
+            findings.append(f"visual_contract.{label} must describe the real runtime implementation")
+
+    layers = contract.get("depth_layers")
+    if not isinstance(layers, list) or len(layers) < 3 or not all(isinstance(item, str) and item.strip() for item in layers):
+        findings.append("visual_contract.depth_layers must list at least background, midground and foreground")
+
+    assets = contract.get("authored_assets")
+    if not isinstance(assets, list) or len(assets) < 2:
+        findings.append("visual_contract.authored_assets must list at least two authored subject/environment assets")
+    else:
+        for index, value in enumerate(assets):
+            path = _safe_relative(root, value, f"visual_contract.authored_assets[{index}]", findings)
+            if path is not None and (not path.is_file() or path.stat().st_size == 0):
+                findings.append(f"visual_contract.authored_assets[{index}]: missing or empty asset: {value}")
+
+    if contract.get("no_flat_color_blocks") is not True:
+        findings.append("visual_contract.no_flat_color_blocks must be true")
+    return contract
+
+
+def _validate_game_lobby(root: Path, manifest: Mapping[str, Any], files: Mapping[Path, str], findings: list[str]) -> None:
+    """Validate the game-only immersive lobby and its reachable flows."""
+    if manifest.get("project_type") not in {"game", "mixed"}:
+        return
+    lobby = manifest.get("game_lobby")
+    if not isinstance(lobby, dict):
+        findings.append("game_lobby is required for game and mixed projects")
+        return
+
+    if lobby.get("role") != "immersive_game_lobby":
+        findings.append("game_lobby.role must be immersive_game_lobby")
+    if lobby.get("mode") != "immersive_portrait" or lobby.get("orientation") != "portrait":
+        findings.append("game_lobby must use an immersive portrait mode and portrait orientation")
+    if lobby.get("entrypoint") != "lib/welcome.dart":
+        findings.append("game_lobby.entrypoint must be lib/welcome.dart; retain the file as the immersive game lobby")
+
+    primary = lobby.get("primary_actions")
+    if primary != ["Play", "Load", "Operation"]:
+        findings.append("game_lobby.primary_actions must be exactly Play, Load and Operation")
+    top = lobby.get("top_actions")
+    if top != ["Exit", "Settings"]:
+        findings.append("game_lobby.top_actions must be exactly Exit and Settings")
+
+    expected_flows = {
+        "play_flow": ["Play", "Loading", "Game"],
+        "load_flow": ["Load", "Save Slot", "Game"],
+    }
+    for key, expected in expected_flows.items():
+        if lobby.get(key) != expected:
+            findings.append(f"game_lobby.{key} must be {' -> '.join(expected)}")
+    controls = lobby.get("operation_controls")
+    if not isinstance(controls, list) or not {"Volume", "Graphics Quality"}.issubset(controls):
+        findings.append("game_lobby.operation_controls must include Volume and Graphics Quality")
+    adaptation = lobby.get("performance_adaptation")
+    if not isinstance(adaptation, str) or not adaptation.strip():
+        findings.append("game_lobby.performance_adaptation must describe iPhone performance-tier adaptation")
+
+    evidence = lobby.get("evidence")
+    if not isinstance(evidence, list) or ".codex-work/game-lobby.json" not in evidence:
+        findings.append("game_lobby.evidence must include .codex-work/game-lobby.json")
+    else:
+        for index, value in enumerate(evidence):
+            path = _safe_relative(root, value, f"game_lobby.evidence[{index}]", findings, allow_work=True)
+            if path is not None and (not path.is_file() or path.stat().st_size == 0):
+                findings.append(f"game_lobby.evidence[{index}]: missing or empty file: {value}")
+
+    entry = _safe_relative(root, lobby.get("entrypoint"), "game_lobby.entrypoint", findings)
+    if entry is None or not entry.is_file():
+        findings.append("game_lobby.entrypoint must point to an existing lib/welcome.dart")
+    runtime_text = _runtime_dart_text(root, files)
+    for label, patterns in (
+        ("Play", [r"\bPlay\b", r"\bplay\s*\(", r"initializeGame"]),
+        ("Loading", [r"\bLoading\b", r"showLoading", r"loading"]),
+        ("Load", [r"\bLoad\b", r"\bload\s*\(", r"loadSave"]),
+        ("Operation", [r"\bOperation\b", r"\boperation\s*\("] ),
+        ("Exit", [r"\bExit\b", r"\bexit\s*\("] ),
+        ("Settings", [r"\bSettings\b", r"\bsettings\s*\("] ),
+        ("Volume", [r"volume", r"setVolume"]),
+        ("Graphics Quality", [r"graphics", r"setGraphicsQuality"]),
+        ("performance adaptation", [r"performance", r"adaptPerformance"]),
+    ):
+        _require_token(runtime_text, patterns, f"game lobby {label} action", findings)
+
+
+def _validate_generic_engine(root: Path, engine: Mapping[str, Any], manifest: Mapping[str, Any],
+                             files: Mapping[Path, str], findings: list[str]) -> None:
+    """Validate any declared engine through an explicit adapter contract."""
+    name = engine.get("name")
+    if not isinstance(name, str) or not name.strip():
+        findings.append("engine.name must identify the selected game engine")
+    version = engine.get("version")
+    if not isinstance(version, str) or not _version(version):
+        findings.append("engine.version must be an exact numeric engine version")
+    for key in ("role", "integration", "runtime_owner", "build_commands"):
+        value = engine.get(key)
+        if (key == "build_commands" and (not isinstance(value, list) or not value)) or (key != "build_commands" and (not isinstance(value, str) or not value.strip())):
+            findings.append(f"engine.{key} is required for a generic engine adapter")
+    bridge = engine.get("native_bridge")
+    if not isinstance(bridge, str) or not bridge.strip():
+        findings.append("engine.native_bridge must identify the real iOS/Flutter adapter for a non-built-in engine")
+    entry = _safe_relative(root, engine.get("entrypoint"), "engine.entrypoint", findings)
+    if entry is None or not entry.is_file():
+        findings.append("engine.entrypoint must point to an existing generic engine runtime entrypoint")
+
+    runtime_markers = engine.get("runtime_markers")
+    if not isinstance(runtime_markers, list) or len(runtime_markers) < 3 or not all(isinstance(item, str) and item.strip() for item in runtime_markers):
+        findings.append("engine.runtime_markers must list at least three real renderer/camera/scene runtime markers")
+    else:
+        runtime_text = _runtime_code_text(root, files)
+        missing = [marker for marker in runtime_markers if not re.search(re.escape(marker), runtime_text, re.I)]
+        if missing:
+            findings.append("engine.runtime_markers missing from runtime source: " + ", ".join(missing))
+
+    runtime_text = _runtime_code_text(root, files)
+    _require_token(runtime_text, [r"input|touch|tap|pointer|gesture|on_input|handleInput"], "input", findings)
+    _require_token(runtime_text, [r"update|tick|process|physics|step|delta"], "update loop", findings)
+    _require_token(runtime_text, [r"success|failure|win|lose|result"], "success/failure result", findings)
+    _require_token(runtime_text, [r"restart|reset|replay|newGame|reload"], "restart path", findings)
+    _require_token(runtime_text, [r"pause|resume|lifecycle|dispose|destroy|shutdown"], "lifecycle handling", findings)
 
 
 def _validate_flame(root: Path, engine: Mapping[str, Any], pubspec: str, text: str,
@@ -568,6 +723,9 @@ def validate_project(project_root: Path | str) -> list[str]:
     manifest = _manifest(root, findings)
     if manifest is None:
         return findings
+    _visual_contract(manifest, root, findings)
+    _lobby_text, lobby_files = _source_text(root)
+    _validate_game_lobby(root, manifest, lobby_files, findings)
     mode, _required, _reason = _implementation_decision(manifest, findings)
     if mode == "flutter-native":
         _runtime_evidence(root, findings)
@@ -601,9 +759,7 @@ def validate_project(project_root: Path | str) -> list[str]:
     elif name == "Unity":
         _validate_unity(root, engine, text, files, findings)
     else:
-        # _manifest already emits the name error; retain a deterministic finding
-        # for callers that invoke this function with a malformed mapping.
-        findings.append("unsupported or missing game engine")
+        _validate_generic_engine(root, engine, manifest, files, findings)
 
     return findings
 

@@ -13,8 +13,8 @@
 ## Global Constraints
 
 - Game is optional; only confirmed game or mixed projects enter the game gate.
-- A selected game must use one declared real engine with a precise version and actual iPhone integration; adding a dependency or showing a static scene is insufficient.
-- Welcome reaches the primary game destination directly, with at most one visible Play/Start action.
+- A selected game must first record an explicit engine-necessity decision. Use one declared real engine with a precise version and actual iPhone integration when the mechanics, scene complexity, physics/collision, camera/world streaming, or continuous update require it; lightweight turn-based, card, quiz, board, and finite-state puzzle games may use a declared `flutter_native` runtime. Adding a dependency or showing a static scene is insufficient for either route.
+- The retained `lib/welcome.dart` is the game lobby: a portrait, one-screen immersive surface with exactly the primary `Play`, `Load`, and `Operation` actions plus top-level `Exit` and `Settings`. `Play` follows `Loading → Game`; `Load` follows `Save Slot → Game`; `Operation` exposes volume, graphics quality, and device-performance adaptation.
 - The vertical slice must prove real input, engine update, success/failure result, feedback, and restart before content expansion.
 - Game visuals must include authored subject assets, scene depth, materials/lighting, animation/feedback, and readable HUD; colored blocks, empty scenes, static screenshots, and autoplay demos fail.
 - Runtime verification uses one Bundle ID and one existing iPhone Simulator; test files never replace direct App interaction and logs.
