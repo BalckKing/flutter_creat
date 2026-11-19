@@ -99,6 +99,9 @@ require_text "$TASK_ORDER" '项目根目录.*aduit.*必须保留'
 require_text "$TASK_ORDER" '依赖树和 App bundle 中的 `aduit/` 副本必须移除'
 require_text "$TASK_ORDER" '三个具体项目名 HTTP 协议链接.*文件名保持不变'
 require_text "$TASK_ORDER" '缺少证据不能标为 `Verified`'
+require_text "$TASK_ORDER" 'project_type.*non_game.*mixed.*game'
+require_text "$TASK_ROOT/flutter-engine-runner/SKILL.md" 'project_type.*non_game.*mixed.*game'
+require_text "$TASK_ROOT/flutter-engine-runner/scripts/validate_visual_implementation.py" 'project_type is required and must be non_game, mixed, or game'
 require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'schema_version'
 require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'freshness_window_hours'
 require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'release-readiness'
@@ -401,6 +404,34 @@ require_text "$TASK_QA" '11\.10 Apple 4\.3/5\.6 审核风险专项'
 require_text "$TASK_QA" '评价与发现'
 require_text "$TASK_QA" 'Release readiness: Blocked'
 require_text "$TASK_QA" '11\.3\.1 视觉实现硬门槛'
+require_text "$TASK_CONVENTIONS" '0\.0\.1 设计系统先行与全量 UI 硬门槛'
+require_text "$TASK_PLANNING" '3\.0\.1 主题确认后的设计系统决策（硬门槛）'
+require_text "$TASK_DOCS_DIR/04-视觉与页面功能.md" '^### 6\.0 设计系统与 UI/UX 评测先行（硬门槛）'
+require_text "$TASK_ARCHITECTURE" '9\.0\.1 设计系统记录与组件选择边界（硬门槛）'
+require_text "$TASK_QA" '11\.0\.1 设计系统与完成度最终门禁（硬门槛）'
+require_text "$TASK_ORDER" '设计系统顺序是所有实现任务的前置硬门槛'
+require_text "$TASK_README" '主题确认后的设计系统与 UI 硬门槛'
+require_text "$TASK_RUNNER" 'Theme-confirmed design system and absolute UI quality gate'
+require_text "$TASK_RUNNER" 'awesome-design-md'
+require_text "$TASK_RUNNER" 'ui-ux-pro-max'
+require_text "$TASK_RUNNER" 'design-system/<slug>/MASTER.md'
+require_text "$TASK_RUNNER" 'ui-ux-review\.md'
+require_text "$TASK_RUNNER" 'There are no soft UI requirements'
+for task_design_field in accessibility touch_interaction safe_area typography color_contrast responsive_layout motion navigation reduced_motion; do
+  require_text "$TASK_DOCS_DIR/02-创意与思维导图.md" "$task_design_field"
+  require_text "$TASK_DOCS_DIR/04-视觉与页面功能.md" "$task_design_field"
+  require_text "$TASK_RUNNER" "$task_design_field"
+done
+for task_hard_quality in '半成品' '占位' '低质' '当前 iPhone 证据' 'Not appropriate'; do
+  require_text "$TASK_CONVENTIONS" "$task_hard_quality"
+  require_text "$TASK_DOCS_DIR/04-视觉与页面功能.md" "$task_hard_quality"
+  require_text "$TASK_QA" "$task_hard_quality"
+done
+for task_design_script in validate_visual_implementation.py; do
+  require_text "$TASK_ROOT/flutter-engine-runner/scripts/$task_design_script" 'design_system'
+  require_text "$TASK_ROOT/flutter-engine-runner/scripts/$task_design_script" 'ui_ux_review'
+  require_text "$TASK_ROOT/flutter-engine-runner/scripts/$task_design_script" 'DESIGN\.md'
+done
 require_text "$TASK_QA" 'validate_visual_implementation\.py'
 require_text "$TASK_QA" 'validate_review_remarks\.py'
 require_text "$TASK_QA" 'validate_public_copy\.py'

@@ -77,7 +77,18 @@ VISUAL_GATES = {
     "backgrounds", "decoration", "icons", "emoji", "text_density", "media", "content", "layout", "controls", "states",
     "appearance", "accessibility", "launch_flow", "app_icon", "html", "refinement",
 }
-OPTIONAL_VISUAL_GATES = {"gradients"}
+OPTIONAL_VISUAL_GATES = set()
+DESIGN_REVIEW_CATEGORIES = {
+    "accessibility",
+    "touch_interaction",
+    "safe_area",
+    "typography",
+    "color_contrast",
+    "responsive_layout",
+    "motion",
+    "navigation",
+    "reduced_motion",
+}
 PAGE_GATES = {
     "brand_palette", "gradients", "typography", "backgrounds", "decoration", "icons", "emoji", "text_density", "media", "content",
     "layout", "controls", "states", "appearance", "accessibility",
@@ -89,6 +100,118 @@ LAYOUT_AXES = (
     "composition", "region_order", "media_structure", "content_structure",
     "action_structure", "navigation_structure",
 )
+
+
+def validate_design_system_contract(root: Path, ledger: dict) -> list[str]:
+    """Require the design reference and UI/UX review before visual implementation.
+
+    The visual ledger is the hand-off between planning and implementation.  A
+    package name, mockup, or screenshot cannot satisfy this gate: the selected
+    reference, persisted design-system master, resolved review findings, and
+    current iPhone evidence must all be present inside the project boundary.
+    """
+    findings: list[str] = []
+    contract = ledger.get("design_system")
+    if not isinstance(contract, dict):
+        return [
+            "design_system contract is required: select awesome-design-md or record a custom DESIGN.md, "
+            "then complete ui-ux-pro-max review before component selection"
+        ]
+
+    def required_text(value, label):
+        if not isinstance(value, str) or not value.strip():
+            findings.append(f"design_system.{label} must be a nonempty string")
+
+    def required_local_file(value, label):
+        if not isinstance(value, str) or not value.strip():
+            findings.append(f"design_system.{label} must be a project-relative file path")
+            return None
+        relative = Path(value)
+        candidate = (root / relative).resolve()
+        if relative.is_absolute() or not is_within(candidate, root):
+            findings.append(f"design_system.{label} must stay inside the project: {value}")
+            return None
+        if not candidate.is_file() or candidate.stat().st_size == 0:
+            findings.append(f"design_system.{label} is missing or empty: {value}")
+            return None
+        return candidate
+
+    reference = contract.get("reference")
+    if not isinstance(reference, dict):
+        findings.append("design_system.reference is required")
+    else:
+        kind = reference.get("kind")
+        if kind not in {"awesome-design-md", "custom"}:
+            findings.append("design_system.reference.kind must be awesome-design-md or custom")
+        required_text(reference.get("name"), "reference.name")
+        required_text(reference.get("selection_reason"), "reference.selection_reason")
+        source = reference.get("source")
+        required_text(source, "reference.source")
+        if kind == "awesome-design-md" and isinstance(source, str) and "awesome-design-md" not in source:
+            findings.append("design_system.reference.source must identify the awesome-design-md catalog")
+        if kind == "custom" and isinstance(source, str) and not source.strip():
+            findings.append("custom design_system.reference.source must explain the custom origin")
+
+    required_local_file(contract.get("design_doc", "DESIGN.md"), "design_doc")
+    required_local_file(contract.get("master"), "master")
+    required_text(contract.get("ui_ux_command"), "ui_ux_command")
+    required_text(contract.get("ui_ux_query"), "ui_ux_query")
+    required_text(contract.get("ui_ux_stack"), "ui_ux_stack")
+    if contract.get("ui_ux_stack") != "flutter":
+        findings.append("design_system.ui_ux_stack must be flutter for this workflow")
+    if contract.get("status") != "Verified":
+        findings.append("design_system.status must be Verified")
+    if contract.get("component_selection_gate") != "design_review_verified":
+        findings.append("component selection must be gated by a Verified design review")
+
+    review = contract.get("ui_ux_review")
+    if not isinstance(review, dict):
+        findings.append("design_system.ui_ux_review is required")
+        return findings
+    review_path = required_local_file(review.get("record"), "ui_ux_review.record")
+    if review.get("status") != "Verified":
+        findings.append("design_system.ui_ux_review.status must be Verified")
+    if not isinstance(review.get("unresolved_findings"), list):
+        findings.append("design_system.ui_ux_review.unresolved_findings must be a list")
+    elif review["unresolved_findings"]:
+        findings.append("design_system.ui_ux_review contains unresolved findings")
+    categories = review.get("categories")
+    if not isinstance(categories, dict):
+        findings.append("design_system.ui_ux_review.categories must be an object")
+        categories = {}
+    for category in sorted(DESIGN_REVIEW_CATEGORIES):
+        row = categories.get(category)
+        if not isinstance(row, dict):
+            findings.append(f"design_system.ui_ux_review.categories.{category} is required")
+            continue
+        if row.get("status") != "Verified":
+            findings.append(f"design_system.ui_ux_review.categories.{category}.status must be Verified")
+        for key in ("finding", "resolution"):
+            required_text(row.get(key), f"ui_ux_review.categories.{category}.{key}")
+        evidence = row.get("evidence")
+        if not isinstance(evidence, list) or not evidence:
+            findings.append(f"design_system.ui_ux_review.categories.{category}.evidence is required")
+
+    evidence = review.get("current_iphone_evidence")
+    if not isinstance(evidence, list) or not evidence:
+        findings.append("design_system.ui_ux_review.current_iphone_evidence is required")
+    else:
+        for index, value in enumerate(evidence):
+            path = required_local_file(value, f"ui_ux_review.current_iphone_evidence[{index}]")
+            if path is not None and path.suffix.lower() not in MEDIA_EXTENSIONS:
+                findings.append(
+                    f"design_system.ui_ux_review.current_iphone_evidence[{index}] must be an image or recording: {value}"
+                )
+
+    if review_path is not None:
+        review_text = review_path.read_text(encoding="utf-8", errors="replace")
+        if not re.search(r"awesome-design-md|custom design system", review_text, re.I):
+            findings.append("ui-ux review record must state the selected catalog or custom design-system decision")
+        if not re.search(r"ui-ux-pro-max", review_text, re.I):
+            findings.append("ui-ux review record must identify ui-ux-pro-max")
+        if re.search(r"\b(?:TBD|TODO|pending|unresolved|half[- ]finished|placeholder)\b", review_text, re.I):
+            findings.append("ui-ux review record contains unresolved or placeholder language")
+    return findings
 
 
 def validate_layout_diversity(surfaces, history=()):
@@ -285,6 +408,13 @@ def validate_visual_ledger(root: Path):
     if not isinstance(ledger, dict):
         return ["ui-visual-gates.json must be an object"]
     findings = []
+    project_type = ledger.get("project_type")
+    if project_type not in {"non_game", "mixed", "game"}:
+        findings.append("project_type is required and must be non_game, mixed, or game")
+    # The design-system gate is unconditional for every real visual ledger.
+    # Requiring an explicit type prevents an incomplete or malformed ledger
+    # from bypassing the hard UI quality chain by omitting project_type.
+    findings.extend(validate_design_system_contract(root, ledger))
     build = ledger.get("build")
     if not isinstance(build, dict) or any(
         not isinstance(build.get(key), str) or not build[key].strip() for key in ("id", "device", "os")
@@ -444,14 +574,15 @@ def validate_visual_ledger(root: Path):
                 recording = local_file(background.get("recording"), f"surface {surface_id} background motion recording")
                 if recording and recording.suffix.lower() not in {".mp4", ".mov"}:
                     findings.append(f"{surface_id}: background needs an iPhone motion recording file")
-        # Color metadata is optional. Validate its shape when supplied, without
-        # imposing palette sizes, hue choices or gradient usage on the design.
-        if "gradient_tokens" in background:
-            gradient_tokens = background["gradient_tokens"]
-            if not isinstance(gradient_tokens, list) or any(
-                not isinstance(value, str) or not value.strip() for value in gradient_tokens
-            ):
-                findings.append(f"{surface_id}: gradient_tokens must be a list of nonempty token names")
+        # Bright gradient treatment is a hard visual requirement. Every
+        # inventoried surface must expose at least one named gradient token;
+        # the runtime gate below still requires the actual implementation and
+        # current-iPhone evidence, so metadata alone cannot certify the result.
+        gradient_tokens = background.get("gradient_tokens")
+        if not isinstance(gradient_tokens, list) or not gradient_tokens or any(
+            not isinstance(value, str) or not value.strip() for value in gradient_tokens
+        ):
+            findings.append(f"{surface_id}: gradient_tokens must list at least one nonempty gradient token")
         if "palette_hex" in background:
             palette_hex = background["palette_hex"]
             if not isinstance(palette_hex, list) or any(
@@ -516,6 +647,8 @@ def validate_visual_ledger(root: Path):
                 findings.append(f"{gate}: invalid applicability exclusion: {target}")
             if target in targets:
                 findings.append(f"{gate}: target cannot also be excluded: {target}")
+        if gate == "gradients" and exclusions:
+            findings.append("gradients: hard requirement cannot be excluded for any surface")
         if not targets:
             findings.append(f"{gate}: no verified target surfaces")
         if gate in PAGE_GATES:
@@ -563,7 +696,7 @@ def validate(root: Path):
         findings,
     )
 
-    # Typography must be declared and consumed; gradients are a design choice.
+    # Typography and gradient tokens must be declared and consumed.
     brand_entry = root / "lib/common_module/theme/app_theme.dart"
     theme_files = [path for path in files if brand_entry.parent in path.parents]
     if not brand_entry.is_file() or brand_entry.is_symlink():

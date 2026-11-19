@@ -12,6 +12,56 @@ SPEC.loader.exec_module(MODULE)
 
 
 class VisualImplementationContractTests(unittest.TestCase):
+    def add_design_system_contract(self, root, ledger, *, kind="awesome-design-md", status="Verified"):
+        (root / "DESIGN.md").write_text(
+            "# Product design\nSource: awesome-design-md Apple DESIGN.md\n",
+            encoding="utf-8",
+        )
+        master = root / "design-system/product/MASTER.md"
+        master.parent.mkdir(parents=True, exist_ok=True)
+        master.write_text(
+            "# Master\nTypography, spacing, safe area, motion and component rules.\n",
+            encoding="utf-8",
+        )
+        review = root / ".codex-work/ui-ux-review.md"
+        review.parent.mkdir(parents=True, exist_ok=True)
+        review.write_text(
+            "# UI/UX review\nReference: awesome-design-md Apple DESIGN.md\n"
+            "Reviewed with ui-ux-pro-max for Flutter/iPhone.\n",
+            encoding="utf-8",
+        )
+        categories = {}
+        for category in MODULE.DESIGN_REVIEW_CATEGORIES:
+            categories[category] = {
+                "status": status,
+                "finding": f"{category} reviewed against the current iPhone surface.",
+                "resolution": f"{category} resolved in the implementation contract.",
+                "evidence": [".codex-work/ui-ux.png"],
+            }
+        ledger["design_system"] = {
+            "reference": {
+                "kind": kind,
+                "name": "Apple-inspired mobile reference" if kind == "awesome-design-md" else "Project custom design system",
+                "source": "awesome-design-md/references/design-md/apple/DESIGN.md" if kind == "awesome-design-md" else "project brief",
+                "selection_reason": "The reference fits bright iPhone product surfaces and image-led hierarchy.",
+            },
+            "design_doc": "DESIGN.md",
+            "master": "design-system/product/MASTER.md",
+            "ui_ux_command": "python3 ui-ux-pro-max/scripts/search.py mobile productivity --design-system --stack flutter",
+            "ui_ux_query": "mobile productivity bright immersive",
+            "ui_ux_stack": "flutter",
+            "status": status,
+            "component_selection_gate": "design_review_verified",
+            "ui_ux_review": {
+                "record": ".codex-work/ui-ux-review.md",
+                "status": status,
+                "unresolved_findings": [] if status == "Verified" else ["unfinished review"],
+                "categories": categories,
+                "current_iphone_evidence": [".codex-work/ui-ux.png"],
+            },
+        }
+        (root / ".codex-work/ui-ux.png").write_bytes(b"ui-ux-evidence")
+
     def procedural_ledger(self, root, kind="flutter"):
         source = "lib/page_module/home_page.dart" if kind == "flutter" else "aduit/site/PrivacyPolicy.html"
         page = root / source
@@ -42,6 +92,7 @@ class VisualImplementationContractTests(unittest.TestCase):
             "palette_hex": ["#F05A3C", "#FFB347", "#D84315"],
         }
         ledger = {
+            "project_type": "game",
             "build": {"id": "1", "device": "iPhone 17 Pro", "os": "iOS 26.5"},
             "layout_history": {"scope": "first_record", "records": []},
             "surfaces": [{"id": "home", "kind": kind, "source": source,
@@ -51,6 +102,7 @@ class VisualImplementationContractTests(unittest.TestCase):
                         "result": "Observed on current build; fixture does not certify visual quality."}
                        for gate in MODULE.VISUAL_GATES],
         }
+        self.add_design_system_contract(root, ledger)
         return ledger
 
     def test_procedural_background_keeps_image_accent_alongside_scene(self):
@@ -131,8 +183,58 @@ class VisualImplementationContractTests(unittest.TestCase):
                 },
                 "runtime_evidence": [".codex-work/motion.mov"],
             }
+            self.add_design_system_contract(root, ledger)
             (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
             self.assertEqual(MODULE.validate_visual_ledger(root), [])
+
+    def test_non_game_requires_verified_design_system_before_components(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ledger = self.procedural_ledger(root)
+            ledger["project_type"] = "non_game"
+            self.add_design_system_contract(root, ledger, status="Draft")
+            (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
+            findings = MODULE.validate_visual_ledger(root)
+            self.assertTrue(any("design_system.status must be Verified" in item for item in findings), findings)
+            self.assertTrue(any("ui_ux_review.status must be Verified" in item for item in findings), findings)
+
+    def test_game_visual_ledger_also_requires_design_system(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ledger = self.procedural_ledger(root)
+            ledger["project_type"] = "game"
+            ledger.pop("design_system", None)
+            (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
+            findings = MODULE.validate_visual_ledger(root)
+            self.assertTrue(any("design_system contract is required" in item for item in findings), findings)
+
+    def test_visual_ledger_requires_explicit_project_type(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ledger = self.procedural_ledger(root)
+            ledger.pop("project_type", None)
+            ledger.pop("design_system", None)
+            (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
+            findings = MODULE.validate_visual_ledger(root)
+            self.assertTrue(any("project_type is required" in item for item in findings), findings)
+            self.assertTrue(any("design_system contract is required" in item for item in findings), findings)
+
+    def test_non_game_requires_design_artifacts_inside_project(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ledger = self.procedural_ledger(root)
+            ledger["project_type"] = "non_game"
+            ledger["design_system"] = {
+                "reference": {"kind": "custom", "name": "Custom", "source": "brief", "selection_reason": "fit"},
+                "design_doc": "/tmp/DESIGN.md",
+                "master": "design-system/product/MASTER.md",
+                "ui_ux_stack": "flutter",
+                "status": "Verified",
+            }
+            (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
+            findings = MODULE.validate_visual_ledger(root)
+            self.assertTrue(any("design_doc must stay inside" in item for item in findings), findings)
+            self.assertTrue(any("ui_ux_command" in item for item in findings), findings)
 
     def test_every_background_mode_requires_a_translucent_image(self):
         for mode in ("image", "procedural", "animation", "hybrid"):
@@ -192,7 +294,7 @@ class VisualImplementationContractTests(unittest.TestCase):
                 (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
                 self.assertTrue(any(expected in item for item in MODULE.validate_visual_ledger(root)))
 
-    def test_optional_color_metadata_does_not_certify_visual_quality(self):
+    def test_gradient_metadata_is_required_but_does_not_certify_visual_quality(self):
         cases = (([], []), ([], ["#000000"]), ([], ["#0B234A", "#808080"]),
                  (["customGradient"], ["#FFFFFF"]), (None, None))
         for tokens, colors in cases:
@@ -205,9 +307,24 @@ class VisualImplementationContractTests(unittest.TestCase):
                         background.pop(key)
                     else:
                         background[key] = value
-                ledger["checks"] = [row for row in ledger["checks"] if row["id"] != "gradients"]
                 (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
-                self.assertEqual(MODULE.validate_visual_ledger(root), [])
+                findings = MODULE.validate_visual_ledger(root)
+                if tokens:
+                    self.assertEqual(findings, [], findings)
+                else:
+                    self.assertTrue(any("gradient_tokens must list at least one" in item for item in findings), findings)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ledger = self.procedural_ledger(root)
+            ledger["checks"] = [
+                dict(row, exclusions={"home": "Theme does not use gradients"})
+                if row["id"] == "gradients" else row
+                for row in ledger["checks"]
+            ]
+            (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
+            self.assertTrue(any("hard requirement cannot be excluded" in item
+                                for item in MODULE.validate_visual_ledger(root)))
 
     def test_distinct_pages_may_share_the_same_palette(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -510,6 +627,7 @@ class VisualImplementationContractTests(unittest.TestCase):
             background.parent.mkdir(parents=True)
             background.write_bytes(b"background-fixture")
             (evidence / "ui-visual-gates.json").write_text(json.dumps({
+                "project_type": "game",
                 "build": {"id": "1.0.0+1", "device": "iPhone 17 Pro Max", "os": "iOS 26.5"},
                 "layout_history": {"scope": "first_record", "records": []},
                 "surfaces": [{"id": "home", "kind": "flutter", "source": "lib/page_module/home_page.dart",
@@ -528,6 +646,9 @@ class VisualImplementationContractTests(unittest.TestCase):
                                         "backgrounds", "decoration", "icons", "emoji", "text_density", "media", "content", "layout", "controls", "states",
                                         "appearance", "accessibility", "launch_flow", "app_icon", "html", "refinement")]
             }), encoding="utf-8")
+            ledger = json.loads((evidence / "ui-visual-gates.json").read_text())
+            self.add_design_system_contract(root, ledger)
+            (evidence / "ui-visual-gates.json").write_text(json.dumps(ledger), encoding="utf-8")
             self.assertEqual(MODULE.validate_visual_ledger(root), [])
 
             ledger_path = evidence / "ui-visual-gates.json"
