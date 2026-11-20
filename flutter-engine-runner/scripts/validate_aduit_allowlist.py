@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Validate the final aduit delivery allowlist and screenshot dimensions."""
+"""Validate the final aduit delivery allowlist.
+
+Final delivery no longer requires a fixed screenshot count. Runtime visual
+evidence remains in the project work records and is validated per page/state.
+"""
 from __future__ import annotations
 import argparse, json, struct, sys
 from pathlib import Path
@@ -40,16 +44,16 @@ def validate(root: Path, *, final=False):
             errors.append(f"index.html is only allowed as aduit/site/index.html: {path.relative_to(root)}")
     imgs=aduit/"imgs"
     if not imgs.exists():
-        if final: errors.append("aduit/imgs is required for final delivery")
+        # The directory is optional now; the delivery allowlist does not force
+        # screenshot capture or a fixed number of files.
+        pass
     elif not imgs.is_dir() or imgs.is_symlink(): errors.append("aduit/imgs must be a regular directory")
     else:
         files=sorted(p for p in imgs.iterdir() if p.is_file())
-        if final and len(files)!=5: errors.append(f"final aduit/imgs must contain exactly five PNGs, found {len(files)}")
         if any(p.suffix.lower()!=".png" for p in files): errors.append("aduit/imgs may contain PNG files only")
         if final:
             for p in files:
-                size=png_size(p)
-                if size!=(1206,2622): errors.append(f"{p.relative_to(root)} must be 1206x2622 PNG, got {size}")
+                if png_size(p) is None: errors.append(f"{p.relative_to(root)} must be a decodable PNG")
     return {"status":"Failed" if errors else "Passed","errors":errors,"top_level":sorted(actual)}
 def main():
     p=argparse.ArgumentParser(description=__doc__); p.add_argument("--project-root",required=True,type=Path); p.add_argument("--final",action="store_true"); a=p.parse_args(); r=validate(a.project_root,final=a.final); print(json.dumps(r,ensure_ascii=False,indent=2)); return 0 if r["status"]=="Passed" else 1

@@ -100,6 +100,16 @@ PAGE_GATES = {
 FLUTTER_MOTION_GATES = {"page_transitions", "background_motion"}
 MEDIA_EXTENSIONS = {".png", ".jpg", ".jpeg", ".heic", ".mp4", ".mov"}
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".heic", ".webp"}
+MOTION_RECORDING_EXTENSIONS = {".mp4", ".mov"}
+NATIVE_FLUTTER_MOTION_APIS = {
+    "AnimationController", "Tween", "CurvedAnimation", "AnimatedBuilder",
+    "AnimatedContainer", "AnimatedOpacity", "AnimatedSwitcher", "AnimatedPositioned",
+    "CustomPainter", "CustomPaint", "BackdropFilter", "ShaderMask", "Transform",
+}
+FORBIDDEN_MOTION_FORMS = re.compile(
+    r"(?:simple\s+(?:gradient|fade|scale|slide)|flat\s+color|color\s*block|static\s+only|"
+    r"简单渐变|单纯渐变|纯色块|色块拼接|静态占位|无动效)", re.I
+)
 DEFAULT_RASTER_QUALITY = {
     "minimum_width": 32,
     "minimum_height": 32,
@@ -615,6 +625,153 @@ def validate_non_game_ui_contract(root: Path, ledger: dict, surfaces, findings: 
             findings.append(f"{surface_id}: visual treatment must describe at least two rich material/image/depth qualities")
 
 
+def _validate_background_provenance(background: dict, surface_id: str, findings: list[str]) -> None:
+    """Require an auditable third-party-first acquisition decision for every page image."""
+    provenance = background.get("asset_provenance")
+    label = f"{surface_id}: background.asset_provenance"
+    if not isinstance(provenance, dict):
+        findings.append(f"{label} is required; record third-party search before image generation")
+        return
+    order = provenance.get("acquisition_order")
+    if not isinstance(order, list) or not order or order[0] != "third_party_search":
+        findings.append(f"{label}.acquisition_order must begin with third_party_search")
+    elif "image_generation" in order and order.index("image_generation") < order.index("third_party_search"):
+        findings.append(f"{label}.acquisition_order must try third-party sources before image generation")
+
+    search = provenance.get("third_party_search")
+    if not isinstance(search, dict):
+        findings.append(f"{label}.third_party_search is required for every page background")
+        search = {}
+    if search.get("attempted") is not True:
+        findings.append(f"{label}.third_party_search.attempted must be true")
+    sources = search.get("sources")
+    if not isinstance(sources, list) or not sources or any(
+        not isinstance(value, str) or not re.match(r"https?://", value, re.I) for value in sources
+    ):
+        findings.append(f"{label}.third_party_search.sources must list at least one free-resource website URL")
+    for key in ("query", "license_or_usage", "reason"):
+        if not isinstance(search.get(key), str) or not search[key].strip():
+            findings.append(f"{label}.third_party_search.{key} is required")
+    if search.get("free_access") is not True:
+        findings.append(f"{label}.third_party_search.free_access must be true for a freely obtainable asset")
+    result = search.get("result")
+    if result not in {"selected", "no_suitable", "failed"}:
+        findings.append(f"{label}.third_party_search.result must be selected, no_suitable or failed")
+
+    selected = provenance.get("selected_source")
+    if selected not in {"third_party", "generated"}:
+        findings.append(f"{label}.selected_source must be third_party or generated")
+    generation = provenance.get("generation")
+    if not isinstance(generation, dict):
+        findings.append(f"{label}.generation is required")
+        generation = {}
+    used = generation.get("used")
+    if not isinstance(used, bool):
+        findings.append(f"{label}.generation.used must be boolean")
+    if selected == "third_party":
+        if result != "selected":
+            findings.append(f"{label}: selected third-party background requires third_party_search.result=selected")
+        if used is not False:
+            findings.append(f"{label}: image generation must not replace a selected free third-party asset")
+    if selected == "generated":
+        if result not in {"no_suitable", "failed"}:
+            findings.append(f"{label}: generated background requires an unsuccessful/no-suitable third-party search")
+        if used is not True:
+            findings.append(f"{label}.generation.used must be true when selected_source=generated")
+        for key in ("provider_url", "prompt", "task_ids", "evidence"):
+            value = generation.get(key)
+            if key in {"task_ids", "evidence"}:
+                if not isinstance(value, list) or not value or any(not isinstance(item, str) or not item.strip() for item in value):
+                    findings.append(f"{label}.generation.{key} must be a non-empty list")
+            elif not isinstance(value, str) or not value.strip():
+                findings.append(f"{label}.generation.{key} is required when image generation is used")
+        if isinstance(generation.get("provider_url"), str) and not re.match(r"https?://", generation["provider_url"], re.I):
+            findings.append(f"{label}.generation.provider_url must be an HTTP(S) image-generation website")
+
+
+def _validate_dynamic_effects(root: Path, surface: dict, findings: list[str]) -> None:
+    """Validate per-page, native-first motion contracts for Flutter surfaces."""
+    surface_id = surface.get("id", "?")
+    effects = surface.get("dynamic_effects")
+    label = f"{surface_id}: dynamic_effects"
+    if not isinstance(effects, list) or len(effects) < 2:
+        findings.append(f"{label} must contain at least two distinct theme-related effects")
+        return
+    ids = set()
+    triggers = set()
+    forms = set()
+    for index, effect in enumerate(effects):
+        item_label = f"{label}[{index}]"
+        if not isinstance(effect, dict):
+            findings.append(f"{item_label} must be an object")
+            continue
+        for key in ("id", "trigger", "implementation_mode", "curve", "visual_form", "reduce_motion", "lifecycle"):
+            if not isinstance(effect.get(key), str) or not effect[key].strip():
+                findings.append(f"{item_label}.{key} is required")
+        effect_id = effect.get("id")
+        if isinstance(effect_id, str):
+            if effect_id in ids:
+                findings.append(f"{label} contains duplicate effect id: {effect_id}")
+            ids.add(effect_id)
+        trigger = effect.get("trigger")
+        if isinstance(trigger, str):
+            triggers.add(trigger)
+        form = effect.get("visual_form")
+        if isinstance(form, str):
+            forms.add(form.casefold())
+            if FORBIDDEN_MOTION_FORMS.search(form):
+                findings.append(f"{item_label}.visual_form cannot be a simple gradient, flat block or static placeholder")
+        implementation_mode = effect.get("implementation_mode")
+        if implementation_mode not in {"flutter_native", "third_party"}:
+            findings.append(f"{item_label}.implementation_mode must be flutter_native or third_party")
+        implementation = effect.get("implementation")
+        implementation_paths = []
+        if not isinstance(implementation, list) or not implementation:
+            findings.append(f"{item_label}.implementation must list executable project files")
+        else:
+            for value in implementation:
+                path = local_contract_file(root, value, f"{item_label}.implementation", findings)
+                if path is not None:
+                    implementation_paths.append(path)
+        markers = effect.get("runtime_markers")
+        if not isinstance(markers, list) or not markers or any(not isinstance(marker, str) or not marker.strip() for marker in markers):
+            findings.append(f"{item_label}.runtime_markers must list actual runtime calls")
+        elif implementation_paths:
+            source = "\n".join(path.read_text(encoding="utf-8", errors="replace") for path in implementation_paths)
+            missing = [marker for marker in markers if marker not in source]
+            if missing:
+                findings.append(f"{item_label}.runtime_markers are not consumed by implementation: {', '.join(missing)}")
+        native_apis = effect.get("native_apis")
+        if implementation_mode == "flutter_native":
+            if not isinstance(native_apis, list) or not native_apis:
+                findings.append(f"{item_label}.native_apis must list Flutter SDK animation/drawing APIs")
+            elif not any(api in NATIVE_FLUTTER_MOTION_APIS for api in native_apis if isinstance(api, str)):
+                findings.append(f"{item_label}.native_apis must include a Flutter-native animation/drawing API")
+        else:
+            for key in ("third_party_name", "third_party_version", "third_party_license/source", "third_party_reason"):
+                if not isinstance(effect.get(key), str) or not effect[key].strip():
+                    findings.append(f"{item_label}.{key} is required only when native Flutter cannot provide the effect")
+        duration = effect.get("duration_ms")
+        if isinstance(duration, bool) or not isinstance(duration, (int, float)) or duration <= 0:
+            findings.append(f"{item_label}.duration_ms must be a positive number")
+        parameters = effect.get("parameters")
+        if not isinstance(parameters, dict) or not parameters:
+            findings.append(f"{item_label}.parameters must contain numeric effect parameters")
+        elif not any(isinstance(value, (int, float)) and not isinstance(value, bool) for value in parameters.values()):
+            findings.append(f"{item_label}.parameters must include at least one numeric parameter")
+        evidence = effect.get("evidence")
+        if not isinstance(evidence, list) or not evidence:
+            findings.append(f"{item_label}.evidence must list current iPhone before/active/result recording evidence")
+        else:
+            paths = [local_contract_file(root, value, f"{item_label}.evidence", findings) for value in evidence]
+            if not any(path is not None and path.suffix.lower() in MOTION_RECORDING_EXTENSIONS for path in paths):
+                findings.append(f"{item_label}.evidence must include an iPhone .mp4 or .mov recording")
+    if len(triggers) < 2 and len(forms) < 2:
+        findings.append(f"{label} must contain two semantically different triggers or visual forms")
+    if not any(re.search(r"(?:tap|press|click|gesture|drag|swipe|select)", trigger, re.I) for trigger in triggers):
+        findings.append(f"{label} must include at least one real tap/press/gesture interaction trigger")
+
+
 def local_contract_file(root: Path, value, label: str, findings: list[str]) -> Path | None:
     if not isinstance(value, str) or not value.strip():
         findings.append(f"{label}: expected a project-relative file path")
@@ -733,6 +890,10 @@ def validate_visual_ledger(root: Path):
         if not isinstance(background, dict):
             findings.append(f"{surface_id}: missing background record")
             continue
+        if surface.get("kind") in {"flutter", "html"}:
+            _validate_background_provenance(background, surface_id, findings)
+            if surface.get("kind") == "flutter":
+                _validate_dynamic_effects(root, surface, findings)
         # The image accent is required in addition to any procedural/animated
         # scene. Metadata cannot establish real visibility; inspect the build.
         background_asset = background.get("asset")

@@ -110,7 +110,11 @@ class VisualImplementationContractTests(unittest.TestCase):
         renderer.parent.mkdir(parents=True, exist_ok=True)
         if kind == "flutter":
             page.write_text("class HomePage { final background = HomeBg(); }")
-            renderer.write_text("class HomeBg extends CustomPainter { void paint(Canvas canvas, Size size) {} }")
+            renderer.write_text(
+                "class HomeBg extends CustomPainter { "
+                "AnimationController controller; AnimatedBuilder builder; "
+                "void paint(Canvas canvas, Size size) {} }"
+            )
         else:
             page.write_text("<canvas id='bg'></canvas><script>function drawScene() {} drawScene();</script>")
         image = root / "assets/backgrounds/home/home_background.png"
@@ -129,6 +133,21 @@ class VisualImplementationContractTests(unittest.TestCase):
             "opacity": 0.12, "placement": "upper-right behind content",
             "gradient_tokens": ["brandGradient", "sunsetGradient"],
             "palette_hex": ["#F05A3C", "#FFB347", "#D84315"],
+            "visual_treatment": "textured translucent scene with material, directional light, depth and layered image detail",
+            "asset_provenance": {
+                "acquisition_order": ["third_party_search", "image_generation"],
+                "selected_source": "third_party",
+                "third_party_search": {
+                    "attempted": True,
+                    "sources": ["https://images.example.test/texture.jpg"],
+                    "query": "bright textured editorial scene",
+                    "free_access": True,
+                    "license_or_usage": "free download with attribution recorded",
+                    "result": "selected",
+                    "reason": "licensed image matches the page subject and material depth",
+                },
+                "generation": {"used": False},
+            },
             "raster_quality": {
                 "minimum_width": 32, "minimum_height": 32, "minimum_unique_colors": 16,
                 "maximum_dominant_color_ratio": 0.88, "minimum_opaque_coverage": 0.12,
@@ -140,7 +159,35 @@ class VisualImplementationContractTests(unittest.TestCase):
             "build": {"id": "1", "device": "iPhone 17 Pro", "os": "iOS 26.5"},
             "layout_history": {"scope": "first_record", "records": []},
             "surfaces": [{"id": "home", "kind": kind, "source": source,
-                          "layout": self.layout_record(), "background": background}],
+                          "layout": self.layout_record(), "background": background,
+                          "dynamic_effects": [
+                              {
+                                  "id": "hero_reveal", "trigger": "page_ready",
+                                  "implementation_mode": "flutter_native",
+                                  "implementation": [implementation],
+                                  "native_apis": ["AnimationController", "AnimatedBuilder"],
+                                  "runtime_markers": ["AnimatedBuilder"],
+                                  "duration_ms": 720, "curve": "easeOutCubic",
+                                  "visual_form": "parallax material reveal",
+                                  "parameters": {"opacity": 0.84, "offset_px": 18},
+                                  "reduce_motion": "replace with static opacity",
+                                  "lifecycle": "dispose controller on page dispose and cancel on interruption",
+                                  "evidence": [".codex-work/motion.mov"],
+                              },
+                              {
+                                  "id": "tap_spark", "trigger": "tap_primary_action",
+                                  "implementation_mode": "flutter_native",
+                                  "implementation": [implementation],
+                                  "native_apis": ["CustomPainter", "AnimationController"],
+                                  "runtime_markers": ["CustomPainter"],
+                                  "duration_ms": 560, "curve": "easeOutBack",
+                                  "visual_form": "topic-shaped light trail",
+                                  "parameters": {"particle_count": 14, "gravity": 0.8},
+                                  "reduce_motion": "replace with static pressed state",
+                                  "lifecycle": "dispose controller on page dispose and cancel on interruption",
+                                  "evidence": [".codex-work/motion.mov"],
+                              },
+                          ]}],
             "checks": [{"id": gate, "status": "Verified", "targets": ["home"],
                         "implementation": [source], "evidence": [".codex-work/motion.mov"],
                         "result": "Observed on current build; fixture does not certify visual quality."}
@@ -148,6 +195,38 @@ class VisualImplementationContractTests(unittest.TestCase):
         }
         self.add_design_system_contract(root, ledger)
         return ledger
+
+    @staticmethod
+    def dynamic_effects(implementation):
+        """Return the smallest valid per-page motion contract for fixture pages."""
+        return [
+            {
+                "id": "hero_reveal", "trigger": "page_ready",
+                "implementation_mode": "flutter_native",
+                "implementation": [implementation],
+                "native_apis": ["AnimationController", "AnimatedBuilder"],
+                "runtime_markers": ["AnimatedBuilder"],
+                "duration_ms": 720, "curve": "easeOutCubic",
+                "visual_form": "parallax material reveal",
+                "parameters": {"opacity": 0.84, "offset_px": 18},
+                "reduce_motion": "replace with static opacity",
+                "lifecycle": "dispose controller on page dispose and cancel on interruption",
+                "evidence": [".codex-work/motion.mov"],
+            },
+            {
+                "id": "tap_spark", "trigger": "tap_primary_action",
+                "implementation_mode": "flutter_native",
+                "implementation": [implementation],
+                "native_apis": ["CustomPainter", "AnimationController"],
+                "runtime_markers": ["CustomPainter"],
+                "duration_ms": 560, "curve": "easeOutBack",
+                "visual_form": "topic-shaped light trail",
+                "parameters": {"particle_count": 14, "gravity": 0.8},
+                "reduce_motion": "replace with static pressed state",
+                "lifecycle": "dispose controller on page dispose and cancel on interruption",
+                "evidence": [".codex-work/motion.mov"],
+            },
+        ]
 
     def test_procedural_background_keeps_image_accent_alongside_scene(self):
         for kind in ("flutter", "html"):
@@ -305,6 +384,129 @@ class VisualImplementationContractTests(unittest.TestCase):
             findings = []
             MODULE.validate_non_game_ui_contract(root, ledger, [], findings)
             self.assertTrue(any("only flat geometric drawing" in item for item in findings), findings)
+
+    def test_non_game_requires_background_provenance_and_per_page_dynamic_effects(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ledger = self.procedural_ledger(root)
+            ledger["project_type"] = "non_game"
+            ledger["ui_component_contract"] = {
+                "components": [
+                    {"name": "AnimatedBuilder", "version": "Flutter SDK", "license/source": "Flutter SDK",
+                     "actual_consumer": "lib/page_module/home_page.dart", "runtime_markers": ["AnimatedBuilder"]},
+                    {"name": "BackdropFilter", "version": "Flutter SDK", "license/source": "Flutter SDK",
+                     "actual_consumer": "lib/page_module/home_page.dart", "runtime_markers": ["BackdropFilter"]},
+                ],
+                "visual_constraints": {
+                    "no_simple_line_art": True,
+                    "no_flat_color_blocks": True,
+                    "no_solid_color_background": True,
+                },
+                "runtime_evidence": [".codex-work/motion.mov"],
+            }
+            background = ledger["surfaces"][0]["background"]
+            background.pop("asset_provenance", None)
+            ledger["surfaces"][0]["dynamic_effects"] = [{
+                "id": "hero_reveal",
+                "trigger": "page_ready",
+                "implementation_mode": "flutter_native",
+                "implementation": ["lib/common_module/motion/home_bg.dart"],
+                "native_apis": ["AnimationController", "AnimatedBuilder"],
+                "runtime_markers": ["AnimatedBuilder"],
+                "duration_ms": 720,
+                "curve": "easeOutCubic",
+                "visual_form": "parallax material reveal",
+                "parameters": {"opacity": 0.84, "offset_px": 18},
+                "reduce_motion": "replace with static opacity",
+                "lifecycle": "dispose controller on page dispose and cancel on interruption",
+                "evidence": [".codex-work/motion.mov"],
+            }]
+            ledger["surfaces"][0]["source"] = "lib/page_module/home_page.dart"
+            (root / ledger["surfaces"][0]["source"]).write_text(
+                "class HomePage { final background = HomeBg(); AnimatedBuilder build() => AnimatedBuilder(); }",
+                encoding="utf-8",
+            )
+            (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger), encoding="utf-8")
+            findings = MODULE.validate_visual_ledger(root)
+            self.assertTrue(any("asset_provenance" in item for item in findings), findings)
+            self.assertTrue(any("dynamic_effects" in item or "two" in item for item in findings), findings)
+
+    def test_non_game_accepts_third_party_first_background_and_native_effects(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ledger = self.procedural_ledger(root)
+            ledger["project_type"] = "non_game"
+            page = root / ledger["surfaces"][0]["source"]
+            page.write_text(page.read_text() + " AnimatedBuilder AnimationController BackdropFilter", encoding="utf-8")
+            ledger["ui_component_contract"] = {
+                "components": [
+                    {"name": "AnimatedBuilder", "version": "Flutter SDK", "license/source": "Flutter SDK",
+                     "actual_consumer": "lib/page_module/home_page.dart", "runtime_markers": ["AnimatedBuilder"]},
+                    {"name": "BackdropFilter", "version": "Flutter SDK", "license/source": "Flutter SDK",
+                     "actual_consumer": "lib/page_module/home_page.dart", "runtime_markers": ["BackdropFilter"]},
+                ],
+                "visual_constraints": {
+                    "no_simple_line_art": True,
+                    "no_flat_color_blocks": True,
+                    "no_solid_color_background": True,
+                },
+                "runtime_evidence": [".codex-work/motion.mov"],
+            }
+            ledger["surfaces"][0]["background"]["asset_provenance"] = {
+                "acquisition_order": ["third_party_search", "image_generation"],
+                "selected_source": "third_party",
+                "third_party_search": {
+                    "attempted": True,
+                    "sources": ["https://images.example.test/texture.jpg"],
+                    "query": "bright textured editorial scene",
+                    "free_access": True,
+                    "license_or_usage": "free download with attribution recorded",
+                    "result": "selected",
+                    "reason": "licensed image matches the page subject and material depth",
+                },
+                "generation": {"used": False},
+            }
+            ledger["surfaces"][0]["background"]["visual_treatment"] = (
+                "textured translucent scene with material, directional light and depth"
+            )
+            ledger["surfaces"][0]["dynamic_effects"] = [
+                {
+                    "id": "hero_reveal",
+                    "trigger": "page_ready",
+                    "implementation_mode": "flutter_native",
+                    "implementation": ["lib/common_module/motion/home_bg.dart"],
+                    "native_apis": ["AnimationController", "AnimatedBuilder"],
+                    "runtime_markers": ["AnimatedBuilder"],
+                    "duration_ms": 720,
+                    "curve": "easeOutCubic",
+                    "visual_form": "parallax material reveal",
+                    "parameters": {"opacity": 0.84, "offset_px": 18},
+                    "reduce_motion": "replace with static opacity",
+                    "lifecycle": "dispose controller on page dispose and cancel on interruption",
+                    "evidence": [".codex-work/motion.mov"],
+                },
+                {
+                    "id": "primary_tap_spark",
+                    "trigger": "tap_primary_action",
+                    "implementation_mode": "flutter_native",
+                    "implementation": ["lib/common_module/motion/home_bg.dart"],
+                    "native_apis": ["CustomPainter", "AnimationController"],
+                    "runtime_markers": ["CustomPainter"],
+                    "duration_ms": 560,
+                    "curve": "easeOutBack",
+                    "visual_form": "topic-shaped light trail",
+                    "parameters": {"particle_count": 14, "gravity": 0.8},
+                    "reduce_motion": "replace with static pressed state",
+                    "lifecycle": "dispose controller on page dispose and cancel on interruption",
+                    "evidence": [".codex-work/motion.mov"],
+                },
+            ]
+            (root / "lib/common_module/motion/home_bg.dart").write_text(
+                "class HomeBg { AnimationController controller; AnimatedBuilder builder; CustomPainter painter; }",
+                encoding="utf-8",
+            )
+            (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger), encoding="utf-8")
+            self.assertEqual(MODULE.validate_visual_ledger(root), [])
 
     def test_non_game_requires_verified_design_system_before_components(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -736,7 +938,17 @@ class VisualImplementationContractTests(unittest.TestCase):
             root = Path(tmp)
             (root / "lib/page_module").mkdir(parents=True)
             (root / "lib/page_module/home_page.dart").write_text(
-                "class HomePage {}\nconst backgroundAsset = 'home_background.png';", encoding="utf-8"
+                "class HomePage { final background = HomeBg(); }\n"
+                "const backgroundAsset = 'home_background.png';",
+                encoding="utf-8",
+            )
+            motion = root / "lib/common_module/motion/home_bg.dart"
+            motion.parent.mkdir(parents=True)
+            motion.write_text(
+                "class HomeBg extends CustomPainter { "
+                "AnimationController controller; AnimatedBuilder builder; "
+                "void paint(Canvas canvas, Size size) {} }",
+                encoding="utf-8",
             )
             evidence = root / ".codex-work"
             evidence.mkdir()
@@ -751,9 +963,25 @@ class VisualImplementationContractTests(unittest.TestCase):
                 "layout_history": {"scope": "first_record", "records": []},
                 "surfaces": [{"id": "home", "kind": "flutter", "source": "lib/page_module/home_page.dart",
                               "layout": self.layout_record(),
+                              "dynamic_effects": self.dynamic_effects("lib/common_module/motion/home_bg.dart"),
                               "background": {"asset": "assets/backgrounds/home/home_background.png",
                                              "opacity": 0.12, "placement": "upper-right behind content",
                                              "gradient_tokens": ["brandGradient", "sunsetGradient"],
+                                             "visual_treatment": "textured translucent scene with material, directional light and depth",
+                                             "asset_provenance": {
+                                                 "acquisition_order": ["third_party_search", "image_generation"],
+                                                 "selected_source": "third_party",
+                                                 "third_party_search": {
+                                                     "attempted": True,
+                                                     "sources": ["https://images.example.test/texture.jpg"],
+                                                     "query": "bright textured editorial scene",
+                                                     "free_access": True,
+                                                     "license_or_usage": "free download with attribution recorded",
+                                                     "result": "selected",
+                                                     "reason": "licensed image matches the page subject and material depth",
+                                                 },
+                                                 "generation": {"used": False},
+                                             },
                                              "palette_hex": ["#F05A3C", "#FFB347", "#6F2DBD"]}}],
                 "checks": [{"id": gate, "status": "Verified", "targets": ["home"],
                             "implementation": ["lib/page_module/home_page.dart"],
@@ -826,10 +1054,27 @@ class VisualImplementationContractTests(unittest.TestCase):
                     "id": surface_id, "kind": kind, "source": source,
                     "layout": self.layout_record(1),
                     **({"same_layout_as": "welcome"} if kind == "html" else {}),
+                    **({"dynamic_effects": self.dynamic_effects("lib/common_module/motion/home_bg.dart")}
+                       if kind == "flutter" else {}),
                     "background": {
                         "asset": "assets/backgrounds/welcome/welcome_background.png",
                         "opacity": 0.15, "placement": "right edge behind introduction",
                         "gradient_tokens": ["welcomeGradient", "accentGradient"],
+                        "visual_treatment": "textured translucent scene with material, directional light and depth",
+                        "asset_provenance": {
+                            "acquisition_order": ["third_party_search", "image_generation"],
+                            "selected_source": "third_party",
+                            "third_party_search": {
+                                "attempted": True,
+                                "sources": ["https://images.example.test/welcome.jpg"],
+                                "query": "bright textured welcome scene",
+                                "free_access": True,
+                                "license_or_usage": "free download with attribution recorded",
+                                "result": "selected",
+                                "reason": "licensed image matches the page subject and material depth",
+                            },
+                            "generation": {"used": False},
+                        },
                         "palette_hex": ["#F05A3C", "#FFB347", "#6F2DBD"],
                     },
                 })

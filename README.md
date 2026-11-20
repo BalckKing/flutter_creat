@@ -108,7 +108,7 @@ zsh flutter_check/test_workflow_integrity.sh
 
 ## 验收后的 Git 交接
 
-全部项目验收、修复复验及五张最终截图通过后，最后执行第 22 步：在实际 Flutter 工程根目录运行随技能安装的 `scripts/prepare_git_handoff.py`，用用户提供的 Git 地址完成本地 Git 初始化、关联 remote，并创建/切换到 `feat/1.0.0`。脚本会确认工程拥有自己的 `.git`、读取提交身份、记录 unborn/HEAD、保留已有暂存与未暂存改动，并写入 `.codex-work/git-handoff.md`，这样 Git 界面可以识别工程并允许你直接暂存和提交。新仓库可以保持没有首个提交，但必须已经完成本地初始化；缺少 `user.name` 或 `user.email` 时会如实报告“无法直接提交”，不会编造身份。
+全部项目验收、修复复验及最终页面证据通过后，最后执行第 22 步：在实际 Flutter 工程根目录运行随技能安装的 `scripts/prepare_git_handoff.py`，用用户提供的 Git 地址完成本地 Git 初始化、关联 remote，并创建/切换到 `feat/1.0.0`。脚本会确认工程拥有自己的 `.git`、读取提交身份、记录 unborn/HEAD、保留已有暂存与未暂存改动，并写入 `.codex-work/git-handoff.md`，这样 Git 界面可以识别工程并允许你直接暂存和提交。新仓库可以保持没有首个提交，但必须已经完成本地初始化；缺少 `user.name` 或 `user.email` 时会如实报告“无法直接提交”，不会编造身份。
 
 示例命令（`<target-project-root>` 必须是真实 Flutter 工程根目录，包含 `pubspec.yaml`、`lib/` 和 `ios/`）：
 
@@ -368,7 +368,7 @@ Emoji、渐变、矢量插画、AI 拟真图或仅写素材清单不能代替真
 
 每个新建及复用项目都必须适配执行当日最新稳定版 iOS 生命周期，最低部署版本仍为 15.6 或真实依赖要求的更高值。流程会核实稳定 iOS/Xcode/Flutter 组合，成套核验 UIScene、AppDelegate/SceneDelegate、engine/插件/通道注册与原生窗口时机，并在当前 iPhone 构建检查冷启动、前后台、系统中断、Scene 恢复及清除恢复；原生承接层在 Welcome 实际就绪后前台保持 250ms 再淡出的规定继续生效。源码和编译成功不等于运行通过，缺最新 runtime 或真机时如实记录，不用旧系统结果冒充兼容证明；独立 AppListing/About/Remarks 继续生成。详见第 9.1.1、11.1.1 节，证据纳入已有 `.codex-work/quality.md`。
 
-本流程只创建、构建和验证 iOS iPhone App，最低 iOS 部署版本为 15.6；实际依赖要求更高时保留更高版本，并按正文核对 Podfile、所有构建 target 的解析设置及可用产物。运行与截图必须明确指定 iPhone 机型及 UDID；没有可用 iPhone 时继续可执行检查，不回退到其他设备或平台。按实际权限插件检查 `ios/Podfile` 并尽力设置最小权限宏；使用 PhotoKit 整库读取 API 时，必须设置并从 Pods 解析后的编译设置证实 `PERMISSION_PHOTOS=1`；只用系统照片选择器时不启用整库权限宏。宏配置失败需记录，但不得因此中止 Pods 安装或 iOS 打包尝试。不集成追踪功能；ATT 权限申请、弹窗、四状态、触发条件与启动任务全部移除，同时清除请求 API、用途键、框架链接、启用宏、IDFA 访问和追踪依赖。发现仍会追踪的组件时禁用、移除或替换，不恢复该授权流程；核验实际数据流与最终产物，并据实披露。宏配置、构建结果与权限运行验证分开报告，失败的权限路径不能标为通过。摄像机、相册、录音、通知、定位、日历、联系人、文件、蓝牙/NFC、运动/HealthKit 等能力按主题能力矩阵评估；适用项添加真实页面、插件或权限，不适用项记录依据。全部实现、发布材料、图片及依赖检查结束后，执行第 11.6 节 iOS 权限双向校验：实际 API 必需的用途键/宏/能力配置必须完整有效，无真实用途的配置、请求和依赖全部移除；无受保护能力时验证零无关权限。若修正后重建，刷新受影响的最终显示证据并再次核对产物权限；随后按第 12.5 节完成最后的五张项目截图。详情见工作流文档第 0.7、11.6–11.7 节，证据记录于项目 `.codex-work/ios-permissions.md`。
+本流程只创建、构建和验证 iOS iPhone App，最低 iOS 部署版本为 15.6；实际依赖要求更高时保留更高版本，并按正文核对 Podfile、所有构建 target 的解析设置及可用产物。运行与截图必须明确指定 iPhone 机型及 UDID；没有可用 iPhone 时继续可执行检查，不回退到其他设备或平台。按实际权限插件检查 `ios/Podfile` 并尽力设置最小权限宏；使用 PhotoKit 整库读取 API 时，必须设置并从 Pods 解析后的编译设置证实 `PERMISSION_PHOTOS=1`；只用系统照片选择器时不启用整库权限宏。宏配置失败需记录，但不得因此中止 Pods 安装或 iOS 打包尝试。不集成追踪功能；ATT 权限申请、弹窗、四状态、触发条件与启动任务全部移除，同时清除请求 API、用途键、框架链接、启用宏、IDFA 访问和追踪依赖。发现仍会追踪的组件时禁用、移除或替换，不恢复该授权流程；核验实际数据流与最终产物，并据实披露。宏配置、构建结果与权限运行验证分开报告，失败的权限路径不能标为通过。摄像机、相册、录音、通知、定位、日历、联系人、文件、蓝牙/NFC、运动/HealthKit 等能力按主题能力矩阵评估；适用项添加真实页面、插件或权限，不适用项记录依据。全部实现、发布材料、图片及依赖检查结束后，执行第 11.6 节 iOS 权限双向校验：实际 API 必需的用途键/宏/能力配置必须完整有效，无真实用途的配置、请求和依赖全部移除；无受保护能力时验证零无关权限。若修正后重建，刷新受影响的最终显示证据并再次核对产物权限；随后按第 12.5 节完成最后的最终页面证据。详情见工作流文档第 0.7、11.6–11.7 节，证据记录于项目 `.codex-work/ios-permissions.md`。
 
 为避免只写规范却漏配，已提供可执行的 `flutter-engine-runner/scripts/prepare_ios_config.py`，并随启动器安装到技能目录。按第 9.1.2 节在实际 App 上运行：`--project-root "<App根目录>" --photo-access read-write --permission-handler --minimum-ios 15.6 --apply` 适用于通过 CocoaPods 接入 `permission_handler_apple` 且需要 PhotoKit 读写的工程。它保留既有 plist 字段及更高版本，补标准 `MinimumOSVersion`，在唯一现有 Hook 末尾配置插件全部配置的 `PERMISSION_PHOTOS=1` 并禁用其 ATT 宏，保留其他宏；先验证、备份再写入，可重复执行。只添加照片改用 `add-only`，纯系统选择器用 `picker`、无照片能力用 `none`，非该宏体系不传 `--permission-handler`。去掉 `--apply` 是只读复查；缺文件/无效语法会报错，不能伪造空文件。部分 Flutter 模板省略源版本键，迁移也可能移除它，须在迁移后重新检查源文件；源补齐成功与真实 Pods/构建/运行结果分开，仍核验有效宏和 App/App.framework 产物，不宣称所有旧工程已自动修复。
 
@@ -380,19 +380,15 @@ Emoji、渐变、矢量插画、AI 拟真图或仅写素材清单不能代替真
 
 长时间的 `flutter build`、`xcodebuild`、`pod install`、archive、install 和 debug 必须用 `flutter-engine-runner/scripts/run_bounded_command.py` 一次性执行，并保存输出日志、状态 JSON 和心跳。包装器明确区分 `passed`、`failed`、`timeout`、`blocked_no_progress` 与 `launch_failed`；超时或无进展后只读取一次状态和日志进入诊断，禁止连续重复相同的 `write_stdin`，也禁止在没有新证据时重跑同一命令。状态文件是诊断依据，不等于真实 App 已构建、安装或运行通过。
 
-目标工程中的 `aduit/` 必须严格保持（由最终生成的 `AppListing/` 改名/整理而来，不执行公开部署）。改名完成后立即在其根目录新建 `imgs/` 文件夹，创建时为空。工程、材料、最终图片/依赖及 iOS 权限校验和修复复验结束后，最后自主截取五个体现核心功能或操作成果的不同 App 画面放入其中。五张均须为原始竖屏 1206×2622 PNG，复用现有 iPhone 和最终调试安装，逐张检查尺寸、解码、内容差异和无占位；不裁切/缩放/补边凑尺寸。最终 imgs/ 恰好五张，无 `.gitkeep`、隐藏文件或其他产物，记录/旧图留 `.codex-work/`，报告提供五张链接。完整规则见第 12.5 节；原有 `site/img/logo.png` 保持原位置：
+目标工程中的 `aduit/` 必须严格保持（由最终生成的 `AppListing/` 改名/整理而来，不执行公开部署）。`imgs/` 目录可按交付材料需要创建，也可以省略；不再要求固定数量的最终截图。工程、材料、最终图片/依赖及 iOS 权限校验和修复复验结束后，按页面和核心操作状态保存必要的当前 iPhone 视觉证据，优先放入 `.codex-work/`，如需公开交付截图再放入 `aduit/imgs/`。每张实际截图都必须来自最终构建、完整可解码、无占位/遮挡/裁切，并记录页面、状态、设备、构建和哈希；不复制图片或以相邻动画帧凑数。完整规则见第 12.5 节；原有 `site/img/logo.png` 保持原位置：
 
 ```text
 lib/welcome.dart  # Actual Flutter Welcome page; routed at /welcome
 aduit/
 ├── intro.md
 ├── welcome.html  # Standalone delivery only; never loaded or bundled
-├── imgs/  # 最后截取的五张项目画面，均为原始 1206×2622 PNG
-│   ├── 01_<short_id>.png
-│   ├── 02_<short_id>.png
-│   ├── 03_<short_id>.png
-│   ├── 04_<short_id>.png
-│   └── 05_<short_id>.png
+├── imgs/  # 可选的公开页面证据；数量按页面/状态需要，不固定
+│   └── <page_or_state_id>.png  # Optional public copy of current iPhone evidence
 ├── site/
 │   ├── PrivacyPolicy.html
 │   ├── Terms&Conditions.html
@@ -409,7 +405,7 @@ aduit/
 
 发布前会使用唯一 Bundle ID 核对产品身份，并扫描隐藏审核模式、远程换功能、虚假账号/计费/服务/权限、伪造测试记录、评价诱导、评分奖励、搜索/榜单/引荐/安装量操纵，以及崩溃、白屏、占位图、死链接、错误权限、数据丢失和核心流程失败。App Store 元数据、截图、About、Intro、Support 和 Remarks 只能写已确认事实，且必须互相一致。专项结果写入 `.codex-work/app-review-risk.md`；关键项失败会记录为 `Release readiness: Blocked`，不会因为其他材料已生成而报告为可上架。外部网络或素材失败仍按现有回退继续独立任务。
 
-免责与版权说明合并到原法律页。最终 `aduit/site/` 保留与 `aduit/welcome.html` 字节一致的 `index.html`、三个协议 HTML 和 `img/logo.png`；不生成其他首页。Logo 配色、草稿清理等只做有记录的必要定点修正；保存原副本/哈希，在 Dart 运行 Welcome 与 HTML 交付文件制作和清理后复核其余内容字节一致。`aduit/` 顶层仅 `intro.md`、`welcome.html`、`imgs/`（最终五张截图）、`site/`、`review/`，review 仅 remarks.md。Welcome 运行时唯一使用 `lib/welcome.dart`；`aduit/welcome.html` 保留为独立交付文件，不删除、不加载、不注册、不桥接、不复制或打包到 App，仍内联全部内容与 Base64 图片并严格小于 262,144 字节。HTML 只做独立离线验收，不能作为第二个 App Welcome 或运行证据。五张最终项目截图只放 `aduit/imgs/`，过程证据/备份/额外产物只放 `.codex-work/`。Remarks 全英文、最多 4,000 字符、七章分点、设置按顺序编号、仅指定 iPhone 记录和已确认事实，无 WebView/WebKit/内部模块描述。清理旧 AppListing、首页 HTML、aduit/html 和根目录旧 welcome/enter HTML，保留三个协议页与三个 URL。
+免责与版权说明合并到原法律页。最终 `aduit/site/` 保留与 `aduit/welcome.html` 字节一致的 `index.html`、三个协议 HTML 和 `img/logo.png`；不生成其他首页。Logo 配色、草稿清理等只做有记录的必要定点修正；保存原副本/哈希，在 Dart 运行 Welcome 与 HTML 交付文件制作和清理后复核其余内容字节一致。`aduit/` 顶层仅 `intro.md`、`welcome.html`、`imgs/`（可选公开页面证据）、`site/`、`review/`，review 仅 remarks.md。Welcome 运行时唯一使用 `lib/welcome.dart`；`aduit/welcome.html` 保留为独立交付文件，不删除、不加载、不注册、不桥接、不复制或打包到 App，仍内联全部内容与 Base64 图片并严格小于 262,144 字节。HTML 只做独立离线验收，不能作为第二个 App Welcome 或运行证据。最终页面证据按页面/状态保存在 `.codex-work/`，需要公开副本时才放入 `aduit/imgs/`；过程证据/备份/额外产物只放 `.codex-work/`。Remarks 全英文、最多 4,000 字符、七章分点、设置按顺序编号、仅指定 iPhone 记录和已确认事实，无 WebView/WebKit/内部模块描述。清理旧 AppListing、首页 HTML、aduit/html 和根目录旧 welcome/enter HTML，保留三个协议页与三个 URL。
 
 ### App 内搜索能力决策（本轮硬规则）
 

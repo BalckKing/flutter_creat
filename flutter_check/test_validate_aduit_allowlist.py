@@ -12,8 +12,13 @@ class AduitTests(unittest.TestCase):
         (self.root/"aduit/site/index.html").write_bytes((self.root/"aduit/welcome.html").read_bytes())
         for name in ("PrivacyPolicy.html","Terms&Conditions.html","Support.html"): (self.root/"aduit/site"/name).write_text("ok", encoding="utf-8")
         (self.root/"aduit/site/img/logo.png").write_bytes(PNG)
-        for i in range(5): (self.root/"aduit/imgs"/f"shot{i}.png").write_bytes(PNG)
-    def test_final_allowlist_passes(self): self.assertEqual(module.validate(self.root, final=True)["status"], "Passed")
+        for i in range(2): (self.root/"aduit/imgs"/f"shot{i}.png").write_bytes(PNG)
+    def test_final_allowlist_accepts_variable_evidence_count(self): self.assertEqual(module.validate(self.root, final=True)["status"], "Passed")
+
+    def test_final_allowlist_allows_missing_optional_screenshot_directory(self):
+        import shutil
+        shutil.rmtree(self.root/"aduit/imgs")
+        self.assertEqual(module.validate(self.root, final=True)["status"], "Passed")
     def test_root_index_and_extra_files_fail(self):
         (self.root/"aduit/index.html").write_text("bad", encoding="utf-8"); (self.root/"aduit/extra.txt").write_text("bad", encoding="utf-8")
         report=module.validate(self.root, final=True); self.assertEqual(report["status"], "Failed"); self.assertTrue(any("index.html" in e for e in report["errors"]))
