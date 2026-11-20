@@ -434,3 +434,17 @@ App 内搜索不是默认能力；它是条件能力。主题确认时在 capabi
 游戏项目还必须提供最终 `2.5d` 或 `3d` 视觉契约：主题化成品资产、前中后景或等价空间层次、相机/遮挡、材质与光影、状态变体、动画/粒子反馈、清楚 HUD、完整玩法范围和当前 iPhone 运行证据。非游戏项目必须提供领域专属视觉语言、至少三个不同结果或页面构图、真实 UI/动效/渲染组件的精确版本/许可证/实际消费者/运行证据、具有主体与材质深度的图像层、完整状态覆盖和当前 iPhone 运行证据。混合项目必须同时通过游戏与非游戏两套契约；非游戏没有游戏引擎时，视觉完成度、真实消费者、状态覆盖和运行证据门槛不降低。
 
 最终报告、公开文案、`release-readiness.json`、截图说明、Review Remarks 和 Git handoff 报告不得把当前交付称为 `prototype`、`functional demo`、`rough build`、`visual prototype`、`unfinished`、`to be polished` 或等价的未完成状态。早期历史记录可以描述原型或垂直切片，但必须明确它是早期阶段；最终状态只能使用 `Passed`、`Failed`、`Blocked` 或 `Not verified`。运行 `python3 <skill-root>/scripts/validate_final_visual_product.py --project-root <target-project-root> --json`，并在发布就绪记录中保留 `final_visual_product` 门禁及其证据。
+
+### 游戏设计契约：单一真相与可执行质量门槛（硬门槛）
+
+当项目类型为 `game` 或 `mixed` 时，必须先创建 `.codex-work/game-design-contract.json`，并运行：
+
+```bash
+python3 <skill-root>/scripts/validate_game_design_contract.py --project-root <target-project-root> --json
+```
+
+该文件是游戏视觉和领域设计的唯一权威来源，优先级固定为 `game-design-contract.json → pages[] → domain/renderer/assets → evidence → status`。`.codex-work/game-engine.json` 只负责引擎必要性、`implementation_mode`、`engine_required` 和垂直切片；未在契约中声明的设计文件冲突必须失败，不能把复古网页、像素街机、渐变卡片等多套风格自行拼接。
+
+契约必须用可验收字段替代“精致”“有层次”“2.5D”等主观词：`projection`、`coordinate_system`、`camera`、`layers`、`materials_lighting`、`occlusion_order`、`measurable_thresholds`。阈值至少包括 `minimum_depth_layers`、`minimum_unique_mode_assets`、`minimum_motion_duration_ms`、`maximum_flat_geometry_ratio` 和 `minimum_occlusion_layers`。每个模式必须有独立环境、道路/空间、车辆/角色、实体、规则、结果和专属资产；每个领域字段都要列出真实代码 `render_consumers`。模式只改标题、颜色、数量或文案，数据没有驱动画面，或没有规则/碰撞因果反馈，都直接阻断。
+
+`asset_pipeline` 必须登记离线资源、透明度、空间层、统一坐标、遮挡顺序和加载入口；`placeholder`、`solid_color_block`、`flat_rectangle`、静态截图和通用占位资产不得通过。每个页面契约必须含真实路由、独立 `layout_signature`、构图、状态、交互、错误恢复和当前 iPhone 证据。证据必须有唯一 ID、项目版本、Bundle ID、设备/UDID、状态和 SHA-256；重复截图、静态图冒充动效、过期设备/构建和 `verification_status` 与 `release_status` 矛盾均为阻断。垂直切片只是技术闭环，契约未通过时不能进入 `final_visual_product`、发布材料或 Git handoff。

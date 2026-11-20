@@ -501,6 +501,31 @@ def _final_visual_findings(root: Path) -> list[str]:
         return [f"final visual product: validator failed to load: {error}"]
 
 
+def _game_design_contract_findings(root: Path) -> list[str]:
+    """Run the single-source game design contract gate.
+
+    ``game-engine.json`` remains responsible for the engine decision and the
+    playable vertical slice.  The design contract owns the visual/domain
+    truth, page contracts and evidence identity.  Keep the import by path so
+    the standalone workflow bundle works without installing a Python package.
+    """
+    validator_path = Path(__file__).with_name("validate_game_design_contract.py")
+    if not validator_path.is_file():
+        return ["game design contract: missing validate_game_design_contract.py"]
+    try:
+        spec = importlib.util.spec_from_file_location("validate_game_design_contract", validator_path)
+        if spec is None or spec.loader is None:
+            return ["game design contract: cannot load validate_game_design_contract.py"]
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        validate = getattr(module, "validate_project", None)
+        if not callable(validate):
+            return ["game design contract: validator does not expose validate_project(project_root)"]
+        return [f"game design contract: {item}" for item in validate(root)]
+    except (OSError, ImportError, AttributeError, TypeError, ValueError) as error:
+        return [f"game design contract: validator failed to load: {error}"]
+
+
 def _visual_contract(manifest: Mapping[str, Any], root: Path, findings: list[str]) -> dict[str, Any] | None:
     """Validate the game-wide 2.5D/3D visual contract.
 
@@ -738,6 +763,8 @@ def validate_project(project_root: Path | str) -> list[str]:
     manifest = _manifest(root, findings)
     if manifest is None:
         return findings
+    if manifest.get("project_type") in {"game", "mixed"}:
+        findings.extend(_game_design_contract_findings(root))
     _visual_contract(manifest, root, findings)
     _lobby_text, lobby_files = _source_text(root)
     _validate_game_lobby(root, manifest, lobby_files, findings)

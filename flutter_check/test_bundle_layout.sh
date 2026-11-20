@@ -23,6 +23,7 @@ typeset -a task_expected=(
   test_start_remote_listing.sh
   test_validate_visual_implementation.py
   test_validate_game_project.py
+  test_validate_game_design_contract.py
   test_prepare_ios_config.py
   test_prepare_git_handoff.py
   test_validate_flutter_navigation.py

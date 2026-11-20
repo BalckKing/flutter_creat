@@ -113,7 +113,7 @@ require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'offline_cold_start'
 require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'Dynamic Type'
 require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" '密钥'
 require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'generated_at'
-for task_new_script in validate_work_records.py validate_ios_artifacts.py validate_aduit_allowlist.py validate_welcome_flow.py validate_execution_state.py validate_capability_matrix.py validate_quality_records.py validate_final_visual_product.py prepare_asset_staging.py validate_asset_staging.py cleanup_generation_history.py validate_logo_quality.py validate_release_readiness.py; do
+for task_new_script in validate_work_records.py validate_ios_artifacts.py validate_aduit_allowlist.py validate_welcome_flow.py validate_execution_state.py validate_capability_matrix.py validate_quality_records.py validate_final_visual_product.py validate_game_design_contract.py prepare_asset_staging.py validate_asset_staging.py cleanup_generation_history.py validate_logo_quality.py validate_release_readiness.py; do
   require_file "$TASK_ROOT/flutter-engine-runner/scripts/$task_new_script"
 done
 
@@ -492,8 +492,20 @@ require_file "$TASK_ROOT/flutter-engine-runner/scripts/prepare_ios_config.py"
 require_file "$TASK_ROOT/flutter-engine-runner/scripts/prepare_git_handoff.py"
 require_file "$TASK_ROOT/flutter-engine-runner/scripts/validate_flutter_navigation.py"
 require_file "$TASK_ROOT/flutter-engine-runner/scripts/validate_game_project.py"
+require_file "$TASK_ROOT/flutter-engine-runner/scripts/validate_game_design_contract.py"
 require_text "$TASK_RUNNER" 'Game engine quality contract \(game and mixed projects only\)'
 require_text "$TASK_RUNNER" '\.codex-work/game-engine\.json'
+require_text "$TASK_RUNNER" 'game-design-contract\.json'
+require_text "$TASK_RUNNER" 'validate_game_design_contract\.py'
+require_text "$TASK_QA" 'game-design-contract\.json'
+require_text "$TASK_QA" 'render_consumers'
+require_text "$TASK_ORDER" 'validate_game_design_contract\.py'
+require_text "$TASK_ARCHITECTURE" 'game-design-contract\.json'
+require_text "$TASK_README" 'game-design-contract\.json'
+require_text "$TASK_DOCS_DIR/02-创意与思维导图.md" 'game-design-contract\.json'
+require_text "$TASK_DOCS_DIR/03-产品定义与导航.md" 'game-design-contract\.json'
+require_text "$TASK_DOCS_DIR/04-视觉与页面功能.md" 'game-design-contract\.json'
+require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'game-design-contract\.json'
 require_text "$TASK_RUNNER" 'engine\.name.*engine\.version.*engine\.entrypoint'
 require_text "$TASK_RUNNER" 'engine environment.*scene boot.*authored asset load.*input.*update/physics.*success or failure result.*feedback.*restart'
 require_text "$TASK_RUNNER" 'validate_game_project\.py'

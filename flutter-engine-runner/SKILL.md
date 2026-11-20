@@ -537,3 +537,17 @@ Every project writes `.codex-work/final-visual-product.json` with `schema_versio
 Game projects require a final 2.5D or 3D authored visual runtime with depth, camera/occlusion, materials/lighting, state variants, animation/feedback, HUD hierarchy, full gameplay scope, and current-iPhone evidence. Non-game projects require a domain-owned visual language, at least three distinct page/result compositions, real UI/visual component consumers with exact version, license/source, actual consumer, and runtime evidence, rich imagery/material/depth, complete state coverage, and current-iPhone evidence. Mixed projects must pass both contracts; the non-game path has the same visual maturity and evidence bar even when no game engine is used.
 
 Final reports, public copy, `release-readiness.json`, screenshot captions, Review Remarks, and Git-handoff reports must not call the delivered project `prototype`, `functional demo`, `rough build`, `visual prototype`, `unfinished`, `to be polished`, or an equivalent incomplete status. Internal historical records may describe an earlier prototype or vertical slice only when clearly labeled as an earlier stage. Run `validate_final_visual_product.py` and keep a `final_visual_product` release gate with its evidence.
+
+## Game design contract: single source of truth and executable visual gates
+
+For every `game` or `mixed` project, create `.codex-work/game-design-contract.json` before implementing the game surface. Run:
+
+```bash
+python3 <skill-root>/scripts/validate_game_design_contract.py --project-root <target-project-root> --json
+```
+
+The contract is the single source of truth with this priority: `game-design-contract.json -> pages[] -> domain/renderer/assets -> evidence -> status`. `.codex-work/game-engine.json` remains the engine-necessity and technical vertical-slice manifest; it cannot override the design contract. Any undeclared conflict between design files is a blocking finding.
+
+Replace subjective claims such as “polished”, “layered”, or “2.5D” with executable fields: `projection`, `coordinate_system`, `camera`, `layers`, `materials_lighting`, `occlusion_order`, and `measurable_thresholds`. Thresholds must include `minimum_depth_layers`, `minimum_unique_mode_assets`, `minimum_motion_duration_ms`, `maximum_flat_geometry_ratio`, and `minimum_occlusion_layers`. Each mode must define an independent `environment`, `road_space`, `vehicle_or_character`, `entities`, `rules`, `results`, and mode-specific assets. Every domain field must list real `render_consumers` in the source tree; changing only copy, color, count, or title never passes.
+
+The `asset_pipeline` must record offline assets, transparency, layer names, coordinates, occlusion order, and load entrypoints. `placeholder`, `solid_color_block`, `flat_rectangle`, static screenshots, and generic placeholder assets are blocking. Each page contract must contain a real route, independent `layout_signature`, composition, assets, states, interactions, error recovery, and current iPhone evidence. Evidence requires a unique ID, project version, Bundle ID, device/UDID, status, and SHA-256. Duplicate evidence, stale device/build captures, static images used as motion evidence, missing routes, and contradictory `plan_status`, `implementation_status`, `verification_status`, or `release_status` are blocking. A technical vertical slice is not the final visual product; the contract must pass before `final_visual_product`, release materials, or Git handoff.

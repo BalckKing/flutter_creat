@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
 import json
 import tempfile
 import unittest
@@ -203,8 +204,247 @@ class MockNativeGame extends StatelessWidget { const MockNativeGame({super.key})
 """
         self.write("lib/game/native_game.dart", source)
 
+    def _write_game_design_contract(self, *, device="iPhone 17 Pro"):
+        """Write the shared design contract required by game preflight.
+
+        The game-engine manifest remains the engine decision fixture.  This
+        contract mirrors its current visual mode and binds the fixture's
+        domain fields, assets, page route and runtime evidence so the new
+        single-source gate can pass for the positive engine/native cases.
+        """
+        manifest_path = self.root / ".codex-work/game-engine.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        visual_mode = manifest.get("visual_mode", "2.5d")
+        engine = manifest.get("engine") if isinstance(manifest.get("engine"), dict) else {}
+        native_runtime = manifest.get("native_runtime") if isinstance(manifest.get("native_runtime"), dict) else {}
+        engine_name = engine.get("name")
+        if manifest.get("implementation_mode") == "flutter-native":
+            runtime_source = "lib/game/native_game.dart"
+            runtime_consumer = "lib/game/native_game.dart:NativeGame"
+            scene_values = list(native_runtime.get("scene_assets", []))
+        elif engine_name == "Godot":
+            runtime_source = "game/scripts/city.gd"
+            runtime_consumer = "game/scripts/city.gd:update_rules"
+            scene_values = list(engine.get("scene_assets", []))
+        elif engine_name not in {None, "Flame"}:
+            runtime_source = str(engine.get("entrypoint") or "lib/game/game.dart")
+            runtime_consumer = f"{runtime_source}:update_rules"
+            scene_values = list(engine.get("scene_assets", []))
+        else:
+            runtime_source = "lib/game/game.dart"
+            runtime_consumer = "lib/game/game.dart:AuroraGame"
+            scene_values = list(engine.get("scene_assets", []))
+
+        # Only use regular, non-empty fixture files for the shipped asset
+        # pipeline.  Runtime evidence files stay in .codex-work and are never
+        # treated as scene assets.
+        candidates = []
+        for value in scene_values + [
+            "assets/game/final_subject.png",
+            "assets/game/final_environment.png",
+            "assets/game/final_prop.png",
+            "assets/game/final_effect.png",
+        ]:
+            path = self.root / value
+            if value not in candidates and path.is_file() and path.stat().st_size:
+                candidates.append(value)
+        while len(candidates) < 6:
+            extra = f"assets/game/contract_asset_{len(candidates)}.png"
+            self.write(extra, b"authored scene fixture")
+            candidates.append(extra)
+        mode_a_assets = candidates[:3]
+        mode_b_assets = candidates[3:6]
+
+        self.write(
+            "lib/game/design_contract_page.dart",
+            """class DesignContractPage {\n"
+            "  static const route = '/play/fixture';\n"
+            "  static const layout = 'fixture-layered-hud-v1';\n"
+            "}\n""",
+        )
+        page_capture = ".codex-work/iphone-gameplay-screenshot.png"
+        page_capture_path = self.root / page_capture
+        evidence = []
+        if page_capture_path.is_file() and page_capture_path.stat().st_size:
+            evidence.append(
+                {
+                    "evidence_id": "fixture_page_capture",
+                    "acceptance_item": "fixture play page route and layout",
+                    "path": page_capture,
+                    "type": "screenshot",
+                    "project_version": "1.0.0",
+                    "bundle_id": "com.example.auroraGame",
+                    "device": device,
+                    "udid": "00008150-001A114E0C91801E",
+                    "status": "Verified",
+                    "sha256": hashlib.sha256(page_capture_path.read_bytes()).hexdigest(),
+                    "page_id": "fixture_play",
+                }
+            )
+        else:
+            # Keep a deterministic record even for negative fixtures; the
+            # validator will report the missing file instead of crashing.
+            evidence.append(
+                {
+                    "evidence_id": "fixture_page_capture",
+                    "acceptance_item": "fixture play page route and layout",
+                    "path": page_capture,
+                    "type": "screenshot",
+                    "project_version": "1.0.0",
+                    "bundle_id": "com.example.auroraGame",
+                    "device": device,
+                    "udid": "00008150-001A114E0C91801E",
+                    "status": "Verified",
+                    "sha256": "0" * 64,
+                    "page_id": "fixture_play",
+                }
+            )
+
+        def asset_entry(path, role, geometry, material, layer):
+            return {
+                "path": path,
+                "role": role,
+                "geometry": geometry,
+                "material": material,
+                "render_layer": layer,
+                "placeholder": False,
+            }
+
+        all_assets = candidates[:6]
+        asset_metadata = [
+            asset_entry(all_assets[0], "authored environment", "layered raster scene", "textured surface", "background"),
+            asset_entry(all_assets[1], "authored gameplay space", "perspective scene mesh", "painted material", "midground"),
+            asset_entry(all_assets[2], "authored subject", "beveled sprite silhouette", "painted metal", "foreground"),
+            asset_entry(all_assets[3], "authored alternate environment", "layered raster scene", "textured surface", "background"),
+            asset_entry(all_assets[4], "authored alternate space", "perspective scene mesh", "fabric and wood", "midground"),
+            asset_entry(all_assets[5], "authored alternate actor", "beveled sprite silhouette", "painted material", "foreground"),
+        ]
+
+        def mode(mode_id, name, assets, scene):
+            return {
+                "mode_id": mode_id,
+                "name": name,
+                "environment": {
+                    "value": f"{name} layered environment with weather and depth",
+                    "render_consumers": [f"{runtime_consumer}"],
+                },
+                "road_space": {
+                    "value": f"{name} navigable space with perspective lanes",
+                    "render_consumers": [f"{runtime_consumer}"],
+                },
+                "vehicle_or_character": {
+                    "value": f"{name} authored actor with material response",
+                    "render_consumers": [f"{runtime_consumer}"],
+                },
+                "entities": {
+                    "value": f"{name} interactive entities with occlusion",
+                    "render_consumers": [f"{runtime_consumer}"],
+                },
+                "rules": {
+                    "value": f"{name} timing and collision rules drive state changes",
+                    "render_consumers": [f"{runtime_consumer}"],
+                },
+                "results": {
+                    "value": f"{name} success and failure feedback with restart",
+                    "render_consumers": [f"{runtime_consumer}"],
+                },
+                "assets": assets,
+            }
+
+        contract = {
+            "schema_version": 1,
+            "project_type": "game",
+            "project_identity": {
+                "version": "1.0.0",
+                "bundle_id": "com.example.auroraGame",
+                "device": device,
+                "udid": "00008150-001A114E0C91801E",
+            },
+            "source_of_truth": {
+                "id": ".codex-work/game-design-contract.json",
+                "version": 1,
+                "priority": ["game-design-contract.json", "pages", "domain_render_assets", "evidence", "status"],
+                "non_authoritative_sources": [".codex-work/game-engine.json"],
+                "conflict_policy": "fail_on_conflict",
+            },
+            "visual_system": {
+                "renderer": "authored layered runtime renderer",
+                "projection": f"{visual_mode} orthographic depth projection",
+                "coordinate_system": "world x/y with depth z",
+                "camera": {"model": "parallax camera with occlusion", "near_clip": 0.1, "far_clip": 100.0},
+                "design_tokens": {"depth_unit_px": 24, "shadow_blur_px": 18, "motion_duration_ms": 420},
+                "layers": [
+                    {"id": "background", "z": 0, "role": "environment"},
+                    {"id": "midground", "z": 1, "role": "play space"},
+                    {"id": "foreground", "z": 2, "role": "actors and effects"},
+                ],
+                "materials_lighting": {
+                    "materials": ["textured raster", "painted metal", "fabric surface"],
+                    "lighting": "directional key light and ambient fill",
+                    "shadows": "contact shadows under actors",
+                },
+                "measurable_thresholds": {
+                    "minimum_depth_layers": 3,
+                    "minimum_unique_mode_assets": 3,
+                    "minimum_motion_duration_ms": 180,
+                    "maximum_flat_geometry_ratio": 0,
+                    "minimum_occlusion_layers": 2,
+                },
+                "rejection_thresholds": [
+                    "reject fewer than three depth layers or authored scene assets",
+                    "reject flat geometry and placeholder assets",
+                ],
+            },
+            "modes": [
+                mode("fixture_a", "Aurora Harbor", mode_a_assets, runtime_source),
+                mode("fixture_b", "Aurora Market", mode_b_assets, runtime_source),
+            ],
+            "asset_pipeline": {
+                "offline_assets": all_assets,
+                "layers": ["background", "midground", "foreground"],
+                "transparency": "premultiplied alpha for sprites and effects",
+                "occlusion_order": ["background", "midground", "foreground", "effects", "hud"],
+                "coordinate_system": "world x/y with depth z",
+                "load_entrypoints": [runtime_source],
+                "assets": asset_metadata,
+                "forbidden": ["placeholder", "flat_rectangle", "static_screenshot"],
+            },
+            "pages": [
+                {
+                    "page_id": "fixture_play",
+                    "route": "/play/fixture",
+                    "route_source": "lib/game/design_contract_page.dart",
+                    "layout_signature": "fixture-layered-hud-v1",
+                    "composition": "layered scene with diagonal depth and focused HUD",
+                    "assets": mode_a_assets[:2],
+                    "states": ["loading", "ready", "success", "failure"],
+                    "interactions": ["tap actor", "drag camera", "restart run"],
+                    "error_recovery": "restore checkpoint and show retry action",
+                    "evidence": ["evidence.fixture_page_capture"],
+                }
+            ],
+            "evidence": evidence,
+            "status": {
+                "plan_status": "Approved",
+                "implementation_status": "Implemented",
+                "verification_status": "Verified",
+                "release_status": "Ready",
+            },
+            "rejection_rules": [
+                "missing independent mode scene",
+                "domain field without render consumer",
+                "placeholder asset",
+                "flat geometry",
+                "duplicate evidence",
+                "static evidence used for motion",
+                "unimplemented route",
+                "stale device or build evidence",
+            ],
+        }
+        self.write(".codex-work/game-design-contract.json", json.dumps(contract, indent=2))
+
     def write_runtime_evidence(self, *, device="iPhone 17 Pro", recording=True,
-                               screenshots=True, logs=True):
+                               screenshots=True, logs=True, design_contract=True):
         record = {
             "build_id": "aurora-game-build-001",
             "bundle_id": "com.example.auroraGame",
@@ -269,6 +509,8 @@ class MockNativeGame extends StatelessWidget { const MockNativeGame({super.key})
             "evidence": [".codex-work/game-lobby.json", final_evidence],
         }
         self.write(".codex-work/final-visual-product.json", json.dumps(final_contract, indent=2))
+        if design_contract:
+            self._write_game_design_contract(device=device)
 
     def write_flame_fixture(self, *, full=True):
         self.write("assets/game/hero.png", b"hero image")
@@ -369,6 +611,13 @@ class GodotPage extends StatelessWidget {
     def test_missing_engine_manifest_is_reported(self):
         findings = self.load_module().validate_project(self.root)
         self.assertTrue(any("game-engine.json" in item for item in findings), findings)
+
+    def test_game_project_requires_game_design_contract(self):
+        self.write_manifest()
+        self.write_flame_fixture()
+        self.write_runtime_evidence(design_contract=False)
+        findings = self.load_module().validate_project(self.root)
+        self.assertTrue(any("game-design-contract.json" in item for item in findings), findings)
 
     def test_dependency_without_runtime_import_is_rejected(self):
         self.write_manifest()

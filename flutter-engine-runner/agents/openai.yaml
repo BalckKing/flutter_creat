@@ -12,5 +12,13 @@ interface:
 # Settings 必须使用主题化品牌头部、分组图标、摘要状态和真实选项值；不能生成单调的连续文字设置页。
 
 # Long iOS commands must run once through scripts/run_bounded_command.py with log/status heartbeats; after timeout or blocked_no_progress, diagnose once and never repeat identical write_stdin polling.
+# Game design contract: every game or mixed project must create and pass
+# .codex-work/game-design-contract.json before engine preflight or final visual gates.
+# It is the single source of truth for visual system, mode domains, render_consumers,
+# authored asset pipeline, page contracts, evidence identities and status synchronization.
+# Run validate_game_design_contract.py --project-root <target-project-root> --json;
+# missing thresholds, conflicting sources, flat/placeholder assets, missing consumers,
+# missing routes/evidence, stale or duplicate evidence, and status contradictions block.
+
 # Universal final visual contract: Technical vertical slice proves only the technical loop; it is not the final visual product. Game, non-game, and mixed projects must separately pass final-visual-product.json before final screenshots, release materials, or Git handoff. Use the order technical_vertical_slice -> full_scope_implementation -> final_visual_product -> release_materials -> Git handoff. Final reports must not call the delivered project prototype, functional demo, rough build, visual prototype, unfinished, or to be polished.
 # English marker: Technical vertical slice proves only the technical loop; it is not the final visual product. Game, non-game, and mixed projects must separately pass the final-visual-product.json final visual product gate.

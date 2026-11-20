@@ -17,6 +17,7 @@ typeset -a TASK_PARALLEL_CHECKS=(
   "$TASK_ROOT/flutter_check/test_onboarding_guide_workflow.sh"
   "$TASK_ROOT/flutter_check/test_validate_visual_implementation.py"
   "$TASK_ROOT/flutter_check/test_validate_game_project.py"
+  "$TASK_ROOT/flutter_check/test_validate_game_design_contract.py"
   "$TASK_ROOT/flutter_check/test_prepare_ios_config.py"
   "$TASK_ROOT/flutter_check/test_prepare_git_handoff.py"
   "$TASK_ROOT/flutter_check/test_validate_flutter_navigation.py"
