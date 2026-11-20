@@ -38,6 +38,7 @@ typeset -a task_expected=(
   test_validate_aduit_allowlist.py
   test_validate_welcome_flow.py
   test_validate_execution_state.py
+  test_run_bounded_command.py
   test_validate_capability_matrix.py
   test_validate_quality_records.py
   test_validate_final_visual_product.py

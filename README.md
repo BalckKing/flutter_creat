@@ -378,6 +378,8 @@ Emoji、渐变、矢量插画、AI 拟真图或仅写素材清单不能代替真
 
 运行验收是硬门槛：首次安装真实 App 后复用同一 Bundle ID、配置和现有 iPhone Simulator，不为每页、用例、截图或精修轮次创建测试 App、测试工程、测试 runner/host、临时 package 或 IPA。App 功能必须通过 Simulator 上真实点击、滑动、输入、返回、截图、录屏和原生日志观察；资料包 `flutter_check/` 只检查工作流、脚本和安装器，不能证明 App 已运行。无变更直接冷启动，必要变更增量构建并覆盖同一安装，最终仍验证最新完整构建。构建/安装/调试串行、输出目录复用，结束本任务多余调试、录屏及日志进程；精确清理失效副本，只保留当前产物、最多一份必要回滚产物和必需证据，不清用户数据或全局缓存，不删减 UI。详见第 0.9.1、11.1 节，结果写入项目已有 `.codex-work/quality.md`。
 
+长时间的 `flutter build`、`xcodebuild`、`pod install`、archive、install 和 debug 必须用 `flutter-engine-runner/scripts/run_bounded_command.py` 一次性执行，并保存输出日志、状态 JSON 和心跳。包装器明确区分 `passed`、`failed`、`timeout`、`blocked_no_progress` 与 `launch_failed`；超时或无进展后只读取一次状态和日志进入诊断，禁止连续重复相同的 `write_stdin`，也禁止在没有新证据时重跑同一命令。状态文件是诊断依据，不等于真实 App 已构建、安装或运行通过。
+
 目标工程中的 `aduit/` 必须严格保持（由最终生成的 `AppListing/` 改名/整理而来，不执行公开部署）。改名完成后立即在其根目录新建 `imgs/` 文件夹，创建时为空。工程、材料、最终图片/依赖及 iOS 权限校验和修复复验结束后，最后自主截取五个体现核心功能或操作成果的不同 App 画面放入其中。五张均须为原始竖屏 1206×2622 PNG，复用现有 iPhone 和最终调试安装，逐张检查尺寸、解码、内容差异和无占位；不裁切/缩放/补边凑尺寸。最终 imgs/ 恰好五张，无 `.gitkeep`、隐藏文件或其他产物，记录/旧图留 `.codex-work/`，报告提供五张链接。完整规则见第 12.5 节；原有 `site/img/logo.png` 保持原位置：
 
 ```text

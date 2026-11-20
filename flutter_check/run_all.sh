@@ -33,6 +33,7 @@ typeset -a TASK_PARALLEL_CHECKS=(
   "$TASK_ROOT/flutter_check/test_validate_aduit_allowlist.py"
   "$TASK_ROOT/flutter_check/test_validate_welcome_flow.py"
   "$TASK_ROOT/flutter_check/test_validate_execution_state.py"
+  "$TASK_ROOT/flutter_check/test_run_bounded_command.py"
   "$TASK_ROOT/flutter_check/test_validate_capability_matrix.py"
   "$TASK_ROOT/flutter_check/test_validate_quality_records.py"
   "$TASK_ROOT/flutter_check/test_validate_final_visual_product.py"
