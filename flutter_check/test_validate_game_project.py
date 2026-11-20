@@ -6,8 +6,10 @@ from __future__ import annotations
 import importlib.util
 import hashlib
 import json
+import struct
 import tempfile
 import unittest
+import zlib
 from pathlib import Path
 
 
@@ -42,6 +44,36 @@ class GameProjectFixtures(unittest.TestCase):
         else:
             path.write_text(content, encoding="utf-8")
         return path
+
+    @staticmethod
+    def _png(width=64, height=64) -> bytes:
+        rows = []
+        for y in range(height):
+            row = bytearray([0])
+            for x in range(width):
+                band = y / max(1, height - 1)
+                red = int(70 + 150 * (1 - band) + (x * 7 + y * 3) % 19)
+                green = int(145 + 75 * (1 - band) + (x * 5 + y * 11) % 23)
+                blue = int(205 - 95 * band + (x * 13 + y * 2) % 29)
+                if y > height * 0.62:
+                    red = int(34 + (x * 9 + y * 5) % 54)
+                    green = int(72 + (x * 7 + y * 3) % 82)
+                    blue = int(98 + (x * 11 + y * 13) % 96)
+                if ((x - 18) ** 2 + (y - 26) ** 2) < 130:
+                    red, green, blue = 250, 188 + ((x + y) % 30), 92
+                row.extend((red, green, blue, 255))
+            rows.append(bytes(row))
+
+        def chunk(kind: bytes, data: bytes) -> bytes:
+            return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data) & 0xffffffff)
+
+        raw = b"".join(rows)
+        return (
+            b"\x89PNG\r\n\x1a\n"
+            + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0))
+            + chunk(b"IDAT", zlib.compress(raw, 9))
+            + chunk(b"IEND", b"")
+        )
 
     def write_manifest(self, engine: str = "Flame", **changes):
         if not isinstance(engine, str):
@@ -166,8 +198,8 @@ class WelcomePage {
         return manifest
 
     def write_native_fixture(self, *, full=True):
-        self.write("assets/game/cards.png", b"cards image")
-        self.write("assets/game/table.png", b"table image")
+        self.write("assets/game/cards.png", self._png())
+        self.write("assets/game/table.png", self._png())
         self.write("lib/welcome.dart", """
 class WelcomePage {
   final primaryActions = const ['Play', 'Load', 'Operation'];
@@ -390,6 +422,14 @@ class MockNativeGame extends StatelessWidget { const MockNativeGame({super.key})
                     "maximum_flat_geometry_ratio": 0,
                     "minimum_occlusion_layers": 2,
                 },
+                "raster_quality": {
+                    "minimum_width": 32,
+                    "minimum_height": 32,
+                    "minimum_unique_colors": 16,
+                    "maximum_dominant_color_ratio": 0.88,
+                    "minimum_opaque_coverage": 0.12,
+                    "minimum_texture_variation": 0.02,
+                },
                 "rejection_thresholds": [
                     "reject fewer than three depth layers or authored scene assets",
                     "reject flat geometry and placeholder assets",
@@ -463,10 +503,10 @@ class MockNativeGame extends StatelessWidget { const MockNativeGame({super.key})
             self.write(".codex-work/iphone-gameplay.log", "iPhone gameplay log\n")
         # The playable vertical slice is intentionally separate from the final
         # visual product gate.  Passing fixtures include both contracts.
-        self.write("assets/game/final_subject.png", b"authored subject")
-        self.write("assets/game/final_environment.png", b"authored environment")
-        self.write("assets/game/final_prop.png", b"authored prop")
-        self.write("assets/game/final_effect.png", b"authored effect")
+        self.write("assets/game/final_subject.png", self._png())
+        self.write("assets/game/final_environment.png", self._png())
+        self.write("assets/game/final_prop.png", self._png())
+        self.write("assets/game/final_effect.png", self._png())
         final_evidence = ".codex-work/iphone-gameplay-recording.mp4" if recording else ".codex-work/iphone-gameplay.log"
         final_contract = {
             "schema_version": 1,
@@ -513,8 +553,8 @@ class MockNativeGame extends StatelessWidget { const MockNativeGame({super.key})
             self._write_game_design_contract(device=device)
 
     def write_flame_fixture(self, *, full=True):
-        self.write("assets/game/hero.png", b"hero image")
-        self.write("assets/game/scene.png", b"scene image")
+        self.write("assets/game/hero.png", self._png())
+        self.write("assets/game/scene.png", self._png())
         source = """
 import 'package:flutter/widgets.dart';
 import 'package:flame/game.dart';
@@ -564,13 +604,15 @@ class MockGame extends StatelessWidget {
         self.write("lib/game/game.dart", source)
 
     def write_godot_fixture(self):
-        self.write("assets/game/hero.png", b"hero image")
-        self.write("assets/game/scene.png", b"scene image")
-        self.write("assets/game/city.png", b"city image")
+        self.write("assets/game/hero.png", self._png())
+        self.write("assets/game/scene.png", self._png())
+        self.write("assets/game/city.png", self._png())
         self.write("game/project.godot", "[application]\nconfig/name=City\n")
         self.write("game/scenes/city.tscn", "[gd_scene load_steps=2 format=3]\n")
         self.write("game/scripts/city.gd", """
 extends Node2D
+var scene_texture = Texture2D.new()
+var scene_material = StandardMaterial3D.new()
 func _input(event):
     if event is InputEventScreenTouch: apply_move(event.position)
 func _process(delta):
@@ -806,8 +848,8 @@ class MyGame extends FlameGame { @override void update(double dt) {} }
             "animation_feedback": "state-driven animation and particles",
             "no_flat_color_blocks": True,
         })
-        self.write("assets/game/hero.png", b"hero image")
-        self.write("assets/game/scene.png", b"scene image")
+        self.write("assets/game/hero.png", self._png())
+        self.write("assets/game/scene.png", self._png())
         self.write("lib/game/game.defold", """
 camera = PerspectiveCamera.new()
 scene = Scene3D.new()

@@ -6,8 +6,10 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import struct
 import tempfile
 import unittest
+import zlib
 from pathlib import Path
 
 
@@ -43,6 +45,46 @@ class GameDesignContractFixtures(unittest.TestCase):
             path.write_text(content, encoding="utf-8")
         return path
 
+    @staticmethod
+    def _png(width=64, height=64, *, style="rich") -> bytes:
+        """Create deterministic PNG fixtures without relying on a GUI tool."""
+        rows = []
+        for y in range(height):
+            row = bytearray([0])
+            for x in range(width):
+                if style == "flat":
+                    rgba = (244, 131, 64, 255)
+                elif style == "lines":
+                    ink = x in {8, 9, 32, 33, 55, 56} or y in {10, 11, 31, 32, 52, 53}
+                    rgba = (28, 34, 48, 255) if ink else (246, 239, 220, 255)
+                else:
+                    # A textured, multi-material scene: a bright sky gradient,
+                    # a darker ground plane and repeated but non-flat details.
+                    band = y / max(1, height - 1)
+                    r = int(72 + 150 * (1 - band) + (x * 7 + y * 3) % 19)
+                    g = int(154 + 70 * (1 - band) + (x * 5 + y * 11) % 23)
+                    b = int(210 - 100 * band + (x * 13 + y * 2) % 29)
+                    if y > height * 0.62:
+                        r = int(34 + (x * 9 + y * 5) % 54)
+                        g = int(72 + (x * 7 + y * 3) % 82)
+                        b = int(98 + (x * 11 + y * 13) % 96)
+                    if ((x - 18) ** 2 + (y - 26) ** 2) < 130:
+                        r, g, b = 250, 188 + ((x + y) % 30), 92
+                    rgba = (r, g, b, 255)
+                row.extend(rgba)
+            rows.append(bytes(row))
+
+        def chunk(kind: bytes, data: bytes) -> bytes:
+            return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data) & 0xffffffff)
+
+        raw = b"".join(rows)
+        return (
+            b"\x89PNG\r\n\x1a\n"
+            + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0))
+            + chunk(b"IDAT", zlib.compress(raw, 9))
+            + chunk(b"IEND", b"")
+        )
+
     def _write_project_sources(self):
         self.write(
             "lib/game/harbor_game.dart",
@@ -51,6 +93,7 @@ class HarborGame {
   final tide = TideSystem();
   final roadGraph = HarborRoadGraph();
   final actors = HarborActorRenderer();
+  final sceneTexture = SpriteComponent();
   void renderTide() {}
   void renderRoadGraph() {}
   void renderActors() {}
@@ -64,6 +107,7 @@ class MarketGame {
   final weather = WeatherSystem();
   final roadGraph = MarketRoadGraph();
   final actors = MarketActorRenderer();
+  final sceneTexture = SpriteComponent();
   void renderWeather() {}
   void renderRoadGraph() {}
   void renderActors() {}
@@ -96,7 +140,7 @@ class MarketPage {
             "market_road.png",
             "market_character.png",
             "shared_shadow.png"):
-            self.write(f"assets/game/{name}", b"authored raster fixture")
+            self.write(f"assets/game/{name}", self._png())
         self.write(".codex-work/harbor-page.png", b"harbor page capture")
         self.write(".codex-work/market-page.png", b"market page capture")
         self.write(".codex-work/harbor-run.mp4", b"harbor run capture")
@@ -160,9 +204,17 @@ class MarketPage {
                     "maximum_flat_geometry_ratio": 0.0,
                     "minimum_occlusion_layers": 2,
                 },
+                "raster_quality": {
+                    "minimum_width": 32,
+                    "minimum_height": 32,
+                    "minimum_unique_colors": 16,
+                    "maximum_dominant_color_ratio": 0.88,
+                    "minimum_opaque_coverage": 0.12,
+                    "minimum_texture_variation": 0.02,
+                },
                 "rejection_thresholds": [
                     "reject if depth layers are fewer than 3",
-                    "reject if authored assets are replaced by flat geometry",
+                    "reject if authored raster assets are line art, solid color blocks or flat geometry",
                     "reject if motion duration is below 180ms",
                 ],
             },
@@ -397,6 +449,7 @@ class MarketPage {
                 "missing collision causality",
                 "placeholder asset",
                 "flat geometry",
+                "raster assets with simple line art or solid color blocks",
                 "duplicate evidence",
                 "static image used as motion evidence",
                 "unimplemented route",
@@ -432,6 +485,46 @@ class MarketPage {
         self.write_contract(contract)
         findings = self.load_module().validate_project(self.root)
         self.assertTrue(any("threshold" in item.lower() or "measurable" in item.lower() for item in findings), findings)
+
+    def test_raster_quality_thresholds_are_required(self):
+        contract = self.contract()
+        contract["visual_system"].pop("raster_quality")
+        self.write_contract(contract)
+        findings = self.load_module().validate_project(self.root)
+        joined = " ".join(findings).lower()
+        self.assertTrue("raster" in joined or "pixel" in joined or "texture" in joined, findings)
+
+    def test_solid_color_raster_asset_is_rejected(self):
+        contract = self.contract()
+        self.write("assets/game/harbor_environment.png", self._png(style="flat"))
+        self.write_contract(contract)
+        findings = self.load_module().validate_project(self.root)
+        joined = " ".join(findings).lower()
+        self.assertTrue("color" in joined or "flat" in joined or "raster" in joined, findings)
+
+    def test_line_art_raster_asset_is_rejected(self):
+        contract = self.contract()
+        self.write("assets/game/harbor_environment.png", self._png(style="lines"))
+        self.write_contract(contract)
+        findings = self.load_module().validate_project(self.root)
+        joined = " ".join(findings).lower()
+        self.assertTrue("line" in joined or "texture" in joined or "raster" in joined, findings)
+
+    def test_flat_only_render_entrypoint_is_rejected(self):
+        contract = self.contract()
+        self.write("lib/game/flat_renderer.dart", """
+class FlatRenderer {
+  void render(Canvas canvas) {
+    canvas.drawRect(Rect.zero, Paint()..color = const Color(0xffff8800));
+    canvas.drawLine(Offset.zero, const Offset(40, 40), Paint());
+  }
+}
+""")
+        contract["asset_pipeline"]["load_entrypoints"] = ["lib/game/flat_renderer.dart"]
+        self.write_contract(contract)
+        findings = self.load_module().validate_project(self.root)
+        joined = " ".join(findings).lower()
+        self.assertTrue("flat geometric" in joined or "line" in joined or "color-block" in joined, findings)
 
     def test_every_mode_domain_field_requires_render_consumers(self):
         contract = self.contract()

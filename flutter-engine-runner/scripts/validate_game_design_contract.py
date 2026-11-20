@@ -11,10 +11,14 @@ blocking findings; an empty list means the static contract passes.
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 import hashlib
 import json
+import math
 import re
+import struct
 import sys
+import zlib
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
@@ -46,6 +50,26 @@ FORBIDDEN_WORDS = (
 )
 IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".heic"}
 VIDEO_SUFFIXES = {".mp4", ".mov", ".m4v", ".webm", ".avi"}
+RUNTIME_ASSET_MARKERS = (
+    r"\b(?:Image\.asset|AssetImage|drawImage|drawImageRect|SpriteComponent|SpriteBatch|Texture|TextureRect|"
+    r"ImageComponent|MeshInstance|TexturedModel|Material|Shader|Rive|Lottie|loadSprite|loadTexture|"
+    r"Texture2D|StandardMaterial3D|Sprite2D|Sprite3D)\b",
+)
+FLAT_RENDER_MARKERS = (
+    r"\b(?:drawRect|drawLine|drawPath|ColoredBox|Container\s*\([^\n]*\bcolor\s*:|solidColor|flatColor)\b",
+)
+RICH_RENDER_MARKERS = (
+    r"\b(?:drawImage|drawImageRect|Image\.asset|AssetImage|Sprite|Texture|Material|Shader|Gradient|"
+    r"BackdropFilter|Rive|Lottie|Particle|Mesh|PBR|shadow|occlusion|parallax)\b",
+)
+DEFAULT_RASTER_QUALITY = {
+    "minimum_width": 32,
+    "minimum_height": 32,
+    "minimum_unique_colors": 16,
+    "maximum_dominant_color_ratio": 0.88,
+    "minimum_opaque_coverage": 0.12,
+    "minimum_texture_variation": 0.02,
+}
 
 
 def _nonempty(value: Any) -> bool:
@@ -145,6 +169,213 @@ def _read_json(path: Path, label: str, findings: list[str]) -> Mapping[str, Any]
         findings.append(f"{label} must contain a JSON object")
         return None
     return value
+
+
+def _png_samples(path: Path, *, max_side: int = 256) -> tuple[int, int, list[tuple[int, int, int, int]]] | None:
+    """Decode the common 8-bit PNG forms without making Pillow mandatory.
+
+    Generated game assets are commonly PNGs.  The fallback decoder keeps this
+    source gate portable and lets it inspect pixels even when the optional
+    Pillow package is unavailable.  Unsupported PNG variants are rejected by
+    the caller instead of silently bypassing the visual-quality gate.
+    """
+    try:
+        data = path.read_bytes()
+    except OSError:
+        return None
+    signature = b"\x89PNG\r\n\x1a\n"
+    if not data.startswith(signature):
+        return None
+    position = len(signature)
+    width = height = bit_depth = color_type = None
+    palette: list[tuple[int, int, int]] = []
+    transparency: list[int] = []
+    compressed = bytearray()
+    while position + 8 <= len(data):
+        length = struct.unpack(">I", data[position:position + 4])[0]
+        kind = data[position + 4:position + 8]
+        start = position + 8
+        end = start + length
+        if end + 4 > len(data):
+            return None
+        payload = data[start:end]
+        position = end + 4
+        if kind == b"IHDR" and len(payload) == 13:
+            width, height, bit_depth, color_type, compression, filtering, interlace = struct.unpack(">IIBBBBB", payload)
+            if compression != 0 or filtering != 0 or interlace != 0:
+                return None
+        elif kind == b"PLTE":
+            palette = [tuple(payload[index:index + 3]) for index in range(0, len(payload) - 2, 3)]
+        elif kind == b"tRNS":
+            transparency = list(payload)
+        elif kind == b"IDAT":
+            compressed.extend(payload)
+        elif kind == b"IEND":
+            break
+    if not width or not height or bit_depth != 8 or color_type not in {0, 2, 3, 4, 6}:
+        return None
+    channel_count = {0: 1, 2: 3, 3: 1, 4: 2, 6: 4}[color_type]
+    row_bytes = width * channel_count
+    try:
+        decoded = zlib.decompress(bytes(compressed))
+    except zlib.error:
+        return None
+    expected = height * (row_bytes + 1)
+    if len(decoded) < expected:
+        return None
+    rows: list[bytes] = []
+    offset = 0
+    previous = bytearray(row_bytes)
+    for _ in range(height):
+        filter_type = decoded[offset]
+        raw = bytearray(decoded[offset + 1:offset + 1 + row_bytes])
+        offset += row_bytes + 1
+        if filter_type not in {0, 1, 2, 3, 4}:
+            return None
+        reconstructed = bytearray(row_bytes)
+        for index, value in enumerate(raw):
+            left = reconstructed[index - channel_count] if index >= channel_count else 0
+            up = previous[index]
+            up_left = previous[index - channel_count] if index >= channel_count else 0
+            if filter_type == 0:
+                result = value
+            elif filter_type == 1:
+                result = (value + left) & 0xff
+            elif filter_type == 2:
+                result = (value + up) & 0xff
+            elif filter_type == 3:
+                result = (value + ((left + up) // 2)) & 0xff
+            else:
+                estimate = left + up - up_left
+                pa, pb, pc = abs(estimate - left), abs(estimate - up), abs(estimate - up_left)
+                predictor = left if pa <= pb and pa <= pc else up if pb <= pc else up_left
+                result = (value + predictor) & 0xff
+            reconstructed[index] = result
+        rows.append(bytes(reconstructed))
+        previous = reconstructed
+
+    step_x = max(1, math.ceil(width / max_side))
+    step_y = max(1, math.ceil(height / max_side))
+    samples: list[tuple[int, int, int, int]] = []
+    for y in range(0, height, step_y):
+        row = rows[y]
+        for x in range(0, width, step_x):
+            start = x * channel_count
+            values = row[start:start + channel_count]
+            if color_type == 0:
+                gray = values[0]
+                alpha = 0 if transparency and gray == int.from_bytes(bytes(transparency[:2]), "big") else 255
+                samples.append((gray, gray, gray, alpha))
+            elif color_type == 2:
+                alpha = 255
+                if transparency and len(transparency) >= 6:
+                    alpha = 0 if tuple(values) == tuple(int.from_bytes(bytes(transparency[i:i + 2]), "big") for i in (0, 2, 4)) else 255
+                samples.append((values[0], values[1], values[2], alpha))
+            elif color_type == 3:
+                palette_index = values[0]
+                if palette_index >= len(palette):
+                    return None
+                red, green, blue = palette[palette_index]
+                alpha = transparency[palette_index] if palette_index < len(transparency) else 255
+                samples.append((red, green, blue, alpha))
+            elif color_type == 4:
+                samples.append((values[0], values[0], values[0], values[1]))
+            else:
+                samples.append((values[0], values[1], values[2], values[3]))
+    return int(width), int(height), samples
+
+
+def _image_samples(path: Path) -> tuple[int, int, list[tuple[int, int, int, int]]] | None:
+    """Return bounded pixel samples using Pillow when available, PNG fallback otherwise."""
+    try:
+        from PIL import Image  # type: ignore
+    except ImportError:
+        Image = None  # type: ignore
+    if Image is not None:
+        try:
+            with Image.open(path) as image:
+                width, height = image.size
+                image = image.convert("RGBA")
+                image.thumbnail((256, 256))
+                pixel_data = image.get_flattened_data() if hasattr(image, "get_flattened_data") else image.getdata()
+                return width, height, list(pixel_data)
+        except Exception:
+            pass
+    return _png_samples(path)
+
+
+def _raster_metrics(path: Path) -> dict[str, float] | None:
+    decoded = _image_samples(path)
+    if decoded is None:
+        return None
+    width, height, samples = decoded
+    if not samples:
+        return None
+    quantized = [(red // 16, green // 16, blue // 16, alpha // 32) for red, green, blue, alpha in samples]
+    counts = Counter(quantized)
+    dominant_ratio = max(counts.values()) / len(samples)
+    opaque = sum(1 for _, _, _, alpha in samples if alpha > 0) / len(samples)
+    luminance = [0.2126 * red + 0.7152 * green + 0.0722 * blue for red, green, blue, _ in samples]
+    # Samples are row-major after thumbnailing.  A one-dimensional gradient
+    # proxy still catches flat blocks and simple line drawings without needing
+    # to retain a second full image buffer.
+    side = max(1, int(round(math.sqrt(len(samples)))))
+    variation = 0.0
+    comparisons = 0
+    edge_count = 0
+    for index in range(1, len(luminance)):
+        delta = abs(luminance[index] - luminance[index - 1]) / 255.0
+        variation += delta
+        comparisons += 1
+        if delta >= 0.16:
+            edge_count += 1
+    texture_variation = variation / max(1, comparisons)
+    edge_density = edge_count / max(1, comparisons)
+    return {
+        "width": float(width),
+        "height": float(height),
+        "unique_colors": float(len(counts)),
+        "dominant_color_ratio": dominant_ratio,
+        "opaque_coverage": opaque,
+        "texture_variation": texture_variation,
+        "edge_density": edge_density,
+        "sample_count": float(len(samples)),
+        "sample_side": float(side),
+    }
+
+
+def _validate_raster_asset(path: Path, label: str, quality: Mapping[str, Any], findings: list[str]) -> None:
+    if path.suffix.casefold() not in IMAGE_SUFFIXES:
+        return
+    metrics = _raster_metrics(path)
+    if metrics is None:
+        findings.append(f"{label}: raster quality cannot be inspected; use a decodable authored image, not a placeholder or line-art bypass")
+        return
+    checks = (
+        ("minimum_width", metrics["width"], ">=", "width"),
+        ("minimum_height", metrics["height"], ">=", "height"),
+        ("minimum_unique_colors", metrics["unique_colors"], ">=", "unique colors/material regions"),
+        ("maximum_dominant_color_ratio", metrics["dominant_color_ratio"], "<=", "dominant color ratio"),
+        ("minimum_opaque_coverage", metrics["opaque_coverage"], ">=", "opaque coverage"),
+        ("minimum_texture_variation", metrics["texture_variation"], ">=", "texture variation"),
+    )
+    for key, actual, operator, description in checks:
+        expected = quality.get(key)
+        if not isinstance(expected, (int, float)) or isinstance(expected, bool):
+            continue
+        passed = actual >= float(expected) if operator == ">=" else actual <= float(expected)
+        if not passed:
+            findings.append(
+                f"{label}: fails raster quality ({description} {actual:.4f} {operator} {float(expected):.4f}); "
+                "simple line art, solid color blocks and flat geometry are forbidden"
+            )
+    line_like = (
+        metrics["unique_colors"] <= max(8.0, float(quality.get("minimum_unique_colors", 16)) / 2.0)
+        and metrics["edge_density"] >= 0.01
+        and metrics["dominant_color_ratio"] >= 0.45
+    )
+    if line_like:
+        findings.append(f"{label}: raster appears to be simple line art rather than a textured scene asset")
 
 
 def _source_conflicts(root: Path, contract: Mapping[str, Any], source: Mapping[str, Any], visual: Mapping[str, Any], findings: list[str]) -> None:
@@ -252,14 +483,50 @@ def _validate_assets(root: Path, contract: Mapping[str, Any], visual: Mapping[st
     pipeline = _mapping(contract.get("asset_pipeline"), "asset_pipeline", findings)
     if pipeline is None:
         return set(), set()
+    quality = _mapping(visual.get("raster_quality") if isinstance(visual, Mapping) else None, "visual_system.raster_quality", findings)
+    if quality is not None:
+        for key, minimum, maximum in (
+            ("minimum_width", 32, None),
+            ("minimum_height", 32, None),
+            ("minimum_unique_colors", 16, None),
+            ("maximum_dominant_color_ratio", None, 0.88),
+            ("minimum_opaque_coverage", 0.12, 1.0),
+            ("minimum_texture_variation", 0.02, None),
+        ):
+            _numeric(quality, key, "visual_system.raster_quality", findings, minimum=minimum, maximum=maximum)
     offline = _list(pipeline.get("offline_assets"), "asset_pipeline.offline_assets", findings, minimum=3)
     offline_paths: set[str] = set()
     for index, value in enumerate(offline):
         path = _file_path(root, value, f"asset_pipeline.offline_assets[{index}]", findings)
         if path is not None:
             offline_paths.add(path.relative_to(root).as_posix())
+            if quality is not None:
+                _validate_raster_asset(path, f"asset_pipeline.offline_assets[{index}]", quality, findings)
     for key in ("layers", "occlusion_order", "load_entrypoints"):
         _list(pipeline.get(key), f"asset_pipeline.{key}", findings, minimum=3 if key == "layers" else 1)
+    entrypoints = pipeline.get("load_entrypoints")
+    entrypoint_sources: list[str] = []
+    if isinstance(entrypoints, list):
+        for index, value in enumerate(entrypoints):
+            entrypoint_value = value.split(":", 1)[0] if isinstance(value, str) else value
+            entrypoint = _file_path(root, entrypoint_value, f"asset_pipeline.load_entrypoints[{index}]", findings)
+            if entrypoint is not None:
+                try:
+                    entrypoint_sources.append(entrypoint.read_text(encoding="utf-8", errors="replace"))
+                except OSError:
+                    pass
+    runtime_text = "\n".join(entrypoint_sources)
+    if entrypoint_sources and not any(re.search(pattern, runtime_text, re.I | re.M) for pattern in RUNTIME_ASSET_MARKERS):
+        findings.append(
+            "asset_pipeline.load_entrypoints must contain a real image/material/texture consumer; "
+            "a Canvas made only from lines or solid color blocks cannot satisfy the game visual contract"
+        )
+    if entrypoint_sources and any(re.search(pattern, runtime_text, re.I | re.M) for pattern in FLAT_RENDER_MARKERS):
+        if not any(re.search(pattern, runtime_text, re.I | re.M) for pattern in RICH_RENDER_MARKERS):
+            findings.append(
+                "asset_pipeline.load_entrypoints contains only flat geometric rendering; "
+                "add authored image/material/texture consumers and reject line/color-block-only scenes"
+            )
     _require_text(pipeline, "transparency", "asset_pipeline", findings)
     _require_text(pipeline, "coordinate_system", "asset_pipeline", findings)
     metadata = _list(pipeline.get("assets"), "asset_pipeline.assets", findings, minimum=3)
@@ -275,6 +542,8 @@ def _validate_assets(root: Path, contract: Mapping[str, Any], visual: Mapping[st
             metadata_paths.add(relative)
             if relative not in offline_paths:
                 findings.append(f"asset_pipeline.assets[{index}].path is missing from offline_assets: {relative}")
+            if quality is not None:
+                _validate_raster_asset(path, f"asset_pipeline.assets[{index}].path", quality, findings)
         for key in ("role", "geometry", "material", "render_layer"):
             _require_text(entry, key, f"asset_pipeline.assets[{index}]", findings)
         placeholder = entry.get("placeholder")

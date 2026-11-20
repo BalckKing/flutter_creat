@@ -1,7 +1,9 @@
 import importlib.util
 import json
+import struct
 import tempfile
 import unittest
+import zlib
 from pathlib import Path
 
 
@@ -12,6 +14,43 @@ SPEC.loader.exec_module(MODULE)
 
 
 class VisualImplementationContractTests(unittest.TestCase):
+    @staticmethod
+    def _png(width=64, height=64, *, style="rich", seed=0) -> bytes:
+        rows = []
+        for y in range(height):
+            row = bytearray([0])
+            for x in range(width):
+                if style == "flat":
+                    rgba = (242, 128, 61, 255)
+                elif style == "lines":
+                    ink = x in {8, 9, 32, 33, 55, 56} or y in {10, 11, 31, 32, 52, 53}
+                    rgba = (28, 34, 48, 255) if ink else (246, 239, 220, 255)
+                else:
+                    band = y / max(1, height - 1)
+                    red = int(70 + 145 * (1 - band) + (x * 7 + y * 3 + seed) % 19)
+                    green = int(145 + 75 * (1 - band) + (x * 5 + y * 11 + seed * 3) % 23)
+                    blue = int(205 - 95 * band + (x * 13 + y * 2 + seed * 5) % 29)
+                    if y > height * 0.62:
+                        red = int(34 + (x * 9 + y * 5 + seed) % 54)
+                        green = int(72 + (x * 7 + y * 3 + seed) % 82)
+                        blue = int(98 + (x * 11 + y * 13 + seed) % 96)
+                    if ((x - 18 - seed % 5) ** 2 + (y - 26) ** 2) < 130:
+                        red, green, blue = 250, 188 + ((x + y + seed) % 30), 92
+                    rgba = (red, green, blue, 255)
+                row.extend(rgba)
+            rows.append(bytes(row))
+
+        def chunk(kind: bytes, data: bytes) -> bytes:
+            return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data) & 0xffffffff)
+
+        raw = b"".join(rows)
+        return (
+            b"\x89PNG\r\n\x1a\n"
+            + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0))
+            + chunk(b"IDAT", zlib.compress(raw, 9))
+            + chunk(b"IEND", b"")
+        )
+
     def add_design_system_contract(self, root, ledger, *, kind="awesome-design-md", status="Verified"):
         (root / "DESIGN.md").write_text(
             "# Product design\nSource: awesome-design-md Apple DESIGN.md\n",
@@ -76,7 +115,7 @@ class VisualImplementationContractTests(unittest.TestCase):
             page.write_text("<canvas id='bg'></canvas><script>function drawScene() {} drawScene();</script>")
         image = root / "assets/backgrounds/home/home_background.png"
         image.parent.mkdir(parents=True)
-        image.write_bytes(b"home-background-fixture")
+        image.write_bytes(self._png(seed=1))
         page.write_text(page.read_text() + "\n'home_background.png'")
         evidence = root / ".codex-work"
         evidence.mkdir()
@@ -90,6 +129,11 @@ class VisualImplementationContractTests(unittest.TestCase):
             "opacity": 0.12, "placement": "upper-right behind content",
             "gradient_tokens": ["brandGradient", "sunsetGradient"],
             "palette_hex": ["#F05A3C", "#FFB347", "#D84315"],
+            "raster_quality": {
+                "minimum_width": 32, "minimum_height": 32, "minimum_unique_colors": 16,
+                "maximum_dominant_color_ratio": 0.88, "minimum_opaque_coverage": 0.12,
+                "minimum_texture_variation": 0.02,
+            },
         }
         ledger = {
             "project_type": "game",
@@ -149,6 +193,51 @@ class VisualImplementationContractTests(unittest.TestCase):
             self.assertTrue(any("at least two" in item for item in findings), findings)
             self.assertTrue(any("flat/simple" in item or "solid color" in item for item in findings), findings)
 
+    def test_non_game_requires_raster_quality_thresholds(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ledger = self.procedural_ledger(root)
+            ledger["project_type"] = "non_game"
+            ledger["surfaces"][0]["background"].pop("raster_quality", None)
+            ledger["ui_component_contract"] = {
+                "components": [
+                    {"name": "flutter_animate", "version": "4.5.0", "license/source": "pub.dev",
+                     "actual_consumer": "lib/page_module/home_page.dart", "runtime_markers": ["flutter_animate"]},
+                    {"name": "BackdropFilter", "version": "Flutter SDK", "license/source": "Flutter SDK",
+                     "actual_consumer": "lib/page_module/home_page.dart", "runtime_markers": ["BackdropFilter"]},
+                ],
+                "visual_constraints": {"no_simple_line_art": True, "no_flat_color_blocks": True, "no_solid_color_background": True},
+                "runtime_evidence": [".codex-work/motion.mov"],
+            }
+            (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
+            findings = MODULE.validate_visual_ledger(root)
+            self.assertTrue(any("raster_quality" in item for item in findings), findings)
+
+    def test_non_game_rejects_flat_background_pixels(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ledger = self.procedural_ledger(root)
+            ledger["project_type"] = "non_game"
+            ledger["surfaces"][0]["background"]["raster_quality"] = {
+                "minimum_width": 32, "minimum_height": 32, "minimum_unique_colors": 16,
+                "maximum_dominant_color_ratio": 0.88, "minimum_opaque_coverage": 0.12,
+                "minimum_texture_variation": 0.02,
+            }
+            ledger["ui_component_contract"] = {
+                "components": [
+                    {"name": "flutter_animate", "version": "4.5.0", "license/source": "pub.dev",
+                     "actual_consumer": "lib/page_module/home_page.dart", "runtime_markers": ["flutter_animate"]},
+                    {"name": "BackdropFilter", "version": "Flutter SDK", "license/source": "Flutter SDK",
+                     "actual_consumer": "lib/page_module/home_page.dart", "runtime_markers": ["BackdropFilter"]},
+                ],
+                "visual_constraints": {"no_simple_line_art": True, "no_flat_color_blocks": True, "no_solid_color_background": True},
+                "runtime_evidence": [".codex-work/motion.mov"],
+            }
+            (root / ledger["surfaces"][0]["background"]["asset"]).write_bytes(self._png(style="flat"))
+            (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
+            findings = MODULE.validate_visual_ledger(root)
+            self.assertTrue(any("raster quality" in item or "flat color" in item for item in findings), findings)
+
     def test_non_game_accepts_two_real_ui_components_and_rich_background_treatment(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -186,6 +275,36 @@ class VisualImplementationContractTests(unittest.TestCase):
             self.add_design_system_contract(root, ledger)
             (root / ".codex-work/ui-visual-gates.json").write_text(json.dumps(ledger))
             self.assertEqual(MODULE.validate_visual_ledger(root), [])
+
+    def test_non_game_rejects_flat_geometry_when_no_authored_visual_consumer_exists(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            page = root / "lib/page_module/map_page.dart"
+            page.parent.mkdir(parents=True)
+            page.write_text(
+                "class MapPage extends CustomPainter { void paint(Canvas canvas, Size size) { "
+                "canvas.drawLine(Offset.zero, const Offset(40, 40), Paint()); "
+                "canvas.drawRect(const Rect.fromLTWH(0, 0, 40, 40), Paint()); } }",
+                encoding="utf-8",
+            )
+            contract = {
+                "components": [
+                    {"name": "flutter_animate", "version": "4.5.0", "license/source": "pub.dev",
+                     "actual_consumer": "lib/page_module/map_page.dart", "runtime_markers": ["drawLine"]},
+                    {"name": "CustomPainter", "version": "Flutter SDK", "license/source": "Flutter SDK",
+                     "actual_consumer": "lib/page_module/map_page.dart", "runtime_markers": ["drawRect"]},
+                ],
+                "visual_constraints": {
+                    "no_simple_line_art": True,
+                    "no_flat_color_blocks": True,
+                    "no_solid_color_background": True,
+                },
+                "runtime_evidence": [],
+            }
+            ledger = {"project_type": "non_game", "ui_component_contract": contract}
+            findings = []
+            MODULE.validate_non_game_ui_contract(root, ledger, [], findings)
+            self.assertTrue(any("only flat geometric drawing" in item for item in findings), findings)
 
     def test_non_game_requires_verified_design_system_before_components(self):
         with tempfile.TemporaryDirectory() as tmp:

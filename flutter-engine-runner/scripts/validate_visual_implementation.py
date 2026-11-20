@@ -7,10 +7,14 @@ as implemented particles, typography, or gradients.
 """
 
 import argparse
+from collections import Counter
 import hashlib
 import json
+import math
 import re
+import struct
 import sys
+import zlib
 from pathlib import Path
 
 
@@ -96,10 +100,198 @@ PAGE_GATES = {
 FLUTTER_MOTION_GATES = {"page_transitions", "background_motion"}
 MEDIA_EXTENSIONS = {".png", ".jpg", ".jpeg", ".heic", ".mp4", ".mov"}
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".heic", ".webp"}
+DEFAULT_RASTER_QUALITY = {
+    "minimum_width": 32,
+    "minimum_height": 32,
+    "minimum_unique_colors": 16,
+    "maximum_dominant_color_ratio": 0.88,
+    "minimum_opaque_coverage": 0.12,
+    "minimum_texture_variation": 0.02,
+}
+NON_GAME_FLAT_RENDER_MARKERS = (
+    r"\b(?:drawLine|drawRect|drawPath|lineTo|moveTo|fillRect|strokeRect|stroke|solidColor|flatColor)\b",
+    r"\bColoredBox\b",
+    r"\bContainer\s*\([^\n]*(?:\bcolor\s*:|BoxDecoration\s*\([^\n]*\bcolor\s*:)",
+    r"\b(?:canvas\.fill|canvas\.stroke|context\.fillRect|context\.strokeRect)\b",
+)
+NON_GAME_RICH_RENDER_MARKERS = (
+    r"\b(?:Image\.asset|AssetImage|NetworkImage|DecorationImage|ImageProvider|Texture|Material|Shader|"
+    r"FragmentProgram|BackdropFilter|Rive|Lottie|VideoPlayer|Sprite|Particle|MapView|GoogleMap|Mapbox|"
+    r"FlutterMap|AppleMap|LineChart|BarChart|PieChart|FlChart|Chart|PBR|occlusion|parallax)\b",
+    r"\b(?:CustomPainter|CustomPaint)\b.*\b(?:Image|Shader|Particle|Texture|Material)\b",
+    r"(?:data:image/|<img\b|<video\b|background-image\s*:)",
+    r"\.(?:png|jpe?g|webp|heic|gif|mp4|mov)\b",
+)
 LAYOUT_AXES = (
     "composition", "region_order", "media_structure", "content_structure",
     "action_structure", "navigation_structure",
 )
+
+
+def _png_samples(path: Path, *, max_side: int = 256):
+    try:
+        data = path.read_bytes()
+    except OSError:
+        return None
+    if not data.startswith(b"\x89PNG\r\n\x1a\n"):
+        return None
+    position = 8
+    width = height = bit_depth = color_type = None
+    palette = []
+    transparency = []
+    compressed = bytearray()
+    while position + 8 <= len(data):
+        length = struct.unpack(">I", data[position:position + 4])[0]
+        kind = data[position + 4:position + 8]
+        start = position + 8
+        end = start + length
+        if end + 4 > len(data):
+            return None
+        payload = data[start:end]
+        position = end + 4
+        if kind == b"IHDR" and len(payload) == 13:
+            width, height, bit_depth, color_type, compression, filtering, interlace = struct.unpack(">IIBBBBB", payload)
+            if compression != 0 or filtering != 0 or interlace != 0:
+                return None
+        elif kind == b"PLTE":
+            palette = [tuple(payload[index:index + 3]) for index in range(0, len(payload) - 2, 3)]
+        elif kind == b"tRNS":
+            transparency = list(payload)
+        elif kind == b"IDAT":
+            compressed.extend(payload)
+        elif kind == b"IEND":
+            break
+    if not width or not height or bit_depth != 8 or color_type not in {0, 2, 3, 4, 6}:
+        return None
+    channels = {0: 1, 2: 3, 3: 1, 4: 2, 6: 4}[color_type]
+    row_bytes = width * channels
+    try:
+        decoded = zlib.decompress(bytes(compressed))
+    except zlib.error:
+        return None
+    if len(decoded) < height * (row_bytes + 1):
+        return None
+    rows = []
+    offset = 0
+    previous = bytearray(row_bytes)
+    for _ in range(height):
+        filter_type = decoded[offset]
+        raw = bytearray(decoded[offset + 1:offset + 1 + row_bytes])
+        offset += row_bytes + 1
+        if filter_type not in {0, 1, 2, 3, 4}:
+            return None
+        row = bytearray(row_bytes)
+        for index, value in enumerate(raw):
+            left = row[index - channels] if index >= channels else 0
+            up = previous[index]
+            up_left = previous[index - channels] if index >= channels else 0
+            if filter_type == 0:
+                predictor = 0
+            elif filter_type == 1:
+                predictor = left
+            elif filter_type == 2:
+                predictor = up
+            elif filter_type == 3:
+                predictor = (left + up) // 2
+            else:
+                estimate = left + up - up_left
+                pa, pb, pc = abs(estimate - left), abs(estimate - up), abs(estimate - up_left)
+                predictor = left if pa <= pb and pa <= pc else up if pb <= pc else up_left
+            row[index] = (value + predictor) & 0xff
+        rows.append(bytes(row))
+        previous = row
+    step_x = max(1, math.ceil(width / max_side))
+    step_y = max(1, math.ceil(height / max_side))
+    samples = []
+    for y in range(0, height, step_y):
+        row = rows[y]
+        for x in range(0, width, step_x):
+            start = x * channels
+            values = row[start:start + channels]
+            if color_type == 0:
+                gray = values[0]
+                samples.append((gray, gray, gray, 255))
+            elif color_type == 2:
+                samples.append((values[0], values[1], values[2], 255))
+            elif color_type == 3:
+                index = values[0]
+                if index >= len(palette):
+                    return None
+                red, green, blue = palette[index]
+                alpha = transparency[index] if index < len(transparency) else 255
+                samples.append((red, green, blue, alpha))
+            elif color_type == 4:
+                samples.append((values[0], values[0], values[0], values[1]))
+            else:
+                samples.append((values[0], values[1], values[2], values[3]))
+    return int(width), int(height), samples
+
+
+def _raster_metrics(path: Path):
+    try:
+        from PIL import Image  # type: ignore
+    except ImportError:
+        Image = None  # type: ignore
+    decoded = None
+    if Image is not None:
+        try:
+            with Image.open(path) as image:
+                width, height = image.size
+                image = image.convert("RGBA")
+                image.thumbnail((256, 256))
+                pixel_data = image.get_flattened_data() if hasattr(image, "get_flattened_data") else image.getdata()
+                decoded = (width, height, list(pixel_data))
+        except Exception:
+            decoded = None
+    decoded = decoded or _png_samples(path)
+    if decoded is None:
+        return None
+    width, height, samples = decoded
+    if not samples:
+        return None
+    quantized = [(red // 16, green // 16, blue // 16, alpha // 32) for red, green, blue, alpha in samples]
+    counts = Counter(quantized)
+    luminance = [0.2126 * red + 0.7152 * green + 0.0722 * blue for red, green, blue, _ in samples]
+    differences = [abs(luminance[index] - luminance[index - 1]) / 255.0 for index in range(1, len(luminance))]
+    return {
+        "width": float(width),
+        "height": float(height),
+        "unique_colors": float(len(counts)),
+        "dominant_color_ratio": max(counts.values()) / len(samples),
+        "opaque_coverage": sum(1 for _, _, _, alpha in samples if alpha > 0) / len(samples),
+        "texture_variation": sum(differences) / max(1, len(differences)),
+        "edge_density": sum(1 for value in differences if value >= 0.16) / max(1, len(differences)),
+    }
+
+
+def validate_raster_quality(path: Path, label: str, quality: dict, findings: list[str]):
+    if path.suffix.lower() not in IMAGE_EXTENSIONS:
+        return
+    metrics = _raster_metrics(path)
+    if metrics is None:
+        findings.append(f"{label}: raster quality cannot be inspected; use a decodable authored image")
+        return
+    checks = (
+        ("minimum_width", metrics["width"], ">=", "width"),
+        ("minimum_height", metrics["height"], ">=", "height"),
+        ("minimum_unique_colors", metrics["unique_colors"], ">=", "unique colors/material regions"),
+        ("maximum_dominant_color_ratio", metrics["dominant_color_ratio"], "<=", "dominant color ratio"),
+        ("minimum_opaque_coverage", metrics["opaque_coverage"], ">=", "opaque coverage"),
+        ("minimum_texture_variation", metrics["texture_variation"], ">=", "texture variation"),
+    )
+    for key, actual, operator, description in checks:
+        expected = quality.get(key)
+        if not isinstance(expected, (int, float)) or isinstance(expected, bool):
+            continue
+        passed = actual >= float(expected) if operator == ">=" else actual <= float(expected)
+        if not passed:
+            findings.append(f"{label}: raster quality fails ({description} {actual:.4f} {operator} {float(expected):.4f}); simple line art and flat color blocks are forbidden")
+    if (
+        metrics["unique_colors"] <= max(8.0, float(quality.get("minimum_unique_colors", 16)) / 2.0)
+        and metrics["edge_density"] >= 0.01
+        and metrics["dominant_color_ratio"] >= 0.45
+    ):
+        findings.append(f"{label}: raster appears to be simple line art rather than an authored image")
 
 
 def validate_design_system_contract(root: Path, ledger: dict) -> list[str]:
@@ -290,6 +482,7 @@ def validate_non_game_ui_contract(root: Path, ledger: dict, surfaces, findings: 
     provide visual evidence. Pure line art, flat color-block collages and a
     single solid-color background are rejected as implementation shortcuts.
     """
+    root = root.resolve()
     project_type = ledger.get("project_type")
     if project_type not in {"non_game", "mixed"}:
         return
@@ -354,8 +547,59 @@ def validate_non_game_ui_contract(root: Path, ledger: dict, surfaces, findings: 
             if evidence is not None and evidence.suffix.lower() not in MEDIA_EXTENSIONS:
                 findings.append(f"ui_component_contract.runtime_evidence[{index}] must be an image or recording: {value}")
 
+    raster_quality = contract.get("raster_quality")
+    if raster_quality is not None and not isinstance(raster_quality, dict):
+        findings.append("ui_component_contract.raster_quality must be an object")
+
     forbidden = re.compile(r"(?:solid\s+colou?r|flat\s+colou?r|colour\s*block|color\s*block|simple\s+line|line\s*art|纯色|色块|简易线条|线条拼接)", re.I)
     rich_markers = re.compile(r"(?:texture|material|lighting|light|depth|layer|image|illustration|scene|gradient|translucent|photo|纹理|材质|光影|景深|层次|图片|插画|场景|渐变|半透明)", re.I)
+    # Scan only files that are declared as visual/runtime consumers. Scanning
+    # every Dart helper would mistake a theme token or a non-visual utility
+    # for a page that is actually rendered as flat geometry.
+    runtime_paths = set()
+    for surface in surfaces:
+        if not isinstance(surface, dict):
+            continue
+        source = surface.get("source")
+        if isinstance(source, str) and source.strip():
+            candidate = (root / source).resolve()
+            if is_within(candidate, root) and candidate.is_file():
+                runtime_paths.add(candidate)
+        background = surface.get("background")
+        if isinstance(background, dict):
+            implementations = background.get("implementation", [])
+            if isinstance(implementations, list):
+                for value in implementations:
+                    if isinstance(value, str) and value.strip():
+                        candidate = (root / value).resolve()
+                        if is_within(candidate, root) and candidate.is_file():
+                            runtime_paths.add(candidate)
+    for component in components:
+        if not isinstance(component, dict):
+            continue
+        value = component.get("actual_consumer")
+        if isinstance(value, str) and value.strip():
+            candidate = (root / value).resolve()
+            if is_within(candidate, root) and candidate.is_file():
+                runtime_paths.add(candidate)
+    if (root / "aduit/welcome.html").is_file():
+        runtime_paths.add(root / "aduit/welcome.html")
+    if (root / "aduit/site").is_dir():
+        runtime_paths.update(path for path in (root / "aduit/site").glob("*.html") if path.is_file())
+
+    flat_only_hits = []
+    for runtime_path in sorted(runtime_paths):
+        source = runtime_path.read_text(encoding="utf-8", errors="replace")
+        has_flat = any(re.search(pattern, source, re.I | re.M | re.S) for pattern in NON_GAME_FLAT_RENDER_MARKERS)
+        has_rich = any(re.search(pattern, source, re.I | re.M | re.S) for pattern in NON_GAME_RICH_RENDER_MARKERS)
+        if has_flat and not has_rich:
+            flat_only_hits.append(runtime_path)
+    if flat_only_hits:
+        names = ", ".join(path.relative_to(root).as_posix() for path in flat_only_hits[:4])
+        findings.append(
+            "non-game runtime surface contains only flat geometric drawing without an authored image/material/texture consumer: "
+            f"{names}; line maps, color-block charts and hand-drawn placeholders are forbidden"
+        )
     for surface in surfaces:
         if not isinstance(surface, dict):
             continue
@@ -462,6 +706,7 @@ def validate_visual_ledger(root: Path):
     background_assets = set()
     background_hashes = {}
     background_scenes = set()
+    raster_quality_missing_reported = False
     page_ids = set()
     flutter_ids = set()
     for surface in surfaces:
@@ -529,6 +774,34 @@ def validate_visual_ledger(root: Path):
                         f"{surface_id}: background asset must be page-specific under "
                         f"assets/backgrounds/{surface_id}/: {background_asset}"
                     )
+            if project_type in {"non_game", "mixed"}:
+                component_contract = ledger.get("ui_component_contract")
+                component_quality = component_contract.get("raster_quality") if isinstance(component_contract, dict) else None
+                surface_quality = background.get("raster_quality")
+                quality = component_quality if isinstance(component_quality, dict) else surface_quality
+                if not isinstance(quality, dict):
+                    if not raster_quality_missing_reported:
+                        findings.append(
+                            "ui_component_contract.raster_quality is required for non-game and mixed image assets"
+                        )
+                        raster_quality_missing_reported = True
+                else:
+                    for key, minimum, maximum in (
+                        ("minimum_width", 32, None),
+                        ("minimum_height", 32, None),
+                        ("minimum_unique_colors", 16, None),
+                        ("maximum_dominant_color_ratio", None, 0.88),
+                        ("minimum_opaque_coverage", 0.12, 1.0),
+                        ("minimum_texture_variation", 0.02, None),
+                    ):
+                        value = quality.get(key)
+                        if isinstance(value, bool) or not isinstance(value, (int, float)):
+                            findings.append(f"ui_component_contract.raster_quality.{key} must be numeric")
+                        elif minimum is not None and value < minimum:
+                            findings.append(f"ui_component_contract.raster_quality.{key} must be >= {minimum:g}")
+                        elif maximum is not None and value > maximum:
+                            findings.append(f"ui_component_contract.raster_quality.{key} must be <= {maximum:g}")
+                    validate_raster_quality(background_path, f"surface {surface_id} background", quality, findings)
         if uses_scene:
             if surface.get("kind") == "native":
                 findings.append(f"{surface_id}: native Launch Screen must stay static; export a still and use image mode")
