@@ -49,8 +49,8 @@ def validate(root: Path):
         errors.append("Welcome must expose Continue")
     if re.search(r"\b(?:pause|paused|resume)\b|Pause|暂停", source, re.I):
         errors.append("Welcome pause controls or paused state must be removed")
-    if re.search(r"(?:welcome|enter)\.html|aduit[/\\]", all_dart, re.I):
-        errors.append("runtime Dart must not load delivery HTML or aduit paths")
+    if re.search(r"(?:welcome|enter)\.html|AppListing[/\\]", all_dart, re.I):
+        errors.append("runtime Dart must not load delivery HTML or AppListing paths")
     if route_kind is not None:
         route_errors = ROUTING_MODULE.validate(root)
         errors.extend(f"routing: {error}" for error in route_errors)
@@ -64,11 +64,11 @@ def validate(root: Path):
         errors.append("Initialization must follow successful Clear Data")
     if has_entry and not re.search(r"\bEnter\b", all_dart):
         errors.append("Initialization action must be labelled Enter")
-    for obsolete in (root / "welcome.html", root / "enter.html", root / "aduit/enter.html"):
+    for obsolete in (root / "welcome.html", root / "enter.html", root / "AppListing/enter.html"):
         if obsolete.exists():
             errors.append(f"obsolete Welcome HTML path exists: {obsolete.relative_to(root)}")
-    if not (root / "aduit/welcome.html").is_file():
-        errors.append("standalone delivery aduit/welcome.html is missing")
+    if not (root / "AppListing/welcome.html").is_file():
+        errors.append("standalone delivery AppListing/welcome.html is missing")
     return {"status": "Failed" if errors else "Passed", "errors": errors}
 
 

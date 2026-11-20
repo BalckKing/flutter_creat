@@ -60,7 +60,7 @@ TOOL_ROOTS = (
     "ios/Pods", "ios/.symlinks", "ios/Flutter",
     "ios/Runner.xcodeproj", "ios/Runner.xcworkspace",
 )
-NAME_ONLY_ROOTS = (".codex-work", "aduit", "AppListing")
+NAME_ONLY_ROOTS = (".codex-work", "AppListing", "AppListing")
 FIXED_PATHS = {
     "lib/common_module", "lib/page_module", "lib/service_module",
     "lib/common_module/theme/app_theme.dart", "assets/logo.png",

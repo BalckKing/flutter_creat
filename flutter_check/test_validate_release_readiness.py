@@ -7,7 +7,7 @@ spec=importlib.util.spec_from_file_location("validate_release_readiness", SCRIPT
 class ReadinessTests(unittest.TestCase):
     def setUp(self): self.temp=tempfile.TemporaryDirectory(); self.addCleanup(self.temp.cleanup); self.root=Path(self.temp.name); (self.root/".codex-work").mkdir()
     def gates(self,status="Passed"):
-        return [{"name":n,"status":status,"evidence":[f".codex-work/{n}.json"]} for n in ("runtime","ios_artifacts","aduit","quality_records","asset_staging","generation_cleanup","logo_quality","final_visual_product","git_handoff")]
+        return [{"name":n,"status":status,"evidence":[f".codex-work/{n}.json"]} for n in ("runtime","ios_artifacts","AppListing","quality_records","asset_staging","generation_cleanup","logo_quality","final_visual_product","git_handoff")]
     def generated_at(self):
         return (datetime.now(timezone.utc) - timedelta(minutes=1)).isoformat().replace("+00:00", "Z")
     def test_ready_requires_all_passed(self):

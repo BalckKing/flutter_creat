@@ -9,7 +9,10 @@ from pathlib import Path
 
 
 PAGES = ("PrivacyPolicy.html", "Terms&Conditions.html", "Support.html")
-REMOVED_HOME_PAGE = re.compile(r"(?:index" + r"\.html|href\s*=\s*[\"\']?/?(?:home|about)(?:[\"\']|/|\b))", re.IGNORECASE)
+DISALLOWED_NAVIGATION = re.compile(
+    r"href\s*=\s*[\"\']?\./(?:PrivacyPolicy\.html|Terms&Conditions\.html|Support\.html)",
+    re.IGNORECASE,
+)
 BLOCKS = frozenset((
     "address", "article", "aside", "blockquote", "br", "button", "div", "dl", "dt", "dd",
     "fieldset", "figcaption", "figure", "footer", "form", "h1", "h2", "h3", "h4", "h5",
@@ -93,8 +96,8 @@ def inspect_page(path):
     if not copy:
         return ["page has no readable copy"]
     findings = []
-    if REMOVED_HOME_PAGE.search(source):
-        findings.append("removed home page reference")
+    if DISALLOWED_NAVIGATION.search(source):
+        findings.append("protocol pages must not link to one another")
     for label, pattern in RULES:
         match = pattern.search(copy)
         if match:

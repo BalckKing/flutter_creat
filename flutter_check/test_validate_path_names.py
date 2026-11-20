@@ -79,7 +79,7 @@ class PathNameChecks(unittest.TestCase):
             "lib/ai_client.dart", "lib/AI2Client.dart", "lib/OpenAIClient.dart", "lib/gpt4_client.dart",
             "assets/genai/hero.png", "assets/aigc_art.png", "assets/artificial_intelligence.png",
             "lib/machine_learning.dart", "lib/ChatGPTClient.dart", "lib/CodexWorker.dart",
-            "aduit/site/ai_notes.html", ".codex-work/codex_notes.md", ".codex-work/notes.md",
+            "AppListing/site/ai_notes.html", ".codex-work/codex_notes.md", ".codex-work/notes.md",
             "ios/Runner/Assets.xcassets/ai_cover.imageset/Contents.json",
             "assets/人工智能封面.png", "assets/智能体记录.md",
         )
@@ -131,7 +131,7 @@ class PathNameChecks(unittest.TestCase):
 
     def test_related_term_rule_preserves_ordinary_words_and_tool_dependencies(self):
         for path in ("lib/main.dart", "assets/media/terrain.jpg", "assets/media/rain.jpg",
-                     "lib/domain/detail.dart", ".codex-work/quality.md", "aduit/site/PrivacyPolicy.html",
+                     "lib/domain/detail.dart", ".codex-work/quality.md", "AppListing/site/PrivacyPolicy.html",
                      "build/ai_cache/entry.bin", "ios/Pods/OpenAI/Client.h"):
             self.put(path)
         self.put(".codex-work/path-terms.json", json.dumps({"terms": {}, "keep": [{
@@ -155,7 +155,7 @@ class PathNameChecks(unittest.TestCase):
 
     def test_excluded_tool_and_delivery_roots_do_not_hide_custom_native_or_extra_code(self):
         for path in ("build/services/controller.dart", "ios/Pods/models/Widget.h",
-                     "aduit/site/PrivacyPolicy.html", ".codex-work/path-names.md"):
+                     "AppListing/site/PrivacyPolicy.html", ".codex-work/path-names.md"):
             self.put(path)
         run, report = self.run_check()
         self.assertEqual(run.returncode, 0, report)

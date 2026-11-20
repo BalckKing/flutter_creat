@@ -92,12 +92,12 @@ done
 require_text "$TASK_ORDER" '第 13 节是唯一的执行顺序'
 require_text "$TASK_ORDER" '第 14 节是唯一的最终报告格式'
 require_text "$TASK_ORDER" '本节只保留入口索引和跨文档的不可省略门槛'
-require_text "$TASK_ORDER" '第 17 步先核对远程 checkout'
+require_text "$TASK_ORDER" '第 17 步先核对当前工程本地 ios-app-listing 来源'
 require_text "$TASK_ORDER" '^18\. .*生成 Review Remarks'
 require_text "$TASK_ORDER" '^19\. .*最终图片加载检查'
 require_text "$TASK_ORDER" '^20\. .*最终 iOS 权限校验'
-require_text "$TASK_ORDER" '项目根目录.*aduit.*必须保留'
-require_text "$TASK_ORDER" '依赖树和 App bundle 中的 `aduit/` 副本必须移除'
+require_text "$TASK_ORDER" '项目根目录.*AppListing.*必须保留'
+require_text "$TASK_ORDER" '依赖树和 App bundle 中的 `AppListing/` 副本必须移除'
 require_text "$TASK_ORDER" '三个具体项目名 HTTP 协议链接.*文件名保持不变'
 require_text "$TASK_ORDER" '缺少证据不能标为 `Verified`'
 require_text "$TASK_ORDER" 'project_type.*non_game.*mixed.*game'
@@ -107,13 +107,13 @@ require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'schema_version'
 require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'freshness_window_hours'
 require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'release-readiness'
 require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'PERMISSION_PHOTOS=1'
-require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'aduit/imgs/'
+require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'AppListing/imgs/'
 require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'quality-matrix\.json'
 require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'offline_cold_start'
 require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'Dynamic Type'
 require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" '密钥'
 require_text "$TASK_DOCS_DIR/11-记录与证据契约.md" 'generated_at'
-for task_new_script in validate_work_records.py validate_ios_artifacts.py validate_aduit_allowlist.py validate_welcome_flow.py validate_execution_state.py validate_capability_matrix.py validate_quality_records.py validate_final_visual_product.py validate_game_design_contract.py prepare_asset_staging.py validate_asset_staging.py cleanup_generation_history.py validate_logo_quality.py validate_release_readiness.py; do
+for task_new_script in validate_work_records.py validate_ios_artifacts.py validate_app_listing_allowlist.py validate_welcome_flow.py validate_execution_state.py validate_capability_matrix.py validate_quality_records.py validate_final_visual_product.py validate_game_design_contract.py prepare_asset_staging.py validate_asset_staging.py cleanup_generation_history.py validate_logo_quality.py validate_release_readiness.py; do
   require_file "$TASK_ROOT/flutter-engine-runner/scripts/$task_new_script"
 done
 
@@ -366,7 +366,7 @@ require_text "$TASK_RELEASE" 'http://【项目名称】/PrivacyPolicy\.html'
 require_text "$TASK_RELEASE" 'http://【项目名称】/Terms&Conditions\.html'
 require_text "$TASK_RELEASE" 'http://【项目名称】/Support\.html'
 require_text "$TASK_RELEASE" '三个文件名.*不得改动'
-require_text "$TASK_RELEASE" 'aduit.*完成.*App 内 WebView'
+require_text "$TASK_RELEASE" 'AppListing.*完成.*App 内 WebView'
 require_text "$TASK_RELEASE" '不跳转到外部 App'
 require_text "$TASK_PRODUCT" 'App 内搜索不是默认能力'
 require_text "$TASK_PRODUCT" '搜索.*Not appropriate'
@@ -377,9 +377,9 @@ require_text "$TASK_QA" '未选搜索.*不创建.*搜索.*路由.*页面.*状态
 require_text "$TASK_MATERIALS" '搜索第三方照片网站'
 require_text "$TASK_RELEASE" '点击协议按钮后直接进入唯一 WebView 展示容器并立即加载对应 URL'
 require_text "$TASK_RELEASE" '不得出现协议索引页、协议列表页、文档选择页或中间跳转页'
-require_text "$TASK_RUNNER" 'button -> fixed URL -> immediate WebView load'
+require_text "$TASK_RUNNER" 'button -> fixed local asset -> immediate WebView load'
 require_text "$TASK_RUNNER" 'no protocol index/list/selector/intermediate page'
-require_text "$TASK_PUBLISH" '将 `aduit/welcome.html` 复制为 `aduit/site/index.html`'
+require_text "$TASK_PUBLISH" '将 `AppListing/welcome.html` 复制为 `AppListing/site/index.html`'
 require_text "$TASK_PUBLISH" 'site/index\.html.*welcome\.html.*交付副本'
 require_text "$TASK_ORDER" 'welcome\.html.*site/index\.html'
 require_text "$TASK_RUNNER" 'concrete project name.*generation.*fixed URL registry'
@@ -412,7 +412,7 @@ for task_file in "$TASK_ROOT"/README.md "$TASK_ROOT"/start.sh "$TASK_ROOT"/flutt
     fail "残留旧工作记录路径：$task_file"
   fi
 done
-forbid_text "$TASK_ORDER" '直接维护到 `aduit/site/` 与 `aduit/intro.md` 并接入统一 WebView'
+forbid_text "$TASK_ORDER" '直接维护到 `AppListing/site/` 与 `AppListing/intro.md` 并接入统一 WebView'
 forbid_text "$TASK_QA" 'WebView 预览随包本地正文'
 require_text "$TASK_ARCHITECTURE" 'differentiation-brief\.md'
 require_text "$TASK_ARCHITECTURE" '4\.3 risk: Failed'
@@ -687,7 +687,7 @@ require_before '^20\. \*\*最终 iOS 权限校验' '^21\. \*\*最终页面证据
 require_before '^21\. \*\*最终页面证据' '^22\. \*\*关联 Git 仓库与创建分支'
 require_before '^22\. \*\*关联 Git 仓库与创建分支' '^## 14\. '
 require_text "$TASK_ORDER" '第 19 步之后、第 21 步最终页面证据之前.*全部适用项完成后进入第 21 步'
-require_text "$TASK_ORDER" '每个 Flutter 页面.*lib/welcome.*独立.*aduit/welcome.*三个 About HTML 页面和原生 Launch Screen.*独立背景图案'
+require_text "$TASK_ORDER" '每个 Flutter 页面.*lib/welcome.*独立.*AppListing/welcome.*三个 About HTML 页面和原生 Launch Screen.*独立背景图案'
 
 # Git is a local handoff after acceptance, using the user's fourth input.
 for task_git_doc in "$TASK_CONVENTIONS" "$TASK_PLANNING" "$TASK_ORDER" "$TASK_README" "$TASK_START" "$TASK_ROOT/flutter-engine-runner/agents/openai.yaml"; do

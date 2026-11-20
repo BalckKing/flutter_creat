@@ -57,10 +57,10 @@ def validate_welcome_source(root: Path):
         if re.search(r"\b(?:SingleChildScrollView|ListView|CustomScrollView|NestedScrollView)\b"
                      r"|scrollDirection\s*:\s*Axis\.vertical", source):
             findings.append("Welcome must not contain a vertical scrolling layout; use responsive non-scrolling content and horizontal cards")
-    for relative in ("welcome.html", "enter.html", "aduit/enter.html"):
+    for relative in ("welcome.html", "enter.html", "AppListing/enter.html"):
         path = root / relative
         if path.exists() or path.is_symlink():
-            findings.append(f"obsolete Welcome HTML path: {relative}; preserve standalone HTML only at aduit/welcome.html")
+            findings.append(f"obsolete Welcome HTML path: {relative}; preserve standalone HTML only at AppListing/welcome.html")
     runtime_files = list((root / "lib").rglob("*.dart"))
     runtime_files += [root / "pubspec.yaml"]
     for path in runtime_files:
@@ -70,8 +70,8 @@ def validate_welcome_source(root: Path):
         # Preserve the three raw policy URLs even if their server paths contain
         # a delivery directory name. A web URL is not an asset filesystem path.
         source = re.sub(r"https?://[^\s\x22\x27<>]+", "", source)
-        if re.search(r"(?:welcome|enter)\.html|aduit[/\\]", source, re.IGNORECASE):
-            findings.append(f"runtime source must not reference delivery HTML or aduit paths: {path.relative_to(root)}")
+        if re.search(r"(?:welcome|enter)\.html|AppListing[/\\]", source, re.IGNORECASE):
+            findings.append(f"runtime source must not reference delivery HTML or AppListing paths: {path.relative_to(root)}")
     return findings
 
 
@@ -452,7 +452,7 @@ def validate_layout_diversity(surfaces, history=()):
         if alias is not None:
             target = by_id.get(alias) if isinstance(alias, str) else None
             allowed = bool(target and (
-                (row.get("kind") == "html" and row.get("source") == "aduit/welcome.html"
+                (row.get("kind") == "html" and row.get("source") == "AppListing/welcome.html"
                  and target.get("kind") == "flutter" and target.get("source") == "lib/welcome.dart")
                 or (row.get("kind") == target.get("kind") == "native"
                     and row.get("role") == "native_cover" and target.get("role") == "native_launch")
@@ -592,10 +592,10 @@ def validate_non_game_ui_contract(root: Path, ledger: dict, surfaces, findings: 
             candidate = (root / value).resolve()
             if is_within(candidate, root) and candidate.is_file():
                 runtime_paths.add(candidate)
-    if (root / "aduit/welcome.html").is_file():
-        runtime_paths.add(root / "aduit/welcome.html")
-    if (root / "aduit/site").is_dir():
-        runtime_paths.update(path for path in (root / "aduit/site").glob("*.html") if path.is_file())
+    if (root / "AppListing/welcome.html").is_file():
+        runtime_paths.add(root / "AppListing/welcome.html")
+    if (root / "AppListing/site").is_dir():
+        runtime_paths.update(path for path in (root / "AppListing/site").glob("*.html") if path.is_file())
 
     flat_only_hits = []
     for runtime_path in sorted(runtime_paths):
@@ -883,7 +883,7 @@ def validate_visual_ledger(root: Path):
         path = local_file(surface.get("source"), f"surface {surface_id}")
         if path:
             recorded_sources.add(path)
-        standalone_welcome = bool(path and path == root / "aduit/welcome.html"
+        standalone_welcome = bool(path and path == root / "AppListing/welcome.html"
                                   and surface.get("kind") == "html")
 
         background = surface.get("background")
@@ -1002,7 +1002,7 @@ def validate_visual_ledger(root: Path):
             else:
                 for value in resources:
                     resource = local_file(value, f"surface {surface_id} background resource")
-                    if resource and (is_within(resource, root / ".codex-work") or is_within(resource, root / "aduit")):
+                    if resource and (is_within(resource, root / ".codex-work") or is_within(resource, root / "AppListing")):
                         findings.append(f"{surface_id}: background resources must be bundled project assets: {value}")
             if surface.get("kind") == "flutter":
                 recording = local_file(background.get("recording"), f"surface {surface_id} background motion recording")
@@ -1041,8 +1041,8 @@ def validate_visual_ledger(root: Path):
     expected_sources = [path for path in page_files(dart_files) if re.search(
         r"\bclass\s+\w*(?:Page|Screen)\b", path.read_text(encoding="utf-8", errors="replace")
     )]
-    expected_sources += [root / "aduit/welcome.html"] if (root / "aduit/welcome.html").is_file() else []
-    expected_sources += list((root / "aduit/site").glob("*.html"))
+    expected_sources += [root / "AppListing/welcome.html"] if (root / "AppListing/welcome.html").is_file() else []
+    expected_sources += list((root / "AppListing/site").glob("*.html"))
     expected_sources += list((root / "ios").glob("**/LaunchScreen.storyboard"))
     for path in expected_sources:
         if path.resolve() not in recorded_sources:

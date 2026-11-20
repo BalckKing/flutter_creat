@@ -92,8 +92,8 @@ def validate(root: Path) -> list[str]:
     if not (root / "lib").is_dir():
         return [f"{root}: missing Flutter lib directory; public copy was not scanned"]
     files = list((root / "lib").rglob("*.dart")) if (root / "lib").exists() else []
-    files += [root / "aduit/welcome.html"]
-    site = root / "aduit" / "site"
+    files += [root / "AppListing/welcome.html"]
+    site = root / "AppListing" / "site"
     if site.exists():
         files += list(site.glob("*.html"))
     for path in files:
@@ -157,7 +157,7 @@ def main() -> int:
     if args.require_near_cap and not args.check_welcome_budget:
         args.check_welcome_budget = True
     if args.check_welcome_budget:
-        findings.extend(validate_welcome_budget(args.project_root / "aduit/welcome.html", args.require_near_cap))
+        findings.extend(validate_welcome_budget(args.project_root / "AppListing/welcome.html", args.require_near_cap))
     if findings:
         for finding in findings:
             print(f"FAIL {finding}")

@@ -19,7 +19,7 @@ class WelcomeTests(unittest.TestCase):
         self.addCleanup(temp.cleanup)
         root = Path(temp.name)
         (root / "lib").mkdir()
-        (root / "aduit").mkdir()
+        (root / "AppListing").mkdir()
         (root / ".codex-work").mkdir()
         (root / "lib/welcome.dart").write_text(source, encoding="utf-8")
         (root / "lib/main.dart").write_text(
@@ -32,7 +32,7 @@ void main() => runApp(MaterialApp(home: Builder(builder: (context) => TextButton
 """,
             encoding="utf-8",
         )
-        (root / "aduit/welcome.html").write_text("<html></html>", encoding="utf-8")
+        (root / "AppListing/welcome.html").write_text("<html></html>", encoding="utf-8")
         (root / ".codex-work/navigation.mp4").write_bytes(b"evidence")
         (root / "pubspec.yaml").write_text(
             "name: demo\ndependencies:\n  flutter:\n    sdk: flutter\n" + route_dependency,

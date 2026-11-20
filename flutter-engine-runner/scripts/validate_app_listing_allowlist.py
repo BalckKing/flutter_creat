@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the final aduit delivery allowlist.
+"""Validate the final AppListing delivery allowlist.
 
 Final delivery no longer requires a fixed screenshot count. Runtime visual
 evidence remains in the project work records and is validated per page/state.
@@ -13,44 +13,44 @@ def png_size(path: Path):
     if data[:8] != b"\x89PNG\r\n\x1a\n" or len(data)<24: return None
     return struct.unpack(">II",data[16:24])
 def validate(root: Path, *, final=False):
-    aduit=root/"aduit"; errors=[]
-    if not aduit.is_dir() or aduit.is_symlink(): return {"status":"Not verified","errors":["aduit/ is missing"]}
-    actual={p.name for p in aduit.iterdir()}; extra=sorted(actual-TOP)
-    if extra: errors.append("aduit contains unapproved entries: "+", ".join(extra))
-    site=aduit/"site"
-    if not site.is_dir() or site.is_symlink(): errors.append("aduit/site is missing or a symlink")
+    AppListing=root/"AppListing"; errors=[]
+    if not AppListing.is_dir() or AppListing.is_symlink(): return {"status":"Not verified","errors":["AppListing/ is missing"]}
+    actual={p.name for p in AppListing.iterdir()}; extra=sorted(actual-TOP)
+    if extra: errors.append("AppListing contains unapproved entries: "+", ".join(extra))
+    site=AppListing/"site"
+    if not site.is_dir() or site.is_symlink(): errors.append("AppListing/site is missing or a symlink")
     else:
         site_actual={p.name for p in site.iterdir()}
         if site_actual-SITE: errors.append("site contains unapproved entries: "+", ".join(sorted(site_actual-SITE)))
         for name in ("PrivacyPolicy.html","Terms&Conditions.html","Support.html"):
             if not (site/name).is_file(): errors.append(f"missing policy page: {name}")
         site_index=site/"index.html"
-        welcome=aduit/"welcome.html"
+        welcome=AppListing/"welcome.html"
         if not site_index.is_file() or site_index.is_symlink():
-            errors.append("site/index.html must be a regular copy of aduit/welcome.html")
+            errors.append("site/index.html must be a regular copy of AppListing/welcome.html")
         elif not welcome.is_file() or welcome.is_symlink():
-            errors.append("aduit/welcome.html is required for the site/index.html copy")
+            errors.append("AppListing/welcome.html is required for the site/index.html copy")
         else:
             try:
                 if site_index.read_bytes() != welcome.read_bytes():
-                    errors.append("site/index.html must be byte-identical to aduit/welcome.html")
+                    errors.append("site/index.html must be byte-identical to AppListing/welcome.html")
             except OSError as error:
-                errors.append(f"cannot compare site/index.html and aduit/welcome.html: {error}")
+                errors.append(f"cannot compare site/index.html and AppListing/welcome.html: {error}")
         logo=site/"img/logo.png"
         if not logo.is_file() or logo.is_symlink(): errors.append("site/img/logo.png is missing or invalid")
-    for path in aduit.rglob("*"):
+    for path in AppListing.rglob("*"):
         if path.is_symlink(): errors.append(f"symlink is not allowed: {path.relative_to(root)}")
-        if path.name=="index.html" and path.parent != aduit/"site":
-            errors.append(f"index.html is only allowed as aduit/site/index.html: {path.relative_to(root)}")
-    imgs=aduit/"imgs"
+        if path.name=="index.html" and path.parent != AppListing/"site":
+            errors.append(f"index.html is only allowed as AppListing/site/index.html: {path.relative_to(root)}")
+    imgs=AppListing/"imgs"
     if not imgs.exists():
         # The directory is optional now; the delivery allowlist does not force
         # screenshot capture or a fixed number of files.
         pass
-    elif not imgs.is_dir() or imgs.is_symlink(): errors.append("aduit/imgs must be a regular directory")
+    elif not imgs.is_dir() or imgs.is_symlink(): errors.append("AppListing/imgs must be a regular directory")
     else:
         files=sorted(p for p in imgs.iterdir() if p.is_file())
-        if any(p.suffix.lower()!=".png" for p in files): errors.append("aduit/imgs may contain PNG files only")
+        if any(p.suffix.lower()!=".png" for p in files): errors.append("AppListing/imgs may contain PNG files only")
         if final:
             for p in files:
                 if png_size(p) is None: errors.append(f"{p.relative_to(root)} must be a decodable PNG")

@@ -20,7 +20,7 @@ typeset -a task_expected=(
   test_default_performance_tier.sh
   test_workflow_integrity.sh
   test_onboarding_guide_workflow.sh
-  test_start_remote_listing.sh
+  test_start_project_local_listing.sh
   test_validate_visual_implementation.py
   test_validate_game_project.py
   test_validate_game_design_contract.py
@@ -36,7 +36,7 @@ typeset -a task_expected=(
   test_validate_about_copy.py
   test_validate_work_records.py
   test_validate_ios_artifacts.py
-  test_validate_aduit_allowlist.py
+  test_validate_app_listing_allowlist.py
   test_validate_welcome_flow.py
   test_validate_execution_state.py
   test_run_bounded_command.py

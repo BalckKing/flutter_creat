@@ -13,9 +13,6 @@ fi
 TASK_RUNNER_SOURCE="$TASK_BUNDLE_DIR/flutter-engine-runner"
 TASK_CODEX_DIR="${CODEX_HOME:-$HOME/.codex}"
 TASK_SKILLS_DIR="$TASK_CODEX_DIR/skills"
-TASK_APP_LISTING_REPO="${FLUTTER_APP_LISTING_REPO:-git@codeup.aliyun.com:6366640f0cd435624679b545/Aurora/Agent/aurora_skills/ios-app-listing.git}"
-TASK_APP_LISTING_BRANCH="feature/1.2.1-A1"
-TASK_APP_LISTING_FALLBACK="${FLUTTER_APP_LISTING_FALLBACK:-/Users/admin/Desktop/config/ios-app-listing}"
 TASK_APP_LISTING_COMMIT=""
 TASK_APP_LISTING_SOURCE=""
 TASK_APP_LISTING_MODE=""
@@ -55,7 +52,7 @@ while (( $# > 0 )); do
   esac
 done
 
-for TASK_REQUIRED in "$TASK_DOC" "$TASK_DOC_MANIFEST" "$TASK_RUNNER_SOURCE/SKILL.md" "$TASK_RUNNER_SOURCE/agents/openai.yaml" "$TASK_RUNNER_SOURCE/scripts/validate_about_copy.py" "$TASK_RUNNER_SOURCE/scripts/validate_visual_implementation.py" "$TASK_RUNNER_SOURCE/scripts/validate_review_remarks.py" "$TASK_RUNNER_SOURCE/scripts/validate_public_copy.py" "$TASK_RUNNER_SOURCE/scripts/validate_path_names.py" "$TASK_RUNNER_SOURCE/scripts/prepare_ios_config.py" "$TASK_RUNNER_SOURCE/scripts/prepare_git_handoff.py" "$TASK_RUNNER_SOURCE/scripts/prepare_asset_staging.py" "$TASK_RUNNER_SOURCE/scripts/validate_asset_staging.py" "$TASK_RUNNER_SOURCE/scripts/cleanup_generation_history.py" "$TASK_RUNNER_SOURCE/scripts/validate_flutter_navigation.py" "$TASK_RUNNER_SOURCE/scripts/validate_code_architecture.py" "$TASK_RUNNER_SOURCE/scripts/validate_protocol_urls.py" "$TASK_RUNNER_SOURCE/scripts/validate_launch_screen_visual.py" "$TASK_RUNNER_SOURCE/scripts/validate_game_project.py" "$TASK_RUNNER_SOURCE/scripts/validate_game_design_contract.py" "$TASK_RUNNER_SOURCE/scripts/validate_work_records.py" "$TASK_RUNNER_SOURCE/scripts/validate_ios_artifacts.py" "$TASK_RUNNER_SOURCE/scripts/validate_aduit_allowlist.py" "$TASK_RUNNER_SOURCE/scripts/validate_welcome_flow.py" "$TASK_RUNNER_SOURCE/scripts/validate_execution_state.py" "$TASK_RUNNER_SOURCE/scripts/run_bounded_command.py" "$TASK_RUNNER_SOURCE/scripts/validate_capability_matrix.py" "$TASK_RUNNER_SOURCE/scripts/validate_quality_records.py" "$TASK_RUNNER_SOURCE/scripts/validate_final_visual_product.py" "$TASK_RUNNER_SOURCE/scripts/validate_logo_quality.py" "$TASK_RUNNER_SOURCE/scripts/validate_release_readiness.py"; do
+for TASK_REQUIRED in "$TASK_DOC" "$TASK_DOC_MANIFEST" "$TASK_RUNNER_SOURCE/SKILL.md" "$TASK_RUNNER_SOURCE/agents/openai.yaml" "$TASK_RUNNER_SOURCE/scripts/validate_about_copy.py" "$TASK_RUNNER_SOURCE/scripts/validate_visual_implementation.py" "$TASK_RUNNER_SOURCE/scripts/validate_review_remarks.py" "$TASK_RUNNER_SOURCE/scripts/validate_public_copy.py" "$TASK_RUNNER_SOURCE/scripts/validate_path_names.py" "$TASK_RUNNER_SOURCE/scripts/prepare_ios_config.py" "$TASK_RUNNER_SOURCE/scripts/prepare_git_handoff.py" "$TASK_RUNNER_SOURCE/scripts/prepare_asset_staging.py" "$TASK_RUNNER_SOURCE/scripts/validate_asset_staging.py" "$TASK_RUNNER_SOURCE/scripts/cleanup_generation_history.py" "$TASK_RUNNER_SOURCE/scripts/validate_flutter_navigation.py" "$TASK_RUNNER_SOURCE/scripts/validate_code_architecture.py" "$TASK_RUNNER_SOURCE/scripts/validate_protocol_urls.py" "$TASK_RUNNER_SOURCE/scripts/validate_launch_screen_visual.py" "$TASK_RUNNER_SOURCE/scripts/validate_game_project.py" "$TASK_RUNNER_SOURCE/scripts/validate_game_design_contract.py" "$TASK_RUNNER_SOURCE/scripts/validate_work_records.py" "$TASK_RUNNER_SOURCE/scripts/validate_ios_artifacts.py" "$TASK_RUNNER_SOURCE/scripts/validate_app_listing_allowlist.py" "$TASK_RUNNER_SOURCE/scripts/validate_welcome_flow.py" "$TASK_RUNNER_SOURCE/scripts/validate_execution_state.py" "$TASK_RUNNER_SOURCE/scripts/run_bounded_command.py" "$TASK_RUNNER_SOURCE/scripts/validate_capability_matrix.py" "$TASK_RUNNER_SOURCE/scripts/validate_quality_records.py" "$TASK_RUNNER_SOURCE/scripts/validate_final_visual_product.py" "$TASK_RUNNER_SOURCE/scripts/validate_logo_quality.py" "$TASK_RUNNER_SOURCE/scripts/validate_release_readiness.py"; do
   if [[ ! -f "$TASK_REQUIRED" ]]; then
     print -u2 -- "资料包不完整，缺少：$TASK_REQUIRED"
     print -u2 -- "请复制整个 Flutter工程 文件夹，不要只复制启动器或 Markdown。"
@@ -139,10 +136,10 @@ cp "$TASK_DOC" "$TASK_STAGE/references/workflow.md"
 cp -R "$TASK_DOCS_DIR" "$TASK_STAGE/references/工作流文档"
 
 TASK_APP_LISTING_DIR="$TASK_STAGE/references/ios-app-listing"
-TASK_GIT_SSH_COMMAND="${GIT_SSH_COMMAND:-ssh -o BatchMode=yes -o ConnectTimeout=10}"
+TASK_PROJECT_APP_LISTING="$TASK_BUNDLE_DIR/ios-app-listing"
 task_listing_source_complete() {
   local task_listing_root="$1"
-  [[ -d "$task_listing_root" ]] || return 1
+  [[ -d "$task_listing_root" && ! -L "$task_listing_root" ]] || return 1
   for TASK_LISTING_REQUIRED in \
     SKILL.md \
     references/output-contract.md \
@@ -168,48 +165,31 @@ task_record_listing_source() {
     TASK_APP_LISTING_OPTIONAL_VALIDATOR="available"
   else
     TASK_APP_LISTING_OPTIONAL_VALIDATOR="missing; use the available output-contract and rendered-page checks"
-    print -u2 -- "提示：所选 ios-app-listing 来源没有可选的 validate_site_publication_ready.py；继续使用其余生成器，并对全部产物执行现有契约检查与人工页面复核。"
+    print -u2 -- "提示：当前工程内 ios-app-listing 来源没有可选的 validate_site_publication_ready.py；继续使用其余生成器，并对全部产物执行现有契约检查与人工页面复核。"
   fi
 }
 
-if GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND="$TASK_GIT_SSH_COMMAND" git clone \
-  --branch "$TASK_APP_LISTING_BRANCH" --single-branch "$TASK_APP_LISTING_REPO" "$TASK_APP_LISTING_DIR"; then
-  if [[ "$(git -C "$TASK_APP_LISTING_DIR" branch --show-current)" == "$TASK_APP_LISTING_BRANCH" ]] && \
-    task_listing_source_complete "$TASK_APP_LISTING_DIR"; then
-    TASK_APP_LISTING_SOURCE="$TASK_APP_LISTING_REPO"
-    TASK_APP_LISTING_MODE="remote"
-    task_record_listing_source "$TASK_APP_LISTING_DIR"
-  else
-    print -u2 -- "远程 ios-app-listing 检出不完整或分支不匹配，将尝试本机后备目录。"
-    rm -rf -- "$TASK_APP_LISTING_DIR"
-  fi
+if task_listing_source_complete "$TASK_PROJECT_APP_LISTING"; then
+  mkdir -p "$TASK_APP_LISTING_DIR"
+  cp -R "$TASK_PROJECT_APP_LISTING"/. "$TASK_APP_LISTING_DIR"/
+  TASK_APP_LISTING_SOURCE="$TASK_PROJECT_APP_LISTING"
+  TASK_APP_LISTING_MODE="project-local"
+  task_record_listing_source "$TASK_PROJECT_APP_LISTING"
+  print -r -- "已使用当前工程内 ios-app-listing：$TASK_PROJECT_APP_LISTING"
 else
-  print -u2 -- "远程同步失败：无法获取 ios-app-listing 分支 $TASK_APP_LISTING_BRANCH；将尝试后备生成。"
-  rm -rf -- "$TASK_APP_LISTING_DIR"
-fi
-
-if [[ -z "$TASK_APP_LISTING_SOURCE" ]] && task_listing_source_complete "$TASK_APP_LISTING_FALLBACK"; then
-  ln -s "$TASK_APP_LISTING_FALLBACK" "$TASK_APP_LISTING_DIR"
-  TASK_APP_LISTING_SOURCE="$TASK_APP_LISTING_FALLBACK"
-  TASK_APP_LISTING_MODE="local-fallback"
-  task_record_listing_source "$TASK_APP_LISTING_FALLBACK"
-  print -r -- "已切换到本机 ios-app-listing 后备生成：$TASK_APP_LISTING_FALLBACK"
-fi
-
-if [[ -z "$TASK_APP_LISTING_SOURCE" ]]; then
   TASK_APP_LISTING_MODE="contract-fallback"
   TASK_APP_LISTING_CHECKOUT_BRANCH="none"
   TASK_APP_LISTING_OPTIONAL_VALIDATOR="unavailable"
-  print -u2 -- "远程与本机 ios-app-listing 来源均不可用；仍安装核心流程，并按随包生成契约继续完成 AppListing、About、aduit 整理、引导页与 Review Remarks。"
+  print -u2 -- "当前工程内 ios-app-listing 来源不完整；不读取远程仓库或外部后备目录，继续按随包契约完成 AppListing 与协议材料。"
   print -r -- "不得因此停止或等待用户；逐项完成可交付产物，未通过的校验如实标记，不得伪报通过。具体错误与验证结果写入目标工程 .codex-work/。"
 fi
 
-print -r -- "远程同步失败时使用 $TASK_APP_LISTING_FALLBACK；所有 AppListing、About 与 Review Remarks 任务继续执行。"
+print -r -- "AppListing 来源固定为当前工程根目录的 ios-app-listing；所有 AppListing、About 与 Review Remarks 任务继续执行。"
 print -r -- "local_generation_complete、failures 与 verification 状态必须分开记录，不得将未验证结果伪报为通过。" \
   > "$TASK_STAGE/references/app-listing-fallback-contract.md"
 print -r -- "source=$TASK_APP_LISTING_SOURCE" > "$TASK_STAGE/references/ios-app-listing-source.txt"
 print -r -- "mode=$TASK_APP_LISTING_MODE" >> "$TASK_STAGE/references/ios-app-listing-source.txt"
-print -r -- "branch=$TASK_APP_LISTING_BRANCH" >> "$TASK_STAGE/references/ios-app-listing-source.txt"
+print -r -- "configured_source=project-local" >> "$TASK_STAGE/references/ios-app-listing-source.txt"
 print -r -- "checkout_branch=$TASK_APP_LISTING_CHECKOUT_BRANCH" >> "$TASK_STAGE/references/ios-app-listing-source.txt"
 print -r -- "commit=$TASK_APP_LISTING_COMMIT" >> "$TASK_STAGE/references/ios-app-listing-source.txt"
 print -r -- "optional_publication_validator=$TASK_APP_LISTING_OPTIONAL_VALIDATOR" >> "$TASK_STAGE/references/ios-app-listing-source.txt"
@@ -251,18 +231,18 @@ if (( ! TASK_CUSTOM_SKILLS )); then
   fi
 fi
 
-TASK_PROMPT='使用 $flutter-engine-runner，请直接开始执行。将项目名称、创意主题、性能与功能目标水平、Git 仓库地址一并收集，仓库地址由我提供主题时一起给出，只询问缺失项；名称使用我提供的。性能请完整列出 1 极低、2 低、3 中、4 高（推荐、默认）、5 极高五个选项让我直接选择编号或档名，不要求我手写参数、具体机型或功能标准；功能目标由你按主题自动制定。性能档位未明确时采用高档（默认），针对性能说“不在乎/无限制”等意思映射极高档，已有选择不要重问。按文档为每页分别生成最详细的思维导图和执行文档，分开保存；展示全部页面图、执行文档链接和目标验收标准，整体确认后继续。不要询问项目位置；未指定时使用当前 Codex 工作目录，不在资料包或技能目录创建工程。游戏是可选主题：只有我选择游戏主题或创意明确包含真实游戏模块时，先判断是否需要专用引擎；持续世界、实时物理/碰撞、复杂3D、高频实体或编辑器导出管线使用精确版本的 Flame/Godot/Unity 等引擎，回合制、卡牌、问答、轻量棋盘和有限状态解谜可用 Flutter 原生实现。将 implementation_mode、engine_required 和 decision_reason 写入 .codex-work/game-engine.json；引擎路线完成引擎垂直切片，Flutter 原生路线完成 Flutter 规则垂直切片，并使用动画/效果目录和六部分效果提示词公式，二者都要真实输入、规则、结果、反馈和重开；非游戏项目不接入游戏引擎或游戏专项验收，但必须选择主题匹配的真实地图 SDK/瓦片、图表、媒体、3D、时间线或其他工具，记录 capability、real_tool_or_sdk、version、license/source、actual_consumer、fallback、runtime_evidence、formula_record；禁止线条地图、色块地图、静态地图截图、假坐标网格，组件目录不等于全量安装清单；按主题使用贴题本地动态图和真实数据能力；每个项目独立设计架构、导航和视觉样式，并按工作流验收。项目自有文件夹和文件名禁止Codex/AI相关词，开发记录统一.codex-work/并执行命名检查；项目UI自主创作，以完整成品的美观与精修证据验收，不套固定外观；每页保留真实半透明主题图片点缀，与背景动画同时呈现，按当前构建逐页检查；生图网站/工具不要求统一，按题材选择，以精致美观和主题质量验收；长时间 iOS 构建必须通过 `scripts/run_bounded_command.py` 一次性执行并写入心跳/状态，连续无输出时停止并诊断，禁止对同一终端重复调用 `write_stdin`；最终成品必须填写 `.codex-work/final-visual-product.json` 并运行 `validate_final_visual_product.py`，不得以原型、静态截图、色块拼接或垂直切片代替最终视觉产品。全部验收、修复复验及五张最终截图通过后，最后关联我提供的 Git 仓库地址，创建并切换 feat/1.0.0 分支；不暂存、不提交、不推送代码，等待我自行提交。'
+TASK_PROMPT='使用 $flutter-engine-runner，请直接开始执行。将项目名称、创意主题、性能与功能目标水平、Git 仓库地址一并收集，仓库地址由我提供主题时一起给出，只询问缺失项；名称使用我提供的。性能请完整列出 1 极低、2 低、3 中、4 高（推荐、默认）、5 极高五个选项让我直接选择编号或档名，不要求我手写参数、具体机型或功能标准；功能目标由你按主题自动制定。性能档位未明确时采用高档（默认），针对性能说“不在乎/无限制”等意思映射极高档，已有选择不要重问。按文档为每页分别生成最详细的思维导图和执行文档，分开保存；展示全部页面图、执行文档链接和目标验收标准，整体确认后继续。不要询问项目位置；未指定时使用当前 Codex 工作目录，不在资料包或技能目录创建工程。游戏是可选主题：只有我选择游戏主题或创意明确包含真实游戏模块时，先判断是否需要专用引擎；持续世界、实时物理/碰撞、复杂3D、高频实体或编辑器导出管线使用精确版本的 Flame/Godot/Unity 等引擎，回合制、卡牌、问答、轻量棋盘和有限状态解谜可用 Flutter 原生实现。将 implementation_mode、engine_required 和 decision_reason 写入 .codex-work/game-engine.json；引擎路线完成引擎垂直切片，Flutter 原生路线完成 Flutter 规则垂直切片，并使用动画/效果目录和六部分效果提示词公式，二者都要真实输入、规则、结果、反馈和重开；非游戏项目不接入游戏引擎或游戏专项验收，但必须选择主题匹配的真实地图 SDK/瓦片、图表、媒体、3D、时间线或其他工具，记录 capability、real_tool_or_sdk、version、license/source、actual_consumer、fallback、runtime_evidence、formula_record；禁止线条地图、色块地图、静态地图截图、假坐标网格，组件目录不等于全量安装清单；按主题使用贴题本地动态图和真实数据能力；每个项目独立设计架构、导航和视觉样式，并按工作流验收。项目自有文件夹和文件名禁止Codex/AI相关词，开发记录统一.codex-work/并执行命名检查；项目UI自主创作，以完整成品的美观与精修证据验收，不套固定外观；每页保留真实半透明主题图片点缀，与背景动画同时呈现，按当前构建逐页检查；生图网站/工具不要求统一，按题材选择，以精致美观和主题质量验收；长时间 iOS 构建必须通过 `scripts/run_bounded_command.py` 一次性执行并写入心跳/状态，连续无输出时停止并诊断，禁止对同一终端重复调用 `write_stdin`；最终成品必须填写 `.codex-work/final-visual-product.json` 并运行 `validate_final_visual_product.py`，不得以原型、静态截图、色块拼接或垂直切片代替最终视觉产品。全部验收、修复复验及必要的最终页面证据通过后，最后关联我提供的 Git 仓库地址，创建并切换 feat/1.0.0 分支；不暂存、不提交、不推送代码，等待我自行提交。'
 if [[ -n "$TASK_PROJECT_DIR" ]]; then
   TASK_PROMPT+=" 本次完整目标工程目录：$TASK_PROJECT_DIR。"
 fi
 
 print -r -- "技能已安装：$TASK_INSTALLED_DIR"
 if [[ -n "$TASK_APP_LISTING_SOURCE" ]]; then
-  print -r -- "AppListing 技能来源：$TASK_APP_LISTING_SOURCE ($TASK_APP_LISTING_MODE; $TASK_APP_LISTING_BRANCH @ $TASK_APP_LISTING_COMMIT)"
+  print -r -- "AppListing 技能来源：$TASK_APP_LISTING_SOURCE ($TASK_APP_LISTING_MODE; $TASK_APP_LISTING_CHECKOUT_BRANCH @ $TASK_APP_LISTING_COMMIT)"
 else
-  print -r -- "AppListing 技能来源：未取得 checkout；已启用本地生成后备契约"
+  print -r -- "AppListing 技能来源：未取得工程内 checkout；已启用随包生成契约"
 fi
-print -r -- "总入口与 $(( ${#TASK_DOCUMENTS} - 1 )) 份规范正文已安装；AppListing 来源顺序为远程指定分支，失败时自动使用 $TASK_APP_LISTING_FALLBACK，再失败时按本地生成契约继续。"
+print -r -- "总入口与 $(( ${#TASK_DOCUMENTS} - 1 )) 份规范正文已安装；AppListing 来源固定为当前工程根目录 ios-app-listing，缺失时按随包生成契约继续。"
 if [[ -n "$TASK_PREVIOUS" ]]; then
   print -r -- "旧安装可恢复：$TASK_PREVIOUS"
 fi

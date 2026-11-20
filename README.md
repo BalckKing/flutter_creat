@@ -69,7 +69,7 @@
 ## 第一次使用
 
 1. 把整个 `Flutter工程` 文件夹复制到新机器，保留下面列出的文件和目录。
-2. 双击 `start.command`。它会安装执行技能、复制完整规范，并从远程仓库的 `feature/1.2.1-A1` 分支同步完整 `ios-app-listing` checkout，然后打开 Codex 并将启动语句复制到剪贴板。只安装而不打开 Codex 时，可双击 `install.command`。
+2. 双击 `start.command`。它会安装执行技能、复制完整规范，并从当前工程根目录的 `ios-app-listing/` 使用完整本地 checkout，然后打开 Codex 并将启动语句复制到剪贴板。只安装而不打开 Codex 时，可双击 `install.command`。
 3. 首次安装或更新后重新打开 Codex，选择你要存放工程的项目/工作目录，再进入新对话。
 4. 在技能列表搜索 `Flutter 工程执行` 或 `flutter-engine-runner` 并选择；也可以直接粘贴并发送：
 
@@ -77,7 +77,7 @@
 使用 $flutter-engine-runner，请开始执行。
 ```
 
-5. 缺少输入时提供项目名称、创意主题、Git 仓库地址，并从极低/低/中/高/极高五档直接选择性能与功能目标水平（功能标准自动制定），仓库地址与主题一并给出，查看完整导图及目标验收标准并回复“确认，按此执行”，随后自主开发。质量复核后按远程 AppListing → `/Users/admin/Desktop/config/ios-app-listing` → 随包契约生成完整材料，不因来源/资源失败取消后续步骤。详尽英文 Description 覆盖真实用途、主模块、任务、实际媒体、成果回访和数据边界，最多 4,000 字符；Intro 仅保留 `All URL` 三个协议 URL；生成阶段将用户提供的项目名称写入主机名，文件名和大小写不变；教育展示标签改 `Popular Science`。改名 `aduit/` 后保留三协议页，按项目类型更新并接入 `lib/welcome.dart`：非游戏项目依第 7.1 节自由设计精致的多章节欢迎构图并保留轮播/分页点、品牌配色和 `Continue`；游戏/混合项目将同一文件实现为一屏式沉浸游戏大厅，只保留 `Play`、`Load`、`Operation` 及顶部 `Exit`、`Settings`。原自包含 `welcome.html` 保留在 `aduit/`，不被 App 加载或打包。非游戏 Welcome 禁止纵向滚动，只允许卡片横向切换；游戏大厅使用竖屏沉浸布局，不混入普通引导卡片。Dart 页用本地 assets、SafeArea 与直接 Dart callback；HTML 保留 Base64 data URI 图片、内联内容，完整 UTF-8 文件尽量逼近 256 KB（建议至少 250,000 字节）且严格小于 262,144 字节，独立验收。两份无协议页脚。完成检查后、Remarks 前，将用户提供的项目名称写入三条具体 HTTP URL 的固定配置；协议文本仅加入结束操作成功后的 Initialization 底部：
+5. 缺少输入时提供项目名称、创意主题、Git 仓库地址，并从极低/低/中/高/极高五档直接选择性能与功能目标水平（功能标准自动制定），仓库地址与主题一并给出，查看完整导图及目标验收标准并回复“确认，按此执行”，随后自主开发。质量复核后按工程内 `ios-app-listing/` → 随包契约生成完整材料，不因来源/资源失败取消后续步骤。详尽英文 Description 覆盖真实用途、主模块、任务、实际媒体、成果回访和数据边界，最多 4,000 字符；Intro 仅保留 `All URL` 三个协议 URL；生成阶段将用户提供的项目名称写入主机名，文件名和大小写不变；教育展示标签改 `Popular Science`。改名 `AppListing/` 后保留三协议页，按项目类型更新并接入 `lib/welcome.dart`：非游戏项目依第 7.1 节自由设计精致的多章节欢迎构图并保留轮播/分页点、品牌配色和 `Continue`；游戏/混合项目将同一文件实现为一屏式沉浸游戏大厅，只保留 `Play`、`Load`、`Operation` 及顶部 `Exit`、`Settings`。原自包含 `welcome.html` 保留在 `AppListing/`，不被 App 加载或打包。非游戏 Welcome 禁止纵向滚动，只允许卡片横向切换；游戏大厅使用竖屏沉浸布局，不混入普通引导卡片。Dart 页用本地 assets、SafeArea 与直接 Dart callback；HTML 保留 Base64 data URI 图片、内联内容，完整 UTF-8 文件尽量逼近 256 KB（建议至少 250,000 字节）且严格小于 262,144 字节，独立验收。两份无协议页脚。完成检查后、Remarks 前，将用户提供的项目名称写入三条具体 HTTP URL 的固定配置；协议文本仅加入结束操作成功后的 Initialization 底部：
 
 ```text
 By continuing, you agree to our
@@ -94,9 +94,9 @@ zsh flutter_check/test_workflow_integrity.sh
 
 选择游戏主题后的通过条件是精细可玩闭环而不是“有一个页面”：保留 `lib/welcome.dart`，但运行时把它作为一屏式沉浸竖屏游戏大厅，首屏只显示 `Play`、`Load`、`Operation`，顶部显示 `Exit`、`Settings`；不显示普通多章节 Welcome、`Continue` 或额外引导卡片。`Play` 必须走 `Loading/初始化 → Game`，`Load` 必须走 `Save Slot/存档加载 → Game`，`Operation` 必须能调节音量和画质并按手机性能适配。必须从游戏大厅到主游戏入口完成至少一局真实操作并能重开，并完成主题化角色/场景、HUD、反馈和交互 UI；空场景、彩色方块、静态截图、无效按钮、点击穿透或隐藏路由均不计入。必须先完成并记录 `.codex-work/game-engine.json` 的 `game_lobby`、引擎必要性、2.5D/3D 视觉契约与可玩垂直切片；引擎路线按引擎环境、场景启动、已创作资源加载、真实输入、更新/物理、结果、反馈、重开执行，Flutter 原生路线按 Flutter 运行时、场景启动、已创作资源加载、真实输入、规则更新、结果、反馈、重开执行，并提交动画/效果目录与六部分效果提示词。未选择游戏主题的项目不执行这组游戏专项门槛。入口/路由、引擎或原生场景、规则结果、美术反馈、生命周期和交付材料允许并行推进，但已选择游戏时核心路径任一失败都会阻断发布结论；`setState() called during build`、RenderFlex overflow、dispose 后旧回调、重复引擎注册、引擎超时、输入命中错误、HUD 遮挡、前后台恢复重复更新、崩溃/白屏/卡死均为阻断项。
 
-需要一次性回归全部资料包契约时，运行 `flutter_check/run_all.sh`。它先串行执行检查目录布局这一项前置门禁；布局确认后，并行执行默认性能档位、工作流完整性、引导契约以及其他互不共享工程、Simulator、构建目录、日志流或截图目录的独立静态检查，最后按原验收顺序回放输出；所有检查仍会执行，任一项失败都会返回非零状态。实际任务可按一次性工作流索引和输入指纹复用未变化结果，只重跑受影响检查及其下游；真实 App build/install、Simulator 点击、日志和截图仍必须在单一串行会话中完成。脚本结果不代表用户 App 已构建、安装、点击或通过运行验收。Review Remarks 检查器固定要求第 1 项依次为 `- iPhone 18 Pro, iOS 27` 与 `- Screenshot size: 1206 x 2622 pixels (portrait).` 两条项目符号：按 2026-10-30 Apple 官方规格选择原生尺寸符合要求且搭载 A20 Pro 的最新 Pro 机型，不使用尺寸不符的 Pro Max；实际截图须读取像素宽高核验，不能裁切/缩放其他机型截图凑尺寸。第 2 项固定按顺序为 `iPhone 15 Pro, iOS 18.6` 和 `iPhone 13, iOS 17.7.1`，两项设备章独立且非空，不随机替换、遗漏、重复或新增设备、第 6 项为 `All regions are the same.`，并拒绝待确认占位语、非 iPhone 设备、网页容器术语、中文、`**` 和超过 4,000 字符的公开备注。固定设备配置来自用户指定，不自动证明当前 App 已完成测试；测试范围和完成结果须另对照当前 App 的记录或用户明确确认，缺少结果依据时保留配置、不编造通过声明。公开文案检查器提供 Dart 直接 UI 字符串、独立 `aduit/welcome.html`、About 静态 HTML 与无障碍属性的补充扫描；间接字符串、脚本动态内容、图片嵌字及运行画面仍需按第 11.4 节复核。它不扫描内部记录，也不替代 Remarks 中真实外部服务的披露。
+需要一次性回归全部资料包契约时，运行 `flutter_check/run_all.sh`。它先串行执行检查目录布局这一项前置门禁；布局确认后，并行执行默认性能档位、工作流完整性、引导契约以及其他互不共享工程、Simulator、构建目录、日志流或截图目录的独立静态检查，最后按原验收顺序回放输出；所有检查仍会执行，任一项失败都会返回非零状态。实际任务可按一次性工作流索引和输入指纹复用未变化结果，只重跑受影响检查及其下游；真实 App build/install、Simulator 点击、日志和截图仍必须在单一串行会话中完成。脚本结果不代表用户 App 已构建、安装、点击或通过运行验收。Review Remarks 检查器固定要求第 1 项依次为 `- iPhone 18 Pro, iOS 27` 与 `- Screenshot size: 1206 x 2622 pixels (portrait).` 两条项目符号：按 2026-10-30 Apple 官方规格选择原生尺寸符合要求且搭载 A20 Pro 的最新 Pro 机型，不使用尺寸不符的 Pro Max；实际截图须读取像素宽高核验，不能裁切/缩放其他机型截图凑尺寸。第 2 项固定按顺序为 `iPhone 15 Pro, iOS 18.6` 和 `iPhone 13, iOS 17.7.1`，两项设备章独立且非空，不随机替换、遗漏、重复或新增设备、第 6 项为 `All regions are the same.`，并拒绝待确认占位语、非 iPhone 设备、网页容器术语、中文、`**` 和超过 4,000 字符的公开备注。固定设备配置来自用户指定，不自动证明当前 App 已完成测试；测试范围和完成结果须另对照当前 App 的记录或用户明确确认，缺少结果依据时保留配置、不编造通过声明。公开文案检查器提供 Dart 直接 UI 字符串、独立 `AppListing/welcome.html`、About 静态 HTML 与无障碍属性的补充扫描；间接字符串、脚本动态内容、图片嵌字及运行画面仍需按第 11.4 节复核。它不扫描内部记录，也不替代 Remarks 中真实外部服务的披露。
 
-欢迎页按第 7.1、10.5.1 节先选精细主视觉，再围绕主题与素材自由排版；不同介绍章节有各自的图文关系和视觉节奏，不能整页同骨架换图换字。主图、插画、场景和主要背景图片须有清楚主体、材质/笔触、光影/色彩和空间层次；所有来源及 SVG、Canvas/CustomPainter、代码绘图的位图导出均不得仅以简单线条或色块拼接充当成图。景深、纹理、透明材质与过渡按主题自主编排，静态/减少动态状态仍须精致。独立 `aduit/welcome.html` 的完整 UTF-8 文件尽量逼近 256 KB（建议至少 250,000 字节）且严格小于 262,144 字节；HTML/CSS/JavaScript、Logo、Base64 图片和编码开销全部计入，运行 `validate_public_copy.py --check-welcome-budget --require-near-cap`，不得用无意义填充。`lib/welcome.dart` 同步修改并保持章节 ID、核心文案、图片语义、明亮视觉、轮播/分页节奏及 Continue/准备/错误行为一致，记录 `.codex-work/welcome-sync.md`。四指定视口离线检查各章节和压缩后的实际画质。若已拉取图片资源不足以覆盖已确认的非摄影视觉位，可使用生图软件补充；必须先建立已拉取素材的 `style_reference`，按主体、构图、画幅、光线、色彩、材质/笔触、透明度和视觉密度保持同一视觉风格，逐张并排复核后接入。补充图标记为 `generated`，不冒充真实摄影、实景封面或用户媒体；生图来源不要求统一网站。
+欢迎页按第 7.1、10.5.1 节先选精细主视觉，再围绕主题与素材自由排版；不同介绍章节有各自的图文关系和视觉节奏，不能整页同骨架换图换字。主图、插画、场景和主要背景图片须有清楚主体、材质/笔触、光影/色彩和空间层次；所有来源及 SVG、Canvas/CustomPainter、代码绘图的位图导出均不得仅以简单线条或色块拼接充当成图。景深、纹理、透明材质与过渡按主题自主编排，静态/减少动态状态仍须精致。独立 `AppListing/welcome.html` 的完整 UTF-8 文件尽量逼近 256 KB（建议至少 250,000 字节）且严格小于 262,144 字节；HTML/CSS/JavaScript、Logo、Base64 图片和编码开销全部计入，运行 `validate_public_copy.py --check-welcome-budget --require-near-cap`，不得用无意义填充。`lib/welcome.dart` 同步修改并保持章节 ID、核心文案、图片语义、明亮视觉、轮播/分页节奏及 Continue/准备/错误行为一致，记录 `.codex-work/welcome-sync.md`。四指定视口离线检查各章节和压缩后的实际画质。若已拉取图片资源不足以覆盖已确认的非摄影视觉位，可使用生图软件补充；必须先建立已拉取素材的 `style_reference`，按主体、构图、画幅、光线、色彩、材质/笔触、透明度和视觉密度保持同一视觉风格，逐张并排复核后接入。补充图标记为 `generated`，不冒充真实摄影、实景封面或用户媒体；生图来源不要求统一网站。
 
 ```bash
 ./flutter_check/run_all.sh
@@ -174,11 +174,11 @@ Git 仓库地址：git@example.invalid:your-account/journey-notes.git
 
 每页详细展开区域/元素/文案/尺寸、六维骨架、真实内容与翻页、图片/背景/GIF、渐变/字体/图标/Emoji/点击粒子、每个操作与结果、适用状态/恢复、数据/保存/清除、路由/返回、iOS 权限与可访问性、逐步实施和可复现验收。图文件承担关系与流程，执行文件承担具体参数与行动，不用“同首页”、空目录、通用模板或大段重复文字凑详细。
 
-覆盖原生启动页/承接层、Welcome、Initialization、全部实际业务页和独立弹窗、三个协议 HTML 及独立交付 Welcome HTML；同一逻辑页的内容实例和状态写在本页内。所有文件在原有一次确认前写齐并核验，全部页面图在对话中连续分批展示，附各页执行链接和关键摘要，最后只确认一次。实施或恢复某页前完整读取对应两份文件，完成后更新真实状态与证据；改名/增删同步所有引用，最终逐页对照设计、任务、代码/资源和当前 iPhone 结果，不把文件齐全当成实际通过。文档只留在 `.codex-work/`，不放进 `aduit/` 或 App bundle。
+覆盖原生启动页/承接层、Welcome、Initialization、全部实际业务页和独立弹窗、三个协议 HTML 及独立交付 Welcome HTML；同一逻辑页的内容实例和状态写在本页内。所有文件在原有一次确认前写齐并核验，全部页面图在对话中连续分批展示，附各页执行链接和关键摘要，最后只确认一次。实施或恢复某页前完整读取对应两份文件，完成后更新真实状态与证据；改名/增删同步所有引用，最终逐页对照设计、任务、代码/资源和当前 iPhone 结果，不把文件齐全当成实际通过。文档只留在 `.codex-work/`，不放进 `AppListing/` 或 App bundle。
 
 ## 工程创建在哪里
 
-你当前新建或明确指定的工程文件夹本身就是工程根目录：`pubspec.yaml`、`lib/`、`assets/`、`ios/`、`aduit/` 等直接创建在其中。不要在该目录下再创建“项目名称”子文件夹。项目名称只用作 App 显示名称及合法化后的 Flutter 内部标识，不改变文件夹层级。
+你当前新建或明确指定的工程文件夹本身就是工程根目录：`pubspec.yaml`、`lib/`、`assets/`、`ios/`、`AppListing/` 等直接创建在其中。不要在该目录下再创建“项目名称”子文件夹。项目名称只用作 App 显示名称及合法化后的 Flutter 内部标识，不改变文件夹层级。
 
 未提供位置时，使用 Codex 当前选定项目/工作目录本身作为目标；优先复用本任务的匹配工程，否则直接在该文件夹中创建新工程，不再创建同名子目录。资料包目录和技能安装目录只用于读取流程，不是默认输出位置；若当前工作目录恰好在资料包或技能内，回退到当前用户的 `Documents/FlutterProjects/` 下一个直接目标文件夹，并在思维导图方案中说明，该目标文件夹本身就是工程根目录。
 
@@ -204,7 +204,7 @@ Flutter工程/
 │   ├── test_default_performance_tier.sh
 │   ├── test_workflow_integrity.sh
 │   ├── test_onboarding_guide_workflow.sh
-│   ├── test_start_remote_listing.sh
+│   ├── test_start_project_local_listing.sh
 │   ├── test_prepare_git_handoff.py
 │   ├── test_prepare_ios_config.py
 │   ├── test_validate_about_copy.py
@@ -218,7 +218,7 @@ Flutter工程/
 │   ├── test_validate_public_copy.py
 │   ├── test_validate_work_records.py
 │   ├── test_validate_ios_artifacts.py
-│   ├── test_validate_aduit_allowlist.py
+│   ├── test_validate_AppListing_allowlist.py
 │   ├── test_validate_welcome_flow.py
 │   ├── test_validate_execution_state.py
 │   ├── test_validate_capability_matrix.py
@@ -232,7 +232,7 @@ Flutter工程/
 
 无需复制个人机器上的 `.codex` 文件夹，也不要只复制 Markdown 或启动器。安装器默认使用当前用户的 `CODEX_HOME/skills`，未设置 `CODEX_HOME` 时使用 `~/.codex/skills`；另在 `~/.agents/skills` 建立指向同一安装的兼容链接。会复用旧版的 `flutter工程执行` 安装目录，避免留下同名的旧规则。实际安装路径以启动器输出为准。
 
-安装后的工作流文档来自资料包，AppListing 则每次由安装器优先从远程仓库 `feature/1.2.1-A1` 分支重新同步为 Git checkout；不会把资料包中的同名目录、旧安装或手写页面作为运行时来源。修改 `工作流文档/` 中的正文或执行技能后，重新双击 `start.command` 同步更新，再重新加载 Codex。安装器会在更新前逐项检查文档清单，缺少任何列出的正文或远程 AppListing 必要文件时不覆盖现有技能。远程同步失败或 checkout 不完整时，自动尝试 `/Users/admin/Desktop/config/ios-app-listing`；两者均不可用时仍安装核心流程并按随包契约继续生成全部材料，单独记录受阻校验，不中断后续任务。旧安装保存在技能目录同级的 `skill-backups/flutter-engine-runner/`，可恢复；不会覆盖其他技能。
+安装后的工作流文档来自资料包，AppListing 则每次由安装器从当前工程根目录 `ios-app-listing/` 复制为 Git checkout；不会把资料包中的同名目录、旧安装或手写页面作为运行时来源。修改 `工作流文档/` 中的正文或执行技能后，重新双击 `start.command` 同步更新，再重新加载 Codex。安装器会在更新前逐项检查文档清单，缺少任何列出的正文或当前工程本地 AppListing 必要文件时不覆盖现有技能。当前工程本地来源不完整时直接按随包契约继续生成全部材料，单独记录受阻校验，不中断后续任务。旧安装保存在技能目录同级的 `skill-backups/flutter-engine-runner/`，可恢复；不会覆盖其他技能。
 
 Mac 若不允许双击启动器，可在终端输入 `/bin/zsh `，拖入 `start.sh` 并回车。终端入口也支持 `--project-dir` 指定完整工程目录；该路径会加入待发送的启动语句，不会直接创建工程。`--install-only` 只安装，`--help` 查看选项。
 
@@ -250,13 +250,13 @@ Logo 的光照、主体和题材按主题自主设计，不将每个题材默认
 
 Logo 还需检查主题造型、比例、材质和光线是否自然协调，修复明显畸变、断裂边缘、重复纹理、随机碎片、伪文字或廉价塑料/强光效等生成瑕疵；“自然可信”不要求 Logo 做成照片，也不限制其色彩与渐变选择。每个主要内容列表至少包含两种有意义的明显尺寸；`featured` / `standard` / `compact` 三档按内容在主要浏览体验跨页面覆盖，不要求每页都有三档。多个列表型主要页面至少使用两种有意区分的主编排，例如分组列表、双列网格、精选大卡加横向滚动、瀑布流/不规则卡片或分段式复合布局；单个页面也可以复合使用多种形式。卡片可以长短不齐、大小不一、图片比例不同，但必须由内容重要性、任务优先级、信息密度、媒体比例或排序依据决定，并记录响应式降级与无障碍顺序；不允许随机错落、只为装饰改变尺寸、固定高度截断文字或拉伸图片。设置、协议、权限等便于扫描的功能列表保持整齐。完整实现及验收标准见工作流文档第 6.9 节。
 
-Logo 实际生成失败时，会切换其他实际可用且支持相同质量/格式的模型、工具或网站，再尝试生成；不是只修改提示词。保持高质量、每任务 1 张、总计 12 张独立候选、`1024x1024` 与最终无 Alpha 要求；12 次初始提交加最多 12 次补图，所有模型/候选共用最多 24 次提交与整组 30 分钟预算，不再询问用户。没有可用替代模型或尝试仍失败时，保留真实记录并继续本地 Listing、`aduit/` 和 Remarks。
+Logo 实际生成失败时，会切换其他实际可用且支持相同质量/格式的模型、工具或网站，再尝试生成；不是只修改提示词。保持高质量、每任务 1 张、总计 12 张独立候选、`1024x1024` 与最终无 Alpha 要求；12 次初始提交加最多 12 次补图，所有模型/候选共用最多 24 次提交与整组 30 分钟预算，不再询问用户。没有可用替代模型或尝试仍失败时，保留真实记录并继续本地 Listing、`AppListing/` 和 Remarks。
 
-Logo 下载后还必须实际替换 iPhone 桌面 App 图标、iOS 原生启动品牌图、Welcome/Initialization 页面及现有 App/About 品牌位置，重新构建并检查最终显示，不能仅保存图片。详见 `工作流文档/06-素材与真实照片.md` 第 10.4 节；内容照片封面仍使用贴题的第三方素材，`aduit/site/img/` 仍只保留 `logo.png`。
+Logo 下载后还必须实际替换 iPhone 桌面 App 图标、iOS 原生启动品牌图、Welcome/Initialization 页面及现有 App/About 品牌位置，重新构建并检查最终显示，不能仅保存图片。详见 `工作流文档/06-素材与真实照片.md` 第 10.4 节；内容照片封面仍使用贴题的第三方素材，`AppListing/site/img/` 仍只保留 `logo.png`。
 
-最后检查还会扫描项目解析出的本地依赖、构建目录和 App bundle，清除其中的 `aduit/` 副本并确认依赖中不得残留；项目根目录的 `aduit/` 交付物必须保留。App 品牌引用 `assets/logo.png`；`aduit` 生成完成后，Entry/Settings 协议链接在 App 内用 WebView 显示，统一写入用户提供项目名称对应的完整 HTTP URL；文档中的 `http://【项目名称】/...` 只作为可搜索定位模板，不能留在最终 App 配置。不跳转外部 App；三个文件名保持原样和大小写，目标不可达时仍显示已写入的具体 URL，并在 WebView 中提供可读失败、返回和有限重试。通过无网络 stub 核对映射，不访问或探测真实 URL，也不把本地协议 HTML 打包进依赖。详细边界见第 10.7 节。
+最后检查还会扫描项目解析出的本地依赖、构建目录和 App bundle，清除其中的 `AppListing/` 副本并确认依赖中不得残留；项目根目录的 `AppListing/` 交付物必须保留。App 品牌引用 `assets/logo.png`；`AppListing` 生成完成后，Entry/Settings 协议链接在 App 内用 WebView 显示，统一写入用户提供项目名称对应的完整 HTTP URL；文档中的 `http://【项目名称】/...` 只作为可搜索定位模板，不能留在最终 App 配置。不跳转外部 App；三个文件名保持原样和大小写，协议正文优先从随包本地 HTML 加载；保留具体 HTTP URL 作为 Intro/搜索替换记录，不在运行时发起网络请求。通过无网络 stub 核对映射，不访问或探测真实 URL，也不依赖网络；三份协议 HTML 由 App 本地 assets 提供。详细边界见第 10.7 节。
 
-运行时边界：App 只运行 `lib/welcome.dart` 的 Flutter Welcome 表面；非游戏项目显示普通 WelcomePage，游戏/混合项目显示游戏大厅，不使用欢迎 HTML 或桥接。`aduit/welcome.html` 只作独立交付；不写入 lib、pubspec 资源声明、iOS copy/build phase、依赖或 bundle，不另复制/改名打包。`aduit/` 不被运行代码引用；仍保留 Settings/Initialization 的原协议 WebView。最终依赖与 bundle 中 `aduit/` 不得残留，根目录交付目录保留。
+运行时边界：App 只运行 `lib/welcome.dart` 的 Flutter Welcome 表面；非游戏项目显示普通 WelcomePage，游戏/混合项目显示游戏大厅，不使用欢迎 HTML 或桥接。`AppListing/welcome.html` 只作独立交付；不写入 lib、pubspec 资源声明、iOS copy/build phase、依赖或 bundle，不另复制/改名打包。`AppListing/` 不被运行代码引用；仍保留 Settings/Initialization 的原协议 WebView。最终依赖与 bundle 中 `AppListing/` 不得残留，根目录交付目录保留。
 
 页面边界固定：iOS 原生启动页、欢迎页和初始化页三者彼此独立。欢迎页不显示协议文本；协议文本只在初始化页底部显示。
 
@@ -264,9 +264,9 @@ Logo 下载后还必须实际替换 iPhone 桌面 App 图标、iOS 原生启动�
 
 Settings 页面必须重新设计为主题化品牌头部、分组图标、状态摘要、真实选项值和有层次的操作区域，不能退化为单调的连续文字行。设置页的结束按钮按项目真实数据选择：有用户上传、导入或创建并保存的内容需要清理时使用 `Clear Data`；确实没有这类数据、仅有随包内容或使用偏好时改为 `Exit App`。不因当前记录为空临时换名，也不为清除按钮增加数据功能。入口、确认框、进行中、失败、成功和无障碍文案一起同步；Intro、协议和 Remarks 描述实际操作。仍是一个二次确认流程：取消原处返回，确认后执行；只有实际采用 Clear Data 且真实清除成功，才清空导航栈并进入 Initialization/`Enter`。Exit App 只结束当前使用，保留偏好和随包内容，成功后不进入 Initialization，不强制终止 iOS 进程。详见第 7.7 节。
 
-启动体验有严格条件边界：iOS 原生冷启动页之后，非游戏项目每次启动只进入含 `Continue` 的 Flutter Welcome 页；游戏/混合项目每次启动进入 `lib/welcome.dart` 的沉浸式游戏大厅（Play、Load、Operation，顶部 Exit、Settings），其中 Play 经过 Loading/初始化、Load 经过 Save Slot 后进入 Game；只有项目实际采用 `Clear Data` 且用户确认、清除真实成功后才创建并显示含 `Enter` 的 Flutter Initialization 页。采用 Exit App 的项目不创建、不注册、不打开 Initialization。这些表面各自独立；非游戏启动准备、百分比、进度和错误恢复均为 Welcome 内部状态，不创建普通 Flutter Loading 页面；游戏 Loading/Save Slot 只在 Play/Load 流程中出现。协议文本只在 Initialization 页底部显示：`By continuing, you agree to our` 换行 `Terms of Use and Privacy Policy`；Welcome、独立 `aduit/welcome.html` 交付页和原生启动页都没有这段文案。用户可见按钮必须使用 `Enter`，`/entry` 仅是内部路由名，禁止 `Entry`、`ertyr`、`entryr`、`entyr`、`entery`、`enrty` 等错误文案。正常启动与条件返回页各自按主题设计完整背景与装饰。游戏大厅、Loading 和 Save Slot 也必须按游戏主题设计完整背景、材质、层次和反馈。原生冷启动页禁止“纯白/近白底 + 居中小方图 + 大面积空白”的正规一图式屏，也禁止只放单张图片或孤立文本；必须使用全屏明亮渐变/混合背景、主题图片层、品牌层、项目名与真实定位文案、装饰层组成有层次的静态构图。启动页必须实际消费至少两种贴题的明亮背景渐变令牌，并将主题图以边缘延展或叠层方式融入画面。原生页以完整静态构图衬托更大 Logo、独立 `PRYRIN` 字标、项目名、定位文案与装饰线，不包含动画、进度或交互；非游戏 Welcome 保留丰富的主题引导卡片与 `Continue`，并在页面内部显示真实准备状态，不提供暂停按钮、暂停/恢复控件或 paused 状态；游戏大厅不显示这些普通引导卡片，按游戏契约使用 Play/Load/Operation；若项目采用 Clear Data，Initialization 提供与实际清除结果一致的说明、`Enter` 和唯一协议页脚；Exit App 项目没有 Initialization。每个视觉表面必须按页面任务实际消费协调渐变令牌，令牌数量不设上限；文字与控件始终保持可读。主任务中至少两个真实可达、语义不同的点击位必须实现主题化烟花/喷泉/拖尾反馈；若产品只有一个可操作点击位则覆盖该唯一点击位。使用 `AnimationController` + `CustomPainter` 在 `onTapUp` 坐标生成具有位置、速度、重力、颜色和拖尾的粒子，定义清晰的结束条件并随生命周期释放控制器，穿透触摸且不遮挡内容。按第 1.4 节选定的 iPhone 档位实现，不以低端性能为理由删减效果或改成占位闪烁；系统减少动态设置开启时关闭粒子与拖尾并保留静态按下反馈。任何 AI 生成图都不得采用简约线条、细轮廓、扁平几何或纯色块堆叠风格，且不能代替规定的真实内容照片。先呈现 Welcome 首帧，再异步准备；进度只由真实必需里程碑驱动，准备就绪且原生承接层淡出完成后启用 `Continue`，必须保持同款原生启动画面至 Welcome 实际加载/首绘就绪后 0.25 秒，再淡出原生承接层；除此以外不为展示动画人为停留，系统减少动态设置即时生效。Welcome 错误态保留 `Try again` 与复用现有确认流程的所选 `Clear Data` / `Exit App`；只有 Clear Data 成功后进入 Initialization，Exit App 成功留在当前可恢复边界。需实际验证小屏/大屏 iPhone、大字号、原生冷启动、Welcome 首帧/受控慢准备、适用的 Initialization、结束操作后返回、错误态及每个选定点击位的点击前/粒子进行中/结果落地证据，并核对重复点击、前后台切换、对比度与无障碍；只改文档或热重载不代表 UI 验收通过。详情见第 6.5、7.1–7.2、10.4、11.3 节。
+启动体验有严格条件边界：iOS 原生冷启动页之后，非游戏项目每次启动只进入含 `Continue` 的 Flutter Welcome 页；游戏/混合项目每次启动进入 `lib/welcome.dart` 的沉浸式游戏大厅（Play、Load、Operation，顶部 Exit、Settings），其中 Play 经过 Loading/初始化、Load 经过 Save Slot 后进入 Game；只有项目实际采用 `Clear Data` 且用户确认、清除真实成功后才创建并显示含 `Enter` 的 Flutter Initialization 页。采用 Exit App 的项目不创建、不注册、不打开 Initialization。这些表面各自独立；非游戏启动准备、百分比、进度和错误恢复均为 Welcome 内部状态，不创建普通 Flutter Loading 页面；游戏 Loading/Save Slot 只在 Play/Load 流程中出现。协议文本只在 Initialization 页底部显示：`By continuing, you agree to our` 换行 `Terms of Use and Privacy Policy`；Welcome、独立 `AppListing/welcome.html` 交付页和原生启动页都没有这段文案。用户可见按钮必须使用 `Enter`，`/entry` 仅是内部路由名，禁止 `Entry`、`ertyr`、`entryr`、`entyr`、`entery`、`enrty` 等错误文案。正常启动与条件返回页各自按主题设计完整背景与装饰。游戏大厅、Loading 和 Save Slot 也必须按游戏主题设计完整背景、材质、层次和反馈。原生冷启动页禁止“纯白/近白底 + 居中小方图 + 大面积空白”的正规一图式屏，也禁止只放单张图片或孤立文本；必须使用全屏明亮渐变/混合背景、主题图片层、品牌层、项目名与真实定位文案、装饰层组成有层次的静态构图。启动页必须实际消费至少两种贴题的明亮背景渐变令牌，并将主题图以边缘延展或叠层方式融入画面。原生页以完整静态构图衬托更大 Logo、独立 `PRYRIN` 字标、项目名、定位文案与装饰线，不包含动画、进度或交互；非游戏 Welcome 保留丰富的主题引导卡片与 `Continue`，并在页面内部显示真实准备状态，不提供暂停按钮、暂停/恢复控件或 paused 状态；游戏大厅不显示这些普通引导卡片，按游戏契约使用 Play/Load/Operation；若项目采用 Clear Data，Initialization 提供与实际清除结果一致的说明、`Enter` 和唯一协议页脚；Exit App 项目没有 Initialization。每个视觉表面必须按页面任务实际消费协调渐变令牌，令牌数量不设上限；文字与控件始终保持可读。主任务中至少两个真实可达、语义不同的点击位必须实现主题化烟花/喷泉/拖尾反馈；若产品只有一个可操作点击位则覆盖该唯一点击位。使用 `AnimationController` + `CustomPainter` 在 `onTapUp` 坐标生成具有位置、速度、重力、颜色和拖尾的粒子，定义清晰的结束条件并随生命周期释放控制器，穿透触摸且不遮挡内容。按第 1.4 节选定的 iPhone 档位实现，不以低端性能为理由删减效果或改成占位闪烁；系统减少动态设置开启时关闭粒子与拖尾并保留静态按下反馈。任何 AI 生成图都不得采用简约线条、细轮廓、扁平几何或纯色块堆叠风格，且不能代替规定的真实内容照片。先呈现 Welcome 首帧，再异步准备；进度只由真实必需里程碑驱动，准备就绪且原生承接层淡出完成后启用 `Continue`，必须保持同款原生启动画面至 Welcome 实际加载/首绘就绪后 0.25 秒，再淡出原生承接层；除此以外不为展示动画人为停留，系统减少动态设置即时生效。Welcome 错误态保留 `Try again` 与复用现有确认流程的所选 `Clear Data` / `Exit App`；只有 Clear Data 成功后进入 Initialization，Exit App 成功留在当前可恢复边界。需实际验证小屏/大屏 iPhone、大字号、原生冷启动、Welcome 首帧/受控慢准备、适用的 Initialization、结束操作后返回、错误态及每个选定点击位的点击前/粒子进行中/结果落地证据，并核对重复点击、前后台切换、对比度与无障碍；只改文档或热重载不代表 UI 验收通过。详情见第 6.5、7.1–7.2、10.4、11.3 节。
 
-Listing 生成器优先使用有效的 `assets/logo.png`，不再优先选旧 AppIcon。没有正式 Logo 时可用已有有效图标或项目内的 `assets/dev_brand.png` 继续本地生成，来源记录放 `.codex-work/` 并保留品牌未验证状态；完全无有效图片时仍输出介绍与三页 HTML，缺图和目录契约检查如实失败，后续 `aduit/` 整理及 Remarks 继续执行。
+Listing 生成器优先使用有效的 `assets/logo.png`，不再优先选旧 AppIcon。没有正式 Logo 时可用已有有效图标或项目内的 `assets/dev_brand.png` 继续本地生成，来源记录放 `.codex-work/` 并保留品牌未验证状态；完全无有效图片时仍输出介绍与三页 HTML，缺图和目录契约检查如实失败，后续 `AppListing/` 整理及 Remarks 继续执行。
 
 所有页面还须按第 6.10 节落实与任务相关的图文表达，不只美化首页：内容/详情结合主题摄影或图解与有信息价值的模块，若 Search capability = Selected，搜索使用缩略图/分类图标和元信息；未选搜索时不创建搜索 UI、路由或验收项，Settings 有品牌区与分组图标，媒体页呈现真实预览与反馈，空/错误态有对应图形和下一步。确认框保持风险清楚、操作简洁，协议保留完整易读正文与品牌层次。每页及适用状态都纳入规划和当前构建验收；纯文字堆叠、反复贴 Logo、同文换容器、假统计或无关装饰不算丰富，必要实景照片仍从已列第三方网站取得并核许可。
 
@@ -274,9 +274,9 @@ Listing 生成器优先使用有效的 `assets/logo.png`，不再优先选旧 Ap
 
 所有自有界面的图片统一使用圆角，覆盖 Logo、列表/详情图片、缩略图、视频封面、媒体预览及 HTML 内嵌图；图片本身须实际裁剪，加载、错误、放大与转场中也不能露出尖角。按主题适当增加 Logo 配色的细边框，同类图片圆角与边框保持一致。原始 Logo 仍为无 Alpha 图片，AppIcon 使用系统蒙版。最终逐页检查实际显示，详见第 6.3、11.3、10.7 节。
 
-协议链接文档示例使用完整 HTTP 搜索模板 `http://【项目名称】/xxx.html`，其中 `xxx.html` 仅对应 `PrivacyPolicy.html`、`Terms&Conditions.html`、`Support.html` 三个固定文件；协议链接统一使用三个完整 HTTP 模板：`http://【项目名称】/PrivacyPolicy.html`、`http://【项目名称】/Terms&Conditions.html`、`http://【项目名称】/Support.html`。三个文件名 `PrivacyPolicy.html`、`Terms&Conditions.html`、`Support.html` 千万不要改动或改大小写。App 内使用 WebView 显示，不跳转外部 App；生成时直接写入用户提供的项目名称；`【项目名称】` 仅保留在文档搜索模板中，不得留在最终 App 配置。
+协议链接文档示例保留完整 HTTP 搜索模板 `http://【项目名称】/xxx.html`，其中 `xxx.html` 仅对应 `PrivacyPolicy.html`、`Terms&Conditions.html`、`Support.html` 三个固定文件；协议链接统一使用三个完整 HTTP 模板：`http://【项目名称】/PrivacyPolicy.html`、`http://【项目名称】/Terms&Conditions.html`、`http://【项目名称】/Support.html`。三个文件名 `PrivacyPolicy.html`、`Terms&Conditions.html`、`Support.html` 千万不要改动或改大小写。App 内使用 WebView 显示，不跳转外部 App；生成时直接写入用户提供的项目名称；`【项目名称】` 仅保留在文档搜索模板中，不得留在最终 App 配置。
 
-`.codex-work/` 只保存开发计划、记录、证据和备份。确认可提交后可以整目录删除，主项目的源码、资源、依赖、测试、构建配置和最终 `aduit/` 材料都不得依赖它；实际图片、主题令牌、协议 URL 和必需工具保存在各自项目目录，不通过软链接指回工作记录。最终第 19 步会可逆地把该目录移出工程，实际验证缺席时的依赖解析、测试、构建和 iPhone 运行，再恢复记录供你保留或删除。规则和验收见第 9.2.1、11.12 节。
+`.codex-work/` 只保存开发计划、记录、证据和备份。确认可提交后可以整目录删除，主项目的源码、资源、依赖、测试、构建配置和最终 `AppListing/` 材料都不得依赖它；实际图片、主题令牌、协议 URL 和必需工具保存在各自项目目录，不通过软链接指回工作记录。最终第 19 步会可逆地把该目录移出工程，实际验证缺席时的依赖解析、测试、构建和 iPhone 运行，再恢复记录供你保留或删除。规则和验收见第 9.2.1、11.12 节。
 
 ## 文档集与原入口
 
@@ -298,7 +298,7 @@ Listing 生成器优先使用有效的 `assets/logo.png`，不再优先选旧 Ap
 └── manifest.txt
 ```
 
-运行语句、执行顺序和原第 0–16 节编号不变。技能会读取总入口并按顺序完整读取十一份正文，不是只看目录或按标题猜测内容。规范资源根仍是文档集的父目录；AppListing 运行时目录由安装器从远程仓库同步，工程输出位置不受拆分影响。跨机器复制时必须带上整个文档集、执行技能和启动器，不能只复制启动器或兼容入口；资料包不需要也不应携带本地 AppListing 副本。安装器在旧版长文档不存在时，会用总入口生成安装副本中的旧路径兼容文件。
+运行语句、执行顺序和原第 0–16 节编号不变。技能会读取总入口并按顺序完整读取十一份正文，不是只看目录或按标题猜测内容。规范资源根仍是文档集的父目录；AppListing 运行时目录由安装器从当前工程根目录 `ios-app-listing/` 复制，工程输出位置不受拆分影响。跨机器复制时必须带上整个文档集、执行技能和启动器，不能只复制启动器或兼容入口；资料包不需要也不应携带本地 AppListing 副本。安装器在旧版长文档不存在时，会用总入口生成安装副本中的旧路径兼容文件。
 
 拆分时只调整了文件组织，没有改写规范正文；后续修改需求时编辑对应章节，并同步有实际关联的摘要或引用。拆分前原长文档备份在本机的 `skill-backups/flutter-engine-runner/source-documents/`，不参与执行。
 
@@ -308,7 +308,7 @@ Logo 生成保留 12 张候选跨画风比较（四种画风各 3 张）；可�
 
 About 使用由正式 Logo 派生的小尺寸 PNG（通常 128–256 像素，目标 8–20 KiB，尽量不超过 24 KiB），按清晰度与实际体积选择最小可用版本，保留主 `assets/logo.png` 原规格。引导页内嵌压缩字节并计入整个 HTML 预算；正文和按钮不等待图片下载/解码，必须检查 Logo 延迟、损坏或失败时仍可操作，详见第 12.1 节。
 
-三个协议 HTML 页面与独立 `aduit/welcome.html` 不得含草稿/开发分发/待配置/发布前待补提示。生成与最终精修后对三协议页运行 `validate_about_copy.py`，并单独检查 HTML 交付页与实际 Dart 页文案/渲染；事实缺口仅记内部，不编造联系方式或改三个协议文件名。
+三个协议 HTML 页面与独立 `AppListing/welcome.html` 不得含草稿/开发分发/待配置/发布前待补提示。生成与最终精修后对三协议页运行 `validate_about_copy.py`，并单独检查 HTML 交付页与实际 Dart 页文案/渲染；事实缺口仅记内部，不编造联系方式或改三个协议文件名。
 
 用户可见的 Dart 文案、Welcome/About 文案、按钮、错误/空态和 VoiceOver 文本必须是自然英语，不出现中文或 `H5`、`SDK`、`广告`、`第三方框架`、`技术实现`、`内部模块`、`lib`、`package`、`packages`、`local`、`device`、`测试`、`模板`、`马甲`、`过审` 及其变体。运行 `scripts/validate_public_copy.py` 扫描可见字符串；源码标识、注释和 `.codex-work/` 内部记录不属于公开文案。
 
@@ -348,19 +348,19 @@ Settings 页最底部的版本文案也是硬门槛：只显示 `项目名称 ·
 
 可通过 Google 图片搜索找到并下载许可适用的原图，也可使用下述素材网站；文件先进入本项目专属 `~/Downloads/<sanitized-project-name>/content/` 暂存区，再复制到当前项目 `assets/`，实际生成/下载的背景图片先进入 `~/Downloads/<sanitized-project-name>/backgrounds/<page_id>/`，再复制到 `assets/backgrounds/<page_id>/`；不把公共 Downloads 当项目资源库。不同独立内容展示位使用不同原图，不用改名/裁切图凑数。制作阶段完成下载与打包，App 不运行网络图片加载或首次打开再下载缓存；按本地 key 加载并完成最终构建的断网冷启动/逐图解码检查，避免图片异常卡住页面或崩溃。
 
-图片生成或下载开始前，先依据用户提供的项目名称生成一个仅用于素材暂存的安全目录：`/Users/admin/Downloads/<project-name>/`（在其他机器上等价为 `~/Downloads/<sanitized-project-name>/`）。项目名称只做文件系统安全化，不改变 App 显示名称；目录至少分为 `logo-candidates/`、`backgrounds/`、`content/` 和 `exports/`，所有本项目生成图、下载图和导出中间文件都写入该目录，禁止直接写入公共 Downloads 根目录或其他项目目录。验证格式、许可、哈希和去重后，将需要随包的文件复制到当前项目 `assets/` 对应目录并记录旧路径→新路径映射；运行时代码只能引用项目内 `assets/`，绝不引用 Downloads 的绝对路径。保留项目专属暂存目录以便复核，不把它打包进 App 或 `aduit/`，也不扫描、移动或覆盖其他项目的下载文件。
+图片生成或下载开始前，先依据用户提供的项目名称生成一个仅用于素材暂存的安全目录：`/Users/admin/Downloads/<project-name>/`（在其他机器上等价为 `~/Downloads/<sanitized-project-name>/`）。项目名称只做文件系统安全化，不改变 App 显示名称；目录至少分为 `logo-candidates/`、`backgrounds/`、`content/` 和 `exports/`，所有本项目生成图、下载图和导出中间文件都写入该目录，禁止直接写入公共 Downloads 根目录或其他项目目录。验证格式、许可、哈希和去重后，将需要随包的文件复制到当前项目 `assets/` 对应目录并记录旧路径→新路径映射；运行时代码只能引用项目内 `assets/`，绝不引用 Downloads 的绝对路径。保留项目专属暂存目录以便复核，不把它打包进 App 或 `AppListing/`，也不扫描、移动或覆盖其他项目的下载文件。
 
 统一资源暂存根目录由 `scripts/prepare_asset_staging.py` 实际创建并写入 `.codex-work/asset-staging.json`；所有生图、拉取、浏览器导出和转码文件只能进入 `/Users/admin/Downloads/<sanitized-project-name>/` 下的 `logo-candidates/`、`backgrounds/`、`content/`、`exports/`。运行 `validate_asset_staging.py` 拒绝公共 Downloads 根目录散落图片、其他项目文件、工程内伪目录、未登记子目录和符号链接。生图下载完成后必须通过 Stargate 页面或明确记录的官方删除动作删除本批生成记录，并以 `.codex-work/generation-cleanup.json` 留存 task IDs、已下载路径、精确删除 IDs、时间和证据；这一步就是生成记录删除门，运行 `cleanup_generation_history.py` 验证，删除不完整或执行方式不明不能通过。
 
-项目自有文件夹和文件名禁止出现 Codex 或 AI 相关词：包括工程根目录名、源码、资源、测试、工具、原生自定义文件、`aduit/` 材料及开发记录，按词及常见变体检查 `codex`、`ai`、`openai`、`genai`、`aigc`、`llm`、`gpt` 等；普通 `main.dart`、`rain.jpg` 不因字母组合误判。内部记录统一改为 `.codex-work/`，历史工作记录须实际迁移并同步引用、核对冲突，不覆盖记录或保留旧名软链接。`validate_path_names.py` 扫描真实目录，`keep` 不得豁免；外部技能路径、工程外父路径和真实构建/依赖强制路径保留工具边界。用户指定磁盘名冲突如实说明，不擅自移动工程或改展示品牌。具体见第 9.3.1 节。
+项目自有文件夹和文件名禁止出现 Codex 或 AI 相关词：包括工程根目录名、源码、资源、测试、工具、原生自定义文件、`AppListing/` 材料及开发记录，按词及常见变体检查 `codex`、`ai`、`openai`、`genai`、`aigc`、`llm`、`gpt` 等；普通 `main.dart`、`rain.jpg` 不因字母组合误判。内部记录统一改为 `.codex-work/`，历史工作记录须实际迁移并同步引用、核对冲突，不覆盖记录或保留旧名软链接。`validate_path_names.py` 扫描真实目录，`keep` 不得豁免；外部技能路径、工程外父路径和真实构建/依赖强制路径保留工具边界。用户指定磁盘名冲突如实说明，不擅自移动工程或改展示品牌。具体见第 9.3.1 节。
 
 所有项目自有资源、文件夹与文件能简写就统一简写，但只修改有准确、清楚缩写的名称；已简短、无合适缩写或缩写会歧义的保留，不机械截断。生成前建立主题词表，架构建立后、资源整理后和交付前运行 `validate_path_names.py` 扫描实际工程；可缩写项未改不能通过命名验收。具体词表/保留项格式与命令见第 9.3.1 节；改名必须同步代码/配置/数据/原生工程及测试中的全部引用，并检查受影响构建和断网加载。符合禁用词规则的固定路径与用户项目磁盘名、用户显示名和三个协议文件名保持原样，详见第 9.3.1 节。`assets/` 内项目自有资源使用简短的英文主题/用途名称，例如 `assets/media/city/cbd_cover.jpg`；去掉下载附带的网站名、日期/时间戳、供应商编号和随机串，专有名词统一使用可辨认的缩写。完整名称、缩写及旧新路径映射保留在 `.codex-work/asset-names.md`，来源与许可记录继续保留；固定 `assets/logo.png` 和逐页背景路径不变。既有资源改名后同步声明、代码与数据引用，并重建确认实际加载，详见第 10.1.2、11.1 节。
 
-如果返回 403、429、超时、登录墙、验证码或许可证无法核验，将对应照片项记为 `Blocked`/`Not verified`；继续生成本地 AppListing、About、`aduit/` 和 `aduit/review/remarks.md`，不能再以素材失败停止整个交付流程。
+如果返回 403、429、超时、登录墙、验证码或许可证无法核验，将对应照片项记为 `Blocked`/`Not verified`；继续生成本地 AppListing、About、`AppListing/` 和 `AppListing/review/remarks.md`，不能再以素材失败停止整个交付流程。
 
 执行流程必须实际搜索 Pexels、Pixabay、Unsplash、Wikimedia Commons 等第三方网站，核对主题与许可，下载真实实物/实景摄影到目标工程的 `assets/media/` 并接入 App 页面。`http://stargate.local:3100/` 用于生成 Logo，也可生成选定图片路线的逐页主题化背景装饰；复杂背景可直接动画生成或第三方组件合成，动画工具/服务不限且不强制为动画生图，但每页半透明图片点缀仍须实际取得、接入并验收。图像生成不得用于生成或替代内容照片、实景封面、视频帧或其他真实摄影。实际背景图片须按 `assets/backgrounds/<page_id>/<page_id>_background.png` 或真实格式单独保存并由对应页面引用；程序/动画场景按第 6.11 节记录代码入口、所用资源与真实运行。原生图标、代码矢量符号、其他装饰插画与渐变等非摄影 UI 素材不需要从照片网站取得，也不计作真实照片。没有 API Key 或资源下载技能时仍尝试可用公开网页与合法下载方式；来源失败则切换其他来源，按规范有限尝试，不无限等待。
 
-Emoji、渐变、矢量插画、AI 拟真图或仅写素材清单不能代替真实照片。验收要有来源与许可、实际页面截图及离线展示证据；不能只下载不使用，也不能用一张图填满所有分类。所有可用途径确实失败时可继续独立开发，但照片缺口必须明确报告，不能把该项资源质量标为通过。搜索记录与接触表在目标工程 `.codex-work/`，内容照片不进入 `aduit/`。
+Emoji、渐变、矢量插画、AI 拟真图或仅写素材清单不能代替真实照片。验收要有来源与许可、实际页面截图及离线展示证据；不能只下载不使用，也不能用一张图填满所有分类。所有可用途径确实失败时可继续独立开发，但照片缺口必须明确报告，不能把该项资源质量标为通过。搜索记录与接触表在目标工程 `.codex-work/`，内容照片不进入 `AppListing/`。
 
 ### iPhone 与权限配置
 
@@ -372,7 +372,7 @@ Emoji、渐变、矢量插画、AI 拟真图或仅写素材清单不能代替真
 
 为避免只写规范却漏配，已提供可执行的 `flutter-engine-runner/scripts/prepare_ios_config.py`，并随启动器安装到技能目录。按第 9.1.2 节在实际 App 上运行：`--project-root "<App根目录>" --photo-access read-write --permission-handler --minimum-ios 15.6 --apply` 适用于通过 CocoaPods 接入 `permission_handler_apple` 且需要 PhotoKit 读写的工程。它保留既有 plist 字段及更高版本，补标准 `MinimumOSVersion`，在唯一现有 Hook 末尾配置插件全部配置的 `PERMISSION_PHOTOS=1` 并禁用其 ATT 宏，保留其他宏；先验证、备份再写入，可重复执行。只添加照片改用 `add-only`，纯系统选择器用 `picker`、无照片能力用 `none`，非该宏体系不传 `--permission-handler`。去掉 `--apply` 是只读复查；缺文件/无效语法会报错，不能伪造空文件。部分 Flutter 模板省略源版本键，迁移也可能移除它，须在迁移后重新检查源文件；源补齐成功与真实 Pods/构建/运行结果分开，仍核验有效宏和 App/App.framework 产物，不宣称所有旧工程已自动修复。
 
-最终 `aduit/intro.md` 的 `## Description` 会依据项目实际功能充分展开，覆盖定位与受众、各主模块、典型使用过程、实际媒体能力（如有）、可回访成果、进入与清除流程和数据边界；遵守生成器选定的文案结构及最多 4,000 字符限制。生成后重新读取并核对覆盖，避免只留下几句短文或功能清单；仅在 `All URL` 保留隐私政策、用户协议、Support 三个具体项目名 HTTP URL；移除重复的独立 URL 栏目及其他多余网址，生成阶段立即将用户提供的项目名称写入这三个 URL，文件名和大小写保持不变；文档中的 `【项目名称】` 只作为搜索定位示例，其他事实字段仅允许按第 12.1 节统一科普展示标签；具体项目名 URL 不可访问时仍保留具体 URL并显示错误，不删改文件名。详细写作与验收见第 12.1、11.1 节，审核备注仍单独按其格式生成。
+最终 `AppListing/intro.md` 的 `## Description` 会依据项目实际功能充分展开，覆盖定位与受众、各主模块、典型使用过程、实际媒体能力（如有）、可回访成果、进入与清除流程和数据边界；遵守生成器选定的文案结构及最多 4,000 字符限制。生成后重新读取并核对覆盖，避免只留下几句短文或功能清单；仅在 `All URL` 保留隐私政策、用户协议、Support 三个具体项目名 HTTP URL；移除重复的独立 URL 栏目及其他多余网址，生成阶段立即将用户提供的项目名称写入这三个 URL，文件名和大小写保持不变；文档中的 `【项目名称】` 只作为搜索定位示例，其他事实字段仅允许按第 12.1 节统一科普展示标签；具体项目名 URL 不可访问时仍保留具体 URL并显示错误，不删改文件名。详细写作与验收见第 12.1、11.1 节，审核备注仍单独按其格式生成。
 
 ## 最终交付目录
 
@@ -380,11 +380,11 @@ Emoji、渐变、矢量插画、AI 拟真图或仅写素材清单不能代替真
 
 长时间的 `flutter build`、`xcodebuild`、`pod install`、archive、install 和 debug 必须用 `flutter-engine-runner/scripts/run_bounded_command.py` 一次性执行，并保存输出日志、状态 JSON 和心跳。包装器明确区分 `passed`、`failed`、`timeout`、`blocked_no_progress` 与 `launch_failed`；超时或无进展后只读取一次状态和日志进入诊断，禁止连续重复相同的 `write_stdin`，也禁止在没有新证据时重跑同一命令。状态文件是诊断依据，不等于真实 App 已构建、安装或运行通过。
 
-目标工程中的 `aduit/` 必须严格保持（由最终生成的 `AppListing/` 改名/整理而来，不执行公开部署）。`imgs/` 目录可按交付材料需要创建，也可以省略；不再要求固定数量的最终截图。工程、材料、最终图片/依赖及 iOS 权限校验和修复复验结束后，按页面和核心操作状态保存必要的当前 iPhone 视觉证据，优先放入 `.codex-work/`，如需公开交付截图再放入 `aduit/imgs/`。每张实际截图都必须来自最终构建、完整可解码、无占位/遮挡/裁切，并记录页面、状态、设备、构建和哈希；不复制图片或以相邻动画帧凑数。完整规则见第 12.5 节；原有 `site/img/logo.png` 保持原位置：
+目标工程中的 `AppListing/` 必须严格保持（由最终生成的 `AppListing/` 改名/整理而来，不执行公开部署）。`imgs/` 目录可按交付材料需要创建，也可以省略；不再要求固定数量的最终截图。工程、材料、最终图片/依赖及 iOS 权限校验和修复复验结束后，按页面和核心操作状态保存必要的当前 iPhone 视觉证据，优先放入 `.codex-work/`，如需公开交付截图再放入 `AppListing/imgs/`。每张实际截图都必须来自最终构建、完整可解码、无占位/遮挡/裁切，并记录页面、状态、设备、构建和哈希；不复制图片或以相邻动画帧凑数。完整规则见第 12.5 节；原有 `site/img/logo.png` 保持原位置：
 
 ```text
 lib/welcome.dart  # Actual Flutter Welcome page; routed at /welcome
-aduit/
+AppListing/
 ├── intro.md
 ├── welcome.html  # Standalone delivery only; never loaded or bundled
 ├── imgs/  # 可选的公开页面证据；数量按页面/状态需要，不固定
@@ -405,7 +405,7 @@ aduit/
 
 发布前会使用唯一 Bundle ID 核对产品身份，并扫描隐藏审核模式、远程换功能、虚假账号/计费/服务/权限、伪造测试记录、评价诱导、评分奖励、搜索/榜单/引荐/安装量操纵，以及崩溃、白屏、占位图、死链接、错误权限、数据丢失和核心流程失败。App Store 元数据、截图、About、Intro、Support 和 Remarks 只能写已确认事实，且必须互相一致。专项结果写入 `.codex-work/app-review-risk.md`；关键项失败会记录为 `Release readiness: Blocked`，不会因为其他材料已生成而报告为可上架。外部网络或素材失败仍按现有回退继续独立任务。
 
-免责与版权说明合并到原法律页。最终 `aduit/site/` 保留与 `aduit/welcome.html` 字节一致的 `index.html`、三个协议 HTML 和 `img/logo.png`；不生成其他首页。Logo 配色、草稿清理等只做有记录的必要定点修正；保存原副本/哈希，在 Dart 运行 Welcome 与 HTML 交付文件制作和清理后复核其余内容字节一致。`aduit/` 顶层仅 `intro.md`、`welcome.html`、`imgs/`（可选公开页面证据）、`site/`、`review/`，review 仅 remarks.md。Welcome 运行时唯一使用 `lib/welcome.dart`；`aduit/welcome.html` 保留为独立交付文件，不删除、不加载、不注册、不桥接、不复制或打包到 App，仍内联全部内容与 Base64 图片并严格小于 262,144 字节。HTML 只做独立离线验收，不能作为第二个 App Welcome 或运行证据。最终页面证据按页面/状态保存在 `.codex-work/`，需要公开副本时才放入 `aduit/imgs/`；过程证据/备份/额外产物只放 `.codex-work/`。Remarks 全英文、最多 4,000 字符、七章分点、设置按顺序编号、仅指定 iPhone 记录和已确认事实，无 WebView/WebKit/内部模块描述。清理旧 AppListing、首页 HTML、aduit/html 和根目录旧 welcome/enter HTML，保留三个协议页与三个 URL。
+免责与版权说明合并到原法律页。最终 `AppListing/site/` 保留与 `AppListing/welcome.html` 字节一致的 `index.html`、三个协议 HTML 和 `img/logo.png`；不生成其他首页。Logo 配色、草稿清理等只做有记录的必要定点修正；保存原副本/哈希，在 Dart 运行 Welcome 与 HTML 交付文件制作和清理后复核其余内容字节一致。`AppListing/` 顶层仅 `intro.md`、`welcome.html`、`imgs/`（可选公开页面证据）、`site/`、`review/`，review 仅 remarks.md。Welcome 运行时唯一使用 `lib/welcome.dart`；`AppListing/welcome.html` 保留为独立交付文件，不删除、不加载、不注册、不桥接、不复制或打包到 App，仍内联全部内容与 Base64 图片并严格小于 262,144 字节。HTML 只做独立离线验收，不能作为第二个 App Welcome 或运行证据。最终页面证据按页面/状态保存在 `.codex-work/`，需要公开副本时才放入 `AppListing/imgs/`；过程证据/备份/额外产物只放 `.codex-work/`。Remarks 全英文、最多 4,000 字符、七章分点、设置按顺序编号、仅指定 iPhone 记录和已确认事实，无 WebView/WebKit/内部模块描述。清理旧 AppListing、首页 HTML、AppListing/html 和根目录旧 welcome/enter HTML，保留三个协议页与三个 URL。
 
 ### App 内搜索能力决策（本轮硬规则）
 
@@ -413,11 +413,11 @@ App 内搜索不是默认能力；它是条件能力。主题确认时在 capabi
 
 ### 协议按钮直达 App 内 WebView（本轮硬规则）
 
-`Settings` 的 `Privacy Policy`、`Terms of Use`、`Support` 三个按钮，以及 Initialization 的两个协议链接，均直接把各自具体项目名 HTTP URL 传给唯一协议 WebView 展示容器并立即调用 `loadRequest(Uri.parse(url))` 或等价直接加载 API。不得经过协议索引页、协议列表页、文档选择页、站点首页或任何中间跳转页；可以复用同一个 WebView Widget，但按钮到目标 URL 必须是一次直接加载。加载失败仍在 App 内显示错误、返回和有限重试，不打开外部 App 或系统浏览器。
+`Settings` 的 `Privacy Policy`、`Terms of Use`、`Support` 三个按钮，以及 Initialization 的两个协议链接，将三份协议复制到 `assets/legal/` 后由唯一协议 WebView 展示容器直接调用本地 asset 加载 API。不得经过协议索引页、协议列表页、文档选择页、站点首页或任何中间跳转页；可以复用同一个 WebView Widget，但按钮到目标 URL 必须是一次直接加载。加载失败仍在 App 内显示错误、返回和有限重试，不打开外部 App 或系统浏览器。
 
 ### Welcome HTML 的 site 交付副本（本轮硬规则）
 
-生成和精修 `aduit/welcome.html` 后，按字节复制一份为 `aduit/site/index.html`。`site/index.html` 只是 Welcome 交付副本，不是协议索引、协议选择页或 App 运行入口；校验时必须与 `aduit/welcome.html` 字节一致。`aduit/site/` 最终只允许 `index.html`、`PrivacyPolicy.html`、`Terms&Conditions.html`、`Support.html` 和 `img/logo.png`，不允许其他首页或额外 HTML。App 运行时仍只使用 `lib/welcome.dart`，不加载或打包这些 HTML。
+生成和精修 `AppListing/welcome.html` 后，按字节复制一份为 `AppListing/site/index.html`。`site/index.html` 只是 Welcome 交付副本，不是协议索引、协议选择页或 App 运行入口；校验时必须与 `AppListing/welcome.html` 字节一致。`AppListing/site/` 最终只允许 `index.html`、`PrivacyPolicy.html`、`Terms&Conditions.html`、`Support.html` 和 `img/logo.png`，不允许其他首页或额外 HTML。App 运行时仍只使用 `lib/welcome.dart`，不加载或打包这些 HTML。
 
 ## 通用 `final_visual_product` 最终视觉成品门禁（硬门槛）
 

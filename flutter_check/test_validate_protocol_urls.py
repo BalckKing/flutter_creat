@@ -19,7 +19,7 @@ class ProtocolUrlChecks(unittest.TestCase):
         intermediate_marker=None,
     ):
         root = Path(tempfile.mkdtemp())
-        (root / "pubspec.yaml").write_text("name: demo\n", encoding="utf-8")
+        (root / "pubspec.yaml").write_text("name: demo\nflutter:\n  assets:\n    - assets/legal/\n", encoding="utf-8")
         (root / "lib").mkdir()
         webview_import = (
             "import 'package:webview_flutter/webview_flutter.dart';\n"
@@ -32,9 +32,11 @@ class ProtocolUrlChecks(unittest.TestCase):
         direct_loader = ""
         if direct_load and with_webview:
             direct_loader = """
-void openProtocolUrl(String url) {
-  final controller = WebViewController()
-    ..loadRequest(Uri.parse(url));
+Future<void> openProtocolAsset(String page) async {
+  final controller = WebViewController();
+  await controller.loadFlutterAsset('assets/legal/PrivacyPolicy.html');
+  await controller.loadFlutterAsset('assets/legal/Terms&Conditions.html');
+  await controller.loadFlutterAsset('assets/legal/Support.html');
 }
 """
         intermediate = f"\nfinal route = '{intermediate_marker}';\n" if intermediate_marker else ""
@@ -42,9 +44,21 @@ void openProtocolUrl(String url) {
             webview_import + url_source + direct_loader + intermediate,
             encoding="utf-8",
         )
-        (root / "aduit/site").mkdir(parents=True)
-        for name in ("PrivacyPolicy.html", "Terms&Conditions.html", "Support.html"):
-            (root / "aduit/site" / name).write_text("<html></html>", encoding="utf-8")
+        (root / "AppListing/site").mkdir(parents=True)
+        for name in ("index.html", "PrivacyPolicy.html", "Terms&Conditions.html", "Support.html"):
+            (root / "AppListing/site" / name).write_text("<html></html>", encoding="utf-8")
+        (root / "assets/legal").mkdir(parents=True)
+        for name in ("index.html", "PrivacyPolicy.html", "Terms&Conditions.html", "Support.html"):
+            (root / "assets/legal" / name).write_text("<html></html>", encoding="utf-8")
+        intro_urls = urls or [
+            "http://项目A/PrivacyPolicy.html",
+            "http://项目A/Terms&Conditions.html",
+            "http://项目A/Support.html",
+        ]
+        (root / "AppListing/Intro.md").write_text(
+            "All URL\n" + "\n".join(intro_urls) + "\n",
+            encoding="utf-8",
+        )
         return root
 
     def run_check(self, root, project_name="项目A"):
@@ -84,7 +98,7 @@ void openProtocolUrl(String url) {
                 "http://项目A/Support.html",
             ]
         )
-        (root / "aduit/site/Support.html").unlink()
+        (root / "AppListing/site/Support.html").unlink()
         result = self.run_check(root)
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertIn("project name", result.stdout)
@@ -103,7 +117,7 @@ void openProtocolUrl(String url) {
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertIn("in-app WebView", result.stdout)
 
-    def test_requires_direct_url_load_call(self):
+    def test_requires_direct_local_asset_load_call(self):
         root = self.make_project(
             urls=[
                 "http://项目A/PrivacyPolicy.html",
@@ -114,7 +128,27 @@ void openProtocolUrl(String url) {
         )
         result = self.run_check(root)
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
-        self.assertIn("directly load", result.stdout)
+        self.assertIn("local HTML asset", result.stdout)
+
+    def test_rejects_network_protocol_load_even_when_local_assets_exist(self):
+        root = self.make_project()
+        (root / "lib/policy_page.dart").write_text(
+            "import 'package:webview_flutter/webview_flutter.dart';\n"
+            "final urls = ['http://项目A/PrivacyPolicy.html', 'http://项目A/Terms&Conditions.html', 'http://项目A/Support.html'];\n"
+            "void openProtocolUrl(String url) { WebViewController()..loadRequest(Uri.parse(url)); }\n"
+            "void openProtocolAsset() { WebViewController()..loadFlutterAsset('assets/legal/PrivacyPolicy.html'); }\n",
+            encoding="utf-8",
+        )
+        result = self.run_check(root)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("network", result.stdout.lower())
+
+    def test_requires_all_local_policy_assets(self):
+        root = self.make_project()
+        (root / "assets/legal/Support.html").unlink()
+        result = self.run_check(root)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("Support.html", result.stdout)
 
     def test_rejects_protocol_index_or_selector_intermediate(self):
         root = self.make_project(

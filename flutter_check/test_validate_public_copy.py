@@ -15,8 +15,8 @@ class PublicCopyChecks(unittest.TestCase):
             root = Path(directory)
             (root / "lib").mkdir()
             (root / "lib/welcome.dart").write_text(dart, encoding="utf-8")
-            (root / "aduit").mkdir()
-            (root / "aduit/welcome.html").write_text(html, encoding="utf-8")
+            (root / "AppListing").mkdir()
+            (root / "AppListing/welcome.html").write_text(html, encoding="utf-8")
             result = subprocess.run(
                 [sys.executable, str(SCRIPT), "--project-root", str(root)],
                 capture_output=True, text=True, check=False,

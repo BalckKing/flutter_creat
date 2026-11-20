@@ -102,7 +102,7 @@ class VisualImplementationContractTests(unittest.TestCase):
         (root / ".codex-work/ui-ux.png").write_bytes(b"ui-ux-evidence")
 
     def procedural_ledger(self, root, kind="flutter"):
-        source = "lib/page_module/home_page.dart" if kind == "flutter" else "aduit/site/PrivacyPolicy.html"
+        source = "lib/page_module/home_page.dart" if kind == "flutter" else "AppListing/site/PrivacyPolicy.html"
         page = root / source
         page.parent.mkdir(parents=True)
         implementation = "lib/common_module/motion/home_bg.dart" if kind == "flutter" else source
@@ -815,7 +815,7 @@ class VisualImplementationContractTests(unittest.TestCase):
     def test_only_same_surface_representations_can_share_layout(self):
         surfaces = [
             {"id": "welcome", "kind": "flutter", "source": "lib/welcome.dart", "layout": self.layout_record()},
-            {"id": "welcome_html", "kind": "html", "source": "aduit/welcome.html",
+            {"id": "welcome_html", "kind": "html", "source": "AppListing/welcome.html",
              "same_layout_as": "welcome", "layout": self.layout_record()},
         ]
         self.assertEqual(MODULE.validate_layout_diversity(surfaces), [])
@@ -830,7 +830,7 @@ class VisualImplementationContractTests(unittest.TestCase):
                 self.assertTrue(MODULE.validate_layout_diversity([
                     {"id": "home", "kind": "flutter", "layout": dict(self.layout_record(), **bad)}]))
         self.assertTrue(MODULE.validate_layout_diversity([
-            {"id": "x", "kind": "html", "source": "aduit/welcome.html",
+            {"id": "x", "kind": "html", "source": "AppListing/welcome.html",
              "same_layout_as": "missing", "layout": self.layout_record()}]))
 
     def test_dart_welcome_and_delivery_only_html_are_accepted(self):
@@ -839,11 +839,11 @@ class VisualImplementationContractTests(unittest.TestCase):
             (root / "lib").mkdir()
             welcome = root / "lib/welcome.dart"
             welcome.write_text("class WelcomePage extends StatelessWidget { final cards = PageView(); }", encoding="utf-8")
-            (root / "aduit").mkdir()
-            (root / "aduit/welcome.html").write_text("<html>Standalone delivery</html>", encoding="utf-8")
+            (root / "AppListing").mkdir()
+            (root / "AppListing/welcome.html").write_text("<html>Standalone delivery</html>", encoding="utf-8")
             (root / "lib/policy_page.dart").write_text(
                 "class PolicyPage { final view = WebViewWidget(); "
-                "final rawUrl = 'https://example.invalid/aduit/PrivacyPolicy.html'; }", encoding="utf-8"
+                "final rawUrl = 'https://example.invalid/AppListing/PrivacyPolicy.html'; }", encoding="utf-8"
             )
             self.assertEqual(MODULE.validate_welcome_source(root), [])
             self.assertIn(welcome, MODULE.page_files([welcome]))
@@ -860,7 +860,7 @@ class VisualImplementationContractTests(unittest.TestCase):
                     self.assertTrue(MODULE.validate_welcome_source(root))
             welcome.write_text("class WelcomePage {}", encoding="utf-8")
             pubspec = root / "pubspec.yaml"
-            pubspec.write_text("flutter: {assets: [aduit/welcome.html]}", encoding="utf-8")
+            pubspec.write_text("flutter: {assets: [AppListing/welcome.html]}", encoding="utf-8")
             self.assertTrue(any("runtime source" in item for item in MODULE.validate_welcome_source(root)))
             pubspec.unlink()
             legacy = root / "welcome.html"
@@ -1044,11 +1044,11 @@ class VisualImplementationContractTests(unittest.TestCase):
             (root / "lib/welcome.dart").write_text(
                 "class WelcomePage {} const bg = 'welcome_background.png';", encoding="utf-8"
             )
-            (root / "aduit").mkdir()
-            (root / "aduit/welcome.html").write_text(
+            (root / "AppListing").mkdir()
+            (root / "AppListing/welcome.html").write_text(
                 '<img src="data:image/png;base64,aGVsbG8=">', encoding="utf-8"
             )
-            for kind, surface_id, source in (("html", "welcome_html", "aduit/welcome.html"),
+            for kind, surface_id, source in (("html", "welcome_html", "AppListing/welcome.html"),
                                              ("flutter", "welcome", "lib/welcome.dart")):
                 ledger["surfaces"].append({
                     "id": surface_id, "kind": kind, "source": source,
